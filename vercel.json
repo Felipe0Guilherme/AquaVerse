@@ -7,10 +7,7 @@
     },
     "backend": {
       "root": "backend",
-      "routePrefix": "/_/backend",
-      "build": {
-        "use": "@vercel/node"
-      }
+      "routePrefix": "/_/backend"
     }
   }
 }
