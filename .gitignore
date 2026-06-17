@@ -1,0 +1,13 @@
+# Pastas de dependências
+node_modules/
+
+# Arquivos de ambiente (.env) em qualquer pasta
+.env
+
+# Arquivos sensíveis de banco de dados
+SENHA_BANCO_S*
+
+# Outros arquivos do sistema
+.DS_Store
+dist/
+build/
