@@ -1,12 +1,16 @@
 {
-  "rewrites": [
-    {
-      "source": "/_/backend/:path*",
-      "destination": "/backend/server.ts"
+  "experimentalServices": {
+    "frontend": {
+      "root": "frontend",
+      "routePrefix": "/",
+      "framework": "vite"
     },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
+    "backend": {
+      "root": "backend",
+      "routePrefix": "/_/backend",
+      "build": {
+        "use": "@vercel/node"
+      }
     }
-  ]
+  }
 }
