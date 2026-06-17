@@ -17,7 +17,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
-
+import serverless from 'serverless-http'; // Importe isto
 import usersRoutes from './routes/users';
 
 import { config } from './config/env';
@@ -30,6 +30,9 @@ const app = express();
 // ── Security headers (helmet sets ~15 headers automatically) ─
 app.use(helmet());
 
+
+
+
 // ── CORS ─────────────────────────────────────────────────────
 app.use(
   cors({
@@ -39,6 +42,9 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Em vez de app.listen(3000, ...), você faz:
+export const handler = serverless(app);
 
 // ── Body parsing & cookies ────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));  // Prevent large payload attacks
