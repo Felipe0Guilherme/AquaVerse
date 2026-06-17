@@ -1,13 +1,12 @@
 {
-  "experimentalServices": {
-    "frontend": {
-      "root": "frontend",
-      "routePrefix": "/",
-      "framework": "vite"
+  "rewrites": [
+    {
+      "source": "/_/backend/:path*",
+      "destination": "/backend/server.ts"
     },
-    "backend": {
-      "root": "backend",
-      "routePrefix": "/_/backend"
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
-  }
+  ]
 }
