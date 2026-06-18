@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
     "target": "ES2022",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
@@ -21,8 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path Mapping para o Shadcn */
-    "baseUrl": ".",
+    /* Path Mapping para o Shadcn — sem baseUrl (deprecated no TS 6+) */
     "paths": {
       "@/*": ["./src/*"]
     }
