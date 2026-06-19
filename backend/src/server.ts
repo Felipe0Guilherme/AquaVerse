@@ -6,7 +6,6 @@ import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import serverless from 'serverless-http'; 
 
 import usersRoutes from './routes/users';
 import authRoutes from './routes/auth';
@@ -64,19 +63,14 @@ app.use((_req, res) => {
 
 app.use(errorHandler);
 
-// ── Export for Vercel (Serverless) ────────────────────────────
-export const handler = serverless(app);
-
-// ── Start (Only for Local Development) ────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(config.port, () => {
-    console.log(`
+// ── Start Server ─────────────────────────────────────────────
+app.listen(config.port, () => {
+  console.log(`
   ╔══════════════════════════════════════════╗
-  ║   🐠 AquaMonitor API (Local)             ║
+  ║   🐠 AquaMonitor API                     ║
   ║   Listening on: http://localhost:${config.port}   ║
   ╚══════════════════════════════════════════╝
-    `);
-  });
-}
+  `);
+});
 
 export default app;
