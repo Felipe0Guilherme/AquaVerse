@@ -63,7 +63,7 @@ app.use((_req, res) => {
 
 app.use(errorHandler);
 
-// ── Start Server ─────────────────────────────────────────────
+
 app.listen(config.port, () => {
   console.log(`
   ╔══════════════════════════════════════════╗
