@@ -11,8 +11,9 @@ interface AquaUser {
   created_at: string;
 }
 
-// ── Definições dos tipos de peixe ───────────────────────────
-type DrawFn = (size: number, flipped: boolean) => string;
+// ── Definições dos tipos de criatura ───────────────────────────
+type CreatureKind = 'fish' | 'crab' | 'octopus';
+type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
   // 0 — Clownfish (laranja)
@@ -88,10 +89,58 @@ const FISH: DrawFn[] = [
   </svg>`,
 ];
 
-function getFishType(username: string): number {
+// ── Caranguejo — anda de lado na areia, corpo sempre de frente p/ câmera (não precisa flip) ──
+const drawCrab: DrawFn = (s, _flipped, phase) => {
+  const legs = [0, 1, 2].map(i => {
+    const baseX = 9 - i * 5.5;
+    const swing = Math.sin(phase + i * 1.3) * 3;
+    return `
+      <path d="M${baseX} 14 L${baseX - 4} ${20 + swing}" stroke="#b5421f" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M${40 - baseX} 14 L${40 - baseX + 4} ${20 - swing}" stroke="#b5421f" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s * 1.6}" height="${s * 1.1}" viewBox="0 0 40 28">
+    ${legs}
+    <ellipse cx="20" cy="14" rx="13" ry="9" fill="#d65a2e"/>
+    <ellipse cx="20" cy="14" rx="13" ry="9" fill="none" stroke="#a8401c" stroke-width="0.6"/>
+    <path d="M7 10 Q1 4 4 0 Q9 4 9 10 Z" fill="#d65a2e"/>
+    <path d="M33 10 Q39 4 36 0 Q31 4 31 10 Z" fill="#d65a2e"/>
+    <line x1="14" y1="6" x2="13" y2="0" stroke="#b5421f" stroke-width="1.5"/>
+    <circle cx="13" cy="0" r="1.6" fill="white"/><circle cx="13" cy="0" r="0.8" fill="#111"/>
+    <line x1="26" y1="6" x2="27" y2="0" stroke="#b5421f" stroke-width="1.5"/>
+    <circle cx="27" cy="0" r="1.6" fill="white"/><circle cx="27" cy="0" r="0.8" fill="#111"/>
+  </svg>`;
+};
+
+// ── Polvo — flutua e pulsa, tentáculos ondulando; corpo simétrico, não precisa flip ──
+const drawOctopus: DrawFn = (s, _flipped, phase) => {
+  const tentacles = Array.from({ length: 6 }, (_, i) => {
+    const baseX = 6 + i * 5.5;
+    const wave = Math.sin(phase + i * 0.8) * 5;
+    const wave2 = Math.sin(phase * 0.7 + i) * 3;
+    return `<path d="M${baseX} 18 Q${baseX + wave} 28 ${baseX + wave2} 36" stroke="#9b3fb5" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.85"/>`;
+  }).join('');
+  const pulse = 1 + Math.sin(phase * 0.5) * 0.04;
+  return `<svg width="${s * 1.4}" height="${s * 1.9}" viewBox="0 0 40 56" style="transform:scale(${pulse.toFixed(3)})">
+    ${tentacles}
+    <ellipse cx="20" cy="16" rx="17" ry="14" fill="#b54fd1"/>
+    <ellipse cx="20" cy="16" rx="17" ry="14" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
+    <circle cx="13" cy="13" r="3" fill="white"/><circle cx="13.8" cy="13" r="1.4" fill="#111"/>
+    <circle cx="27" cy="13" r="3" fill="white"/><circle cx="27.8" cy="13" r="1.4" fill="#111"/>
+  </svg>`;
+};
+
+interface CreatureDef { kind: CreatureKind; draw: DrawFn; }
+
+const CREATURES: CreatureDef[] = [
+  ...FISH.map(draw => ({ kind: 'fish' as const, draw })),
+  { kind: 'crab', draw: drawCrab },
+  { kind: 'octopus', draw: drawOctopus },
+];
+
+function getCreatureType(username: string): number {
   let hash = 0;
   for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
-  return Math.abs(hash) % FISH.length;
+  return Math.abs(hash) % CREATURES.length;
 }
 
 function getFishSize(username: string): number {
@@ -103,6 +152,7 @@ interface FishState {
   tipEl: HTMLDivElement;
   username: string;
   typeIdx: number;
+  kind: CreatureKind;
   size: number;
   x: number; y: number;
   vx: number; vy: number;
@@ -166,14 +216,15 @@ export default function AquariumScene() {
         const W = wrap.offsetWidth;
         const H = wrap.offsetHeight;
 
-        const typeIdx = getFishType(u.username);
+        const typeIdx = getCreatureType(u.username);
+        const kind = CREATURES[typeIdx].kind;
         const size = getFishSize(u.username);
         const flipped = Math.random() > 0.5;
 
         // Elemento do peixe
         const el = document.createElement('div');
         el.style.cssText = 'position:absolute;cursor:pointer;z-index:10;user-select:none;';
-        el.innerHTML = FISH[typeIdx](size, flipped);
+        el.innerHTML = CREATURES[typeIdx].draw(size, flipped, 0);
         wrap.appendChild(el);
 
         // Tooltip fixo no body
@@ -223,17 +274,36 @@ export default function AquariumScene() {
 
         const speed = 0.5 + Math.random() * 1.0;
 
+        let x: number, y: number, vx: number, vy: number;
+        if (kind === 'crab') {
+          x = 40 + Math.random() * (W - 160);
+          y = H - 72 - size * 0.7; // pousa na areia, ajustado de novo no loop
+          vx = (Math.random() > 0.5 ? 1 : -1) * speed * 0.6;
+          vy = 0;
+        } else if (kind === 'octopus') {
+          x = 40 + Math.random() * (W - 160);
+          y = 50 + Math.random() * (H - 220);
+          vx = (flipped ? 1 : -1) * speed * 0.4;
+          vy = (Math.random() - 0.5) * 0.3;
+        } else {
+          x = 40 + Math.random() * (W - 160);
+          y = 60 + Math.random() * (H - 200);
+          vx = speed * (flipped ? 1 : -1); // cabeça do SVG é à esquerda → sem flip nada p/ esquerda
+          vy = (Math.random() - 0.5) * 0.5;
+        }
+
         const fish: FishState = {
           el, tipEl,
           username: u.username,
-          typeIdx, size,
-          x: 40 + Math.random() * (W - 160),
-          y: 60 + Math.random() * (H - 200),
-          vx: speed * (flipped ? -1 : 1),
-          vy: (Math.random() - 0.5) * 0.5,
+          typeIdx, kind, size,
+          x, y, vx, vy,
           flipped,
           wobble: Math.random() * Math.PI * 2,
-          wobbleSpeed: 0.035 + Math.random() * 0.03,
+          wobbleSpeed: kind === 'octopus'
+            ? 0.02 + Math.random() * 0.015
+            : kind === 'crab'
+              ? 0.05 + Math.random() * 0.02
+              : 0.035 + Math.random() * 0.03,
           turnTimer: 100 + Math.floor(Math.random() * 150),
           turnCounter: Math.floor(Math.random() * 100),
         };
@@ -261,39 +331,78 @@ export default function AquariumScene() {
         f.wobble += f.wobbleSpeed;
         f.turnCounter++;
 
-        if (f.turnCounter >= f.turnTimer) {
-          f.turnCounter = 0;
-          f.turnTimer = 100 + Math.floor(Math.random() * 150);
-          if (Math.random() < 0.25) {
-            f.flipped = !f.flipped;
-            f.vx = Math.abs(f.vx) * (f.flipped ? -1 : 1);
-          }
-          f.vy += (Math.random() - 0.5) * 0.35;
-          f.vy = Math.max(-0.7, Math.min(0.7, f.vy));
-        }
-
-        f.y += f.vy + Math.sin(f.wobble) * 0.25;
-        f.x += f.vx;
-
         const fw = f.el.offsetWidth  || f.size * 2.2;
         const fh = f.el.offsetHeight || f.size;
 
-        if (f.x < 8) {
-          f.x = 8; f.vx = Math.abs(f.vx); f.flipped = false;
-        }
-        if (f.x + fw > W - 8) {
-          f.x = W - fw - 8; f.vx = -Math.abs(f.vx); f.flipped = true;
-        }
-        if (f.y < ceilY) {
-          f.y = ceilY; f.vy = Math.abs(f.vy);
-        }
-        if (f.y + fh > floorY) {
-          f.y = floorY - fh; f.vy = -Math.abs(f.vy);
+        if (f.kind === 'crab') {
+          // Anda de lado na areia, com pausas — corpo fica de frente p/ câmera, sem flip
+          if (f.turnCounter >= f.turnTimer) {
+            f.turnCounter = 0;
+            f.turnTimer = 70 + Math.floor(Math.random() * 130);
+            if (f.vx === 0) {
+              const dir = Math.random() > 0.5 ? 1 : -1;
+              f.vx = dir * (0.4 + Math.random() * 0.6);
+            } else if (Math.random() < 0.3) {
+              f.vx = 0; // pausa
+            } else if (Math.random() < 0.4) {
+              f.vx = -f.vx;
+            }
+          }
+          f.x += f.vx;
+          f.y = floorY - fh; // sempre fixo na areia
+
+          if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
+          if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
+
+        } else if (f.kind === 'octopus') {
+          // Flutua livre na coluna d'água, pulsando — corpo simétrico, sem flip
+          if (f.turnCounter >= f.turnTimer) {
+            f.turnCounter = 0;
+            f.turnTimer = 90 + Math.floor(Math.random() * 160);
+            f.vx = Math.max(-0.6, Math.min(0.6, f.vx + (Math.random() - 0.5) * 0.3));
+            f.vy = Math.max(-0.5, Math.min(0.5, f.vy + (Math.random() - 0.5) * 0.3));
+          }
+          f.x += f.vx;
+          f.y += f.vy + Math.sin(f.wobble) * 0.3;
+
+          if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
+          if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
+          if (f.y < ceilY) { f.y = ceilY; f.vy = Math.abs(f.vy); }
+          if (f.y + fh > floorY) { f.y = floorY - fh; f.vy = -Math.abs(f.vy); }
+
+        } else {
+          // Peixe: nado lateral com flip sincronizado à direção
+          if (f.turnCounter >= f.turnTimer) {
+            f.turnCounter = 0;
+            f.turnTimer = 100 + Math.floor(Math.random() * 150);
+            if (Math.random() < 0.25) {
+              f.flipped = !f.flipped;
+              f.vx = Math.abs(f.vx) * (f.flipped ? 1 : -1);
+            }
+            f.vy += (Math.random() - 0.5) * 0.35;
+            f.vy = Math.max(-0.7, Math.min(0.7, f.vy));
+          }
+
+          f.y += f.vy + Math.sin(f.wobble) * 0.25;
+          f.x += f.vx;
+
+          if (f.x < 8) {
+            f.x = 8; f.vx = Math.abs(f.vx); f.flipped = true;
+          }
+          if (f.x + fw > W - 8) {
+            f.x = W - fw - 8; f.vx = -Math.abs(f.vx); f.flipped = false;
+          }
+          if (f.y < ceilY) {
+            f.y = ceilY; f.vy = Math.abs(f.vy);
+          }
+          if (f.y + fh > floorY) {
+            f.y = floorY - fh; f.vy = -Math.abs(f.vy);
+          }
         }
 
         f.el.style.left = f.x + 'px';
         f.el.style.top  = f.y + 'px';
-        f.el.innerHTML = FISH[f.typeIdx](f.size, f.flipped);
+        f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble);
       }
 
       animRef.current = requestAnimationFrame(loop);
