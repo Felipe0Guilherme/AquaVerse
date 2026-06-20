@@ -172,11 +172,19 @@ export default function AquariumScene() {
   const [users, setUsers] = useState<AquaUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Busca usuários da API — repete a cada 30s para pegar novos registros
+  // Busca usuários da API — repete a cada 30s para pegar novos registros.
+  // Só atualiza o estado se a lista de usernames realmente mudou, evitando
+  // disparar o efeito de spawn (e suas race conditions) sem necessidade.
   const fetchUsers = useCallback(async () => {
     try {
       const { data } = await apiClient.get<{ success: boolean; data: AquaUser[] }>('/users/aquarium');
-      setUsers(data.data ?? []);
+      const fresh = data.data ?? [];
+
+      setUsers(prev => {
+        const prevKey = prev.map(u => u.username).sort().join(',');
+        const freshKey = fresh.map(u => u.username).sort().join(',');
+        return prevKey === freshKey ? prev : fresh;
+      });
     } catch {
       // silently fail
     } finally {
@@ -206,13 +214,24 @@ export default function AquariumScene() {
       return true;
     });
 
-    // Adiciona peixes novos
+    // Adiciona peixes novos — reservamos o username NO MOMENTO em que o
+    // spawn é agendado (antes do setTimeout), não só quando ele executa.
+    // Isso evita que o efeito, ao rodar de novo (ex: polling de 30s) antes
+    // do timeout anterior disparar, agende um segundo spawn pro mesmo user.
     const existingUsernames = new Set(fishList.current.map(f => f.username));
     const newUsers = users.filter(u => !existingUsernames.has(u.username));
 
     newUsers.forEach((u, idx) => {
+      existingUsernames.add(u.username); // reserva o slot imediatamente
+
       setTimeout(() => {
         if (!wrapRef.current) return;
+
+        // Guarda extra: se por qualquer motivo um peixe com esse username
+        // já existe no array (ex: dois timeouts concorrentes de execuções
+        // diferentes do efeito), não cria duplicado.
+        if (fishList.current.some(f => f.username === u.username)) return;
+
         const W = wrap.offsetWidth;
         const H = wrap.offsetHeight;
 
