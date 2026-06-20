@@ -87,45 +87,90 @@ const FISH: DrawFn[] = [
     <path d="M38 10 L44 5 L44 15 Z" fill="#d4a017"/>
     <path d="M20 3 Q22 10 20 17" stroke="#a07800" stroke-width="1" fill="none" opacity="0.6"/>
   </svg>`,
+  // 8 — Peixe-borboleta (preto e branco)
+  (s, f) => `<svg width="${s*2}" height="${s*1.3}" viewBox="0 0 40 26" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="20" cy="13" rx="15" ry="9" fill="#1a1a1a"/>
+    <rect x="10" y="4" width="3" height="18" fill="white"/>
+    <rect x="20" y="4" width="3" height="18" fill="white"/>
+    <ellipse cx="9" cy="13" rx="4.5" ry="5.5" fill="#000"/>
+    <circle cx="6.5" cy="12" r="1.5" fill="white"/><circle cx="6.9" cy="12" r="0.7" fill="#111"/>
+    <path d="M34 13 L40 7 L40 19 Z" fill="#1a1a1a"/>
+  </svg>`,
+  // 9 — Néon (corpo fino, faixa azul neon + vermelha)
+  (s, f) => `<svg width="${s*2.4}" height="${s*0.8}" viewBox="0 0 48 16" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="24" cy="8" rx="18" ry="5" fill="#0a3d62"/>
+    <rect x="6" y="7" width="36" height="2" fill="#00e5ff"/>
+    <rect x="6" y="9.5" width="36" height="1.5" fill="#e02424"/>
+    <ellipse cx="9" cy="8" rx="3.5" ry="4" fill="#082c47"/>
+    <circle cx="6.5" cy="7.3" r="1.2" fill="white"/><circle cx="6.8" cy="7.3" r="0.6" fill="#111"/>
+    <path d="M40 8 L48 4 L48 12 Z" fill="#0a3d62"/>
+  </svg>`,
+  // 10 — Imperador (listras azul/amarelo)
+  (s, f) => `<svg width="${s*1.9}" height="${s*1.2}" viewBox="0 0 38 24" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="19" cy="12" rx="12" ry="9" fill="#1a3a8c"/>
+    <path d="M9 4 Q19 8 29 4" stroke="#f5c842" stroke-width="2" fill="none"/>
+    <path d="M8 10 Q19 14 30 10" stroke="#f5c842" stroke-width="2" fill="none"/>
+    <path d="M9 17 Q19 20 29 17" stroke="#f5c842" stroke-width="2" fill="none"/>
+    <ellipse cx="9" cy="12" rx="4" ry="5.5" fill="#142e70"/>
+    <circle cx="6.5" cy="11" r="1.5" fill="white"/><circle cx="6.9" cy="11" r="0.7" fill="#111"/>
+    <path d="M30 12 L38 6 L37 12 L38 18 Z" fill="#f5c842"/>
+  </svg>`,
+  // 11 — Peixe-leão (espinhos longos, listras vermelho/branco)
+  (s, f) => `<svg width="${s*2.3}" height="${s*1.6}" viewBox="0 0 46 32" style="transform:scaleX(${f?-1:1})">
+    <path d="M14 8 L12 0 M18 7 L17 0 M22 7 L23 0 M26 8 L28 0" stroke="#c81e3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="22" cy="16" rx="14" ry="8" fill="#e8e0d8"/>
+    <rect x="13" y="9" width="2.5" height="14" fill="#c81e3a"/>
+    <rect x="20" y="9" width="2.5" height="14" fill="#c81e3a"/>
+    <rect x="27" y="9" width="2.5" height="14" fill="#c81e3a"/>
+    <path d="M8 20 L4 28 M11 22 L8 30 M14 23 L12 31" stroke="#c81e3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="10" cy="16" rx="4.5" ry="5.5" fill="#d8c8b8"/>
+    <circle cx="7" cy="15" r="1.5" fill="white"/><circle cx="7.4" cy="15" r="0.7" fill="#111"/>
+    <path d="M36 16 L46 9 L46 23 Z" fill="#e8e0d8"/>
+  </svg>`,
 ];
 
 // ── Caranguejo — anda de lado na areia, corpo sempre de frente p/ câmera (não precisa flip) ──
 const drawCrab: DrawFn = (s, _flipped, phase) => {
   const legs = [0, 1, 2].map(i => {
-    const baseX = 9 - i * 5.5;
+    const baseX = 9 - i * 5;
     const swing = Math.sin(phase + i * 1.3) * 3;
     return `
-      <path d="M${baseX} 14 L${baseX - 4} ${20 + swing}" stroke="#b5421f" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M${40 - baseX} 14 L${40 - baseX + 4} ${20 - swing}" stroke="#b5421f" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+      <path d="M${baseX} 11 L${baseX - 4} ${22 + swing}" stroke="#b5421f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M${40 - baseX} 11 L${40 - baseX + 4} ${22 - swing}" stroke="#b5421f" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
   }).join('');
-  return `<svg width="${s * 1.6}" height="${s * 1.1}" viewBox="0 0 40 28">
+  return `<svg width="${s * 1.55}" height="${s}" viewBox="0 0 40 26">
     ${legs}
-    <ellipse cx="20" cy="14" rx="13" ry="9" fill="#d65a2e"/>
-    <ellipse cx="20" cy="14" rx="13" ry="9" fill="none" stroke="#a8401c" stroke-width="0.6"/>
-    <path d="M7 10 Q1 4 4 0 Q9 4 9 10 Z" fill="#d65a2e"/>
-    <path d="M33 10 Q39 4 36 0 Q31 4 31 10 Z" fill="#d65a2e"/>
-    <line x1="14" y1="6" x2="13" y2="0" stroke="#b5421f" stroke-width="1.5"/>
-    <circle cx="13" cy="0" r="1.6" fill="white"/><circle cx="13" cy="0" r="0.8" fill="#111"/>
-    <line x1="26" y1="6" x2="27" y2="0" stroke="#b5421f" stroke-width="1.5"/>
-    <circle cx="27" cy="0" r="1.6" fill="white"/><circle cx="27" cy="0" r="0.8" fill="#111"/>
+    <ellipse cx="20" cy="9" rx="13" ry="7" fill="#d65a2e"/>
+    <ellipse cx="20" cy="9" rx="13" ry="7" fill="none" stroke="#a8401c" stroke-width="0.6"/>
+    <path d="M7 6 Q2 2 5 0 Q10 3 8 7 Z" fill="#d65a2e"/>
+    <path d="M33 6 Q38 2 35 0 Q30 3 32 7 Z" fill="#d65a2e"/>
+    <line x1="13" y1="2" x2="12" y2="0" stroke="#b5421f" stroke-width="1.4"/>
+    <circle cx="12" cy="0" r="1.4" fill="white"/><circle cx="12" cy="0" r="0.7" fill="#111"/>
+    <line x1="27" y1="2" x2="28" y2="0" stroke="#b5421f" stroke-width="1.4"/>
+    <circle cx="28" cy="0" r="1.4" fill="white"/><circle cx="28" cy="0" r="0.7" fill="#111"/>
   </svg>`;
 };
 
-// ── Polvo — flutua e pulsa, tentáculos ondulando; corpo simétrico, não precisa flip ──
+// ── Polvo — manto bojudo + tentáculos grossos afunilados ondulando; corpo simétrico, não precisa flip ──
 const drawOctopus: DrawFn = (s, _flipped, phase) => {
-  const tentacles = Array.from({ length: 6 }, (_, i) => {
-    const baseX = 6 + i * 5.5;
-    const wave = Math.sin(phase + i * 0.8) * 5;
-    const wave2 = Math.sin(phase * 0.7 + i) * 3;
-    return `<path d="M${baseX} 18 Q${baseX + wave} 28 ${baseX + wave2} 36" stroke="#9b3fb5" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.85"/>`;
+  const tentacles = Array.from({ length: 8 }, (_, i) => {
+    const baseX = 5 + i * 4.3;
+    const wave = Math.sin(phase + i * 0.9) * 6;
+    const wave2 = Math.sin(phase * 0.8 + i * 1.3) * 4;
+    const len = 26 + Math.sin(phase * 0.3 + i) * 3;
+    const w = 5;
+    return `<path d="M${baseX - w / 2} 20
+                     Q${(baseX - w / 2 + wave).toFixed(1)} ${(20 + len * 0.55).toFixed(1)} ${(baseX + wave2 * 0.3).toFixed(1)} ${(20 + len).toFixed(1)}
+                     Q${(baseX + w / 2 + wave).toFixed(1)} ${(20 + len * 0.55).toFixed(1)} ${baseX + w / 2} 20 Z"
+              fill="#9b3fb5" opacity="0.92"/>`;
   }).join('');
-  const pulse = 1 + Math.sin(phase * 0.5) * 0.04;
-  return `<svg width="${s * 1.4}" height="${s * 1.9}" viewBox="0 0 40 56" style="transform:scale(${pulse.toFixed(3)})">
+  const pulse = 1 + Math.sin(phase * 0.5) * 0.035;
+  return `<svg width="${s * 1.5}" height="${s * 1.7}" viewBox="0 0 40 50" style="transform:scale(${pulse.toFixed(3)})">
     ${tentacles}
-    <ellipse cx="20" cy="16" rx="17" ry="14" fill="#b54fd1"/>
-    <ellipse cx="20" cy="16" rx="17" ry="14" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
-    <circle cx="13" cy="13" r="3" fill="white"/><circle cx="13.8" cy="13" r="1.4" fill="#111"/>
-    <circle cx="27" cy="13" r="3" fill="white"/><circle cx="27.8" cy="13" r="1.4" fill="#111"/>
+    <path d="M5 18 Q3 2 20 0 Q37 2 35 18 Q37 24 30 26 Q20 30 10 26 Q3 24 5 18 Z" fill="#b54fd1"/>
+    <path d="M5 18 Q3 2 20 0 Q37 2 35 18 Q37 24 30 26 Q20 30 10 26 Q3 24 5 18 Z" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
+    <circle cx="14" cy="12" r="3.4" fill="white"/><circle cx="14.8" cy="12" r="1.7" fill="#111"/>
+    <circle cx="26" cy="12" r="3.4" fill="white"/><circle cx="26.8" cy="12" r="1.7" fill="#111"/>
   </svg>`;
 };
 
@@ -345,6 +390,7 @@ export default function AquariumScene() {
       const H = wrapRef.current.offsetHeight;
       const floorY = H - 72;
       const ceilY = 36;
+      const sandTopY = H - 60; // topo do bloco de areia visual (ver style do div "Areia")
 
       for (const f of fishList.current) {
         f.wobble += f.wobbleSpeed;
@@ -368,7 +414,10 @@ export default function AquariumScene() {
             }
           }
           f.x += f.vx;
-          f.y = floorY - fh; // sempre fixo na areia
+          // a arte do caranguejo deixa as pernas na altura ~0.85 do viewBox (não na borda exata
+          // do svg) — por isso alinhamos pela ponta da perna, não pelo fundo da bounding box,
+          // senão ele fica com um respiro vazio embaixo e parece flutuar sobre a areia.
+          f.y = sandTopY - fh * 0.846 + 4;
 
           if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
           if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
