@@ -1,6 +1,6 @@
 // src/pages/AquariumScene.tsx
 // Página principal — aquário social com peixes reais da API
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../api/client';
@@ -151,26 +151,36 @@ const drawCrab: DrawFn = (s, _flipped, phase) => {
   </svg>`;
 };
 
-// ── Polvo — manto bojudo + tentáculos grossos afunilados ondulando; corpo simétrico, não precisa flip ──
+// ── Polvo — manto redondo e grande, tentáculos abertos em leque com ventosas; corpo simétrico, não precisa flip ──
 const drawOctopus: DrawFn = (s, _flipped, phase) => {
   const tentacles = Array.from({ length: 8 }, (_, i) => {
-    const baseX = 5 + i * 4.3;
-    const wave = Math.sin(phase + i * 0.9) * 6;
-    const wave2 = Math.sin(phase * 0.8 + i * 1.3) * 4;
-    const len = 26 + Math.sin(phase * 0.3 + i) * 3;
-    const w = 5;
-    return `<path d="M${baseX - w / 2} 20
-                     Q${(baseX - w / 2 + wave).toFixed(1)} ${(20 + len * 0.55).toFixed(1)} ${(baseX + wave2 * 0.3).toFixed(1)} ${(20 + len).toFixed(1)}
-                     Q${(baseX + w / 2 + wave).toFixed(1)} ${(20 + len * 0.55).toFixed(1)} ${baseX + w / 2} 20 Z"
-              fill="#9b3fb5" opacity="0.92"/>`;
+    const spread = (i - 3.5) / 3.5; // -1 (esquerda) a 1 (direita) — abre o "leque"
+    const baseX = 20 + spread * 13;
+    const wave = Math.sin(phase + i * 0.9) * 5;
+    const len = 24 + Math.sin(phase * 0.3 + i) * 3;
+    const midX = baseX + spread * 5 + wave * 0.6;
+    const tipX = baseX + spread * 7 + wave * 0.3;
+    const w = 4.5;
+    const suckers = [0.45, 0.75].map(t => {
+      const sx = (baseX + (midX - baseX) * t).toFixed(1);
+      const sy = (20 + len * t).toFixed(1);
+      return `<ellipse cx="${sx}" cy="${sy}" rx="1.5" ry="1" fill="#d99ce8" opacity="0.7"/>`;
+    }).join('');
+    return `
+      <path d="M${(baseX - w / 2).toFixed(1)} 19
+               Q${(midX - w / 3).toFixed(1)} ${(20 + len * 0.6).toFixed(1)} ${tipX.toFixed(1)} ${(20 + len).toFixed(1)}
+               Q${(midX + w / 3).toFixed(1)} ${(20 + len * 0.6).toFixed(1)} ${(baseX + w / 2).toFixed(1)} 19 Z"
+            fill="#9b3fb5" opacity="0.92"/>
+      ${suckers}`;
   }).join('');
   const pulse = 1 + Math.sin(phase * 0.5) * 0.035;
-  return `<svg width="${s * 1.5}" height="${s * 1.7}" viewBox="0 0 40 50" style="transform:scale(${pulse.toFixed(3)})">
+  return `<svg width="${s * 1.6}" height="${s * 1.5}" viewBox="0 0 40 48" style="transform:scale(${pulse.toFixed(3)})">
     ${tentacles}
-    <path d="M5 18 Q3 2 20 0 Q37 2 35 18 Q37 24 30 26 Q20 30 10 26 Q3 24 5 18 Z" fill="#b54fd1"/>
-    <path d="M5 18 Q3 2 20 0 Q37 2 35 18 Q37 24 30 26 Q20 30 10 26 Q3 24 5 18 Z" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
-    <circle cx="14" cy="12" r="3.4" fill="white"/><circle cx="14.8" cy="12" r="1.7" fill="#111"/>
-    <circle cx="26" cy="12" r="3.4" fill="white"/><circle cx="26.8" cy="12" r="1.7" fill="#111"/>
+    <ellipse cx="20" cy="14" rx="16" ry="13" fill="#b54fd1"/>
+    <ellipse cx="20" cy="14" rx="16" ry="13" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
+    <ellipse cx="20" cy="6" rx="9" ry="3" fill="#c468da" opacity="0.5"/>
+    <circle cx="14" cy="12" r="3.6" fill="white"/><circle cx="14.9" cy="12" r="1.8" fill="#111"/>
+    <circle cx="26" cy="12" r="3.6" fill="white"/><circle cx="26.9" cy="12" r="1.8" fill="#111"/>
   </svg>`;
 };
 
@@ -195,6 +205,7 @@ function getFishSize(username: string): number {
 interface FishState {
   el: HTMLDivElement;
   tipEl: HTMLDivElement;
+  bubbleEl: HTMLDivElement;
   username: string;
   typeIdx: number;
   kind: CreatureKind;
@@ -204,6 +215,8 @@ interface FishState {
   flipped: boolean;
   wobble: number;
   wobbleSpeed: number;
+  lastMsgTs: number;     // timestamp (ms) da última mensagem já exibida — evita reexibir a mesma msg a cada poll
+  messageUntil: number;  // timestamp (ms) até quando o balão deve ficar visível
   turnTimer: number;
   turnCounter: number;
 }
@@ -243,6 +256,66 @@ export default function AquariumScene() {
     return () => clearInterval(interval);
   }, [fetchUsers]);
 
+  // ── Chat ─────────────────────────────────────────────
+  const [chatInput, setChatInput] = useState('');
+  const [sending, setSending] = useState(false);
+
+  // Busca mensagens recentes (últimos ~30s) e atualiza o balão do peixe correspondente.
+  // Usa lastMsgTs por peixe pra não "renovar" o balão a cada poll enquanto a msg
+  // ainda estiver dentro da janela do backend — só atualiza se for de fato uma msg nova.
+  const fetchMessages = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{
+        success: boolean;
+        data: { username: string; text: string; created_at: string }[];
+      }>('/messages/recent');
+
+      for (const m of data.data ?? []) {
+        const f = fishList.current.find(fs => fs.username === m.username);
+        if (!f) continue;
+        const ts = new Date(m.created_at).getTime();
+        if (ts > f.lastMsgTs) {
+          f.lastMsgTs = ts;
+          f.messageUntil = Date.now() + 25_000;
+          f.bubbleEl.textContent = m.text;
+        }
+      }
+    } catch {
+      // silently fail — só não atualiza nesse tick
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return; // só faz polling de chat se estiver logado
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3_000);
+    return () => clearInterval(interval);
+  }, [user, fetchMessages]);
+
+  const handleSendMessage = async (e: FormEvent) => {
+    e.preventDefault();
+    const text = chatInput.trim();
+    if (!text || !user || sending) return;
+
+    setSending(true);
+    setChatInput('');
+    try {
+      await apiClient.post('/messages', { text });
+      // feedback otimista: já mostra o balão no próprio peixe sem esperar o próximo poll
+      const f = fishList.current.find(fs => fs.username === user.username);
+      if (f) {
+        f.lastMsgTs = Date.now();
+        f.messageUntil = Date.now() + 25_000;
+        f.bubbleEl.textContent = text;
+      }
+    } catch {
+      // se falhar, devolve o texto pro input pra não perder o que a pessoa digitou
+      setChatInput(text);
+    } finally {
+      setSending(false);
+    }
+  };
+
   // Spawna peixes quando a lista de usuários mudar
   useEffect(() => {
     if (!wrapRef.current || loading) return;
@@ -254,6 +327,7 @@ export default function AquariumScene() {
       if (!currentUsernames.has(f.username)) {
         f.el.remove();
         f.tipEl.remove();
+        f.bubbleEl.remove();
         return false;
       }
       return true;
@@ -290,6 +364,31 @@ export default function AquariumScene() {
         el.style.cssText = 'position:absolute;cursor:pointer;z-index:10;user-select:none;';
         el.innerHTML = CREATURES[typeIdx].draw(size, flipped, 0);
         wrap.appendChild(el);
+
+        // Balão de chat — fica dentro do wrap (acompanha x/y do peixe, não o cursor)
+        const bubbleEl = document.createElement('div');
+        bubbleEl.style.cssText = [
+          'position:absolute',
+          'z-index:15',
+          'pointer-events:none',
+          'background:rgba(8,22,38,0.95)',
+          'border:1px solid rgba(34,211,238,0.45)',
+          'color:#e6f7ff',
+          'font-family:monospace',
+          'font-size:12px',
+          'line-height:1.3',
+          'padding:5px 10px',
+          'border-radius:12px',
+          'max-width:150px',
+          'white-space:normal',
+          'word-break:break-word',
+          'text-align:center',
+          'opacity:0',
+          'transition:opacity 0.25s ease',
+          'transform:translateX(-50%)',
+          'box-shadow:0 3px 12px rgba(0,0,0,0.4)',
+        ].join(';');
+        wrap.appendChild(bubbleEl);
 
         // Tooltip fixo no body
         const tipEl = document.createElement('div');
@@ -357,7 +456,7 @@ export default function AquariumScene() {
         }
 
         const fish: FishState = {
-          el, tipEl,
+          el, tipEl, bubbleEl,
           username: u.username,
           typeIdx, kind, size,
           x, y, vx, vy,
@@ -370,6 +469,8 @@ export default function AquariumScene() {
               : 0.035 + Math.random() * 0.03,
           turnTimer: 100 + Math.floor(Math.random() * 150),
           turnCounter: Math.floor(Math.random() * 100),
+          lastMsgTs: 0,
+          messageUntil: 0,
         };
 
         fish.el.style.left = fish.x + 'px';
@@ -391,6 +492,7 @@ export default function AquariumScene() {
       const floorY = H - 72;
       const ceilY = 36;
       const sandTopY = H - 60; // topo do bloco de areia visual (ver style do div "Areia")
+      const now = Date.now();
 
       for (const f of fishList.current) {
         f.wobble += f.wobbleSpeed;
@@ -471,6 +573,15 @@ export default function AquariumScene() {
         f.el.style.left = f.x + 'px';
         f.el.style.top  = f.y + 'px';
         f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble);
+
+        // Balão de chat: segue o peixe enquanto a mensagem estiver "viva" (25s)
+        if (f.messageUntil > now) {
+          f.bubbleEl.style.left = (f.x + fw / 2) + 'px';
+          f.bubbleEl.style.top  = (f.y - 38) + 'px';
+          f.bubbleEl.style.opacity = '1';
+        } else if (f.bubbleEl.style.opacity !== '0') {
+          f.bubbleEl.style.opacity = '0';
+        }
       }
 
       animRef.current = requestAnimationFrame(loop);
@@ -488,6 +599,7 @@ export default function AquariumScene() {
       fishList.current.forEach(f => {
         f.el.remove();
         f.tipEl.remove();
+        f.bubbleEl.remove();
       });
       fishList.current = [];
     };
@@ -666,6 +778,42 @@ export default function AquariumScene() {
           </p>
         )}
       </div>
+
+      {/* Chat — só aparece pra quem está logado */}
+      {user && (
+        <form
+          onSubmit={handleSendMessage}
+          className="w-full max-w-5xl mt-3 flex gap-2"
+        >
+          <input
+            type="text"
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
+            maxLength={80}
+            placeholder="Diga algo pro aquário e aperte Enter..."
+            className="flex-1 px-4 py-2 text-sm rounded-lg outline-none font-mono"
+            style={{
+              background: 'rgba(10,30,50,0.55)',
+              border: '1px solid rgba(34,211,238,0.2)',
+              color: '#e6f7ff',
+            }}
+            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(34,211,238,0.5)')}
+            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(34,211,238,0.2)')}
+          />
+          <button
+            type="submit"
+            disabled={sending || !chatInput.trim()}
+            className="px-4 py-2 text-sm font-semibold rounded-lg transition"
+            style={{
+              background: sending || !chatInput.trim() ? 'rgba(34,211,238,0.3)' : '#22d3ee',
+              color: '#040e1a',
+              cursor: sending || !chatInput.trim() ? 'default' : 'pointer',
+            }}
+          >
+            Enviar
+          </button>
+        </form>
+      )}
 
       {/* Rodapé */}
       <p className="mt-4 text-xs" style={{ color: 'rgba(100,130,160,0.5)', fontFamily: 'monospace' }}>
