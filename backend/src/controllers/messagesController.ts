@@ -17,17 +17,16 @@ const MAX_TEXT_LENGTH = 80;
 const RECENT_WINDOW_SECONDS = 30;
 
 export async function sendMessage(
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    // ⚠️ ASSUNÇÃO: assumi que o payload do JWT (decodificado em middleware/auth.ts)
-    // tem `id` e `username` direto. Se o seu JwtPayload (em src/types/index.ts) usar
-    // outro nome de campo, ou só tiver o `id`, ajusta as duas linhas abaixo —
-    // confira como o token é assinado (jwt.sign) no authController.ts no login/register.
-    const userId = req.user?.id;
-    const username = req.user?.username;
+    const authReq = req as AuthRequest;
+
+
+    const userId = authReq.user?.id;
+    const username = authReq.user?.username;
 
     if (!userId || !username) {
       res.status(401).json({ success: false, error: 'Authentication required.' });
