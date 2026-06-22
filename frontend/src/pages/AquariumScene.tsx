@@ -323,10 +323,32 @@ const CREATURE_POOL: number[] = CREATURES.flatMap((c, idx) =>
   Array(RARITY_WEIGHT[c.rarity]).fill(idx)
 );
 
-function getCreatureType(username: string): number {
+function getCreatureType(
+  username: string,
+  typeCounts: Map<number, number>,   // criaturaIdx → quantos já têm esse tipo
+  maxPerType = 2
+): number {
   let hash = 0;
   for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
-  return CREATURE_POOL[Math.abs(hash) % CREATURE_POOL.length];
+  const poolLen = CREATURE_POOL.length;
+  const startPos = Math.abs(hash) % poolLen;
+
+  // Tenta a preferência natural do hash primeiro.
+  // Se esse tipo já atingiu o limite, sobe pelo pool até achar um disponível.
+  // A direção de busca usa um segundo hash derivado do nome, pra dois usuários
+  // "deslocados" não caírem sempre no mesmo tipo de reserva.
+  let hash2 = 0;
+  for (const c of username) hash2 = (hash2 * 17 + c.charCodeAt(0)) & 0xffffffff;
+  const step = (Math.abs(hash2) % (poolLen - 1)) + 1; // passo ímpar garante varredura completa
+
+  for (let i = 0; i < poolLen; i++) {
+    const pos = (startPos + i * step) % poolLen;
+    const idx = CREATURE_POOL[pos];
+    if ((typeCounts.get(idx) ?? 0) < maxPerType) return idx;
+  }
+
+  // Fallback improvável (todas as criaturas com 2+ usuários): retorna a preferência natural
+  return CREATURE_POOL[startPos];
 }
 
 function getFishSize(username: string): number {
@@ -476,8 +498,20 @@ export default function AquariumScene() {
     const existingUsernames = new Set(fishList.current.map(f => f.username));
     const newUsers = users.filter(u => !existingUsernames.has(u.username));
 
+    // Conta quantos peixes já existem de cada tipo (inclui os que já estão no aquário)
+    // pra que getCreatureType pule tipos lotados ao sortear os novos usuários.
+    const typeCounts = new Map<number, number>();
+    for (const f of fishList.current) {
+      typeCounts.set(f.typeIdx, (typeCounts.get(f.typeIdx) ?? 0) + 1);
+    }
+
     newUsers.forEach((u, idx) => {
       existingUsernames.add(u.username); // reserva o slot imediatamente
+
+      // Sorteia o tipo ANTES do setTimeout (com o mapa atual) e já incrementa
+      // o contador, pra usuários seguintes na mesma rodada não pegarem o mesmo.
+      const reservedTypeIdx = getCreatureType(u.username, typeCounts);
+      typeCounts.set(reservedTypeIdx, (typeCounts.get(reservedTypeIdx) ?? 0) + 1);
 
       setTimeout(() => {
         if (!wrapRef.current) return;
@@ -490,7 +524,7 @@ export default function AquariumScene() {
         const W = wrap.offsetWidth;
         const H = wrap.offsetHeight;
 
-        const typeIdx = getCreatureType(u.username);
+        const typeIdx = reservedTypeIdx;
         const creatureDef = CREATURES[typeIdx];
         const kind = creatureDef.kind;
         const size = creatureDef.sizeOverride ?? getFishSize(u.username);
