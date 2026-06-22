@@ -12,7 +12,7 @@ interface AquaUser {
 }
 
 // ── Definições dos tipos de criatura ───────────────────────────
-type CreatureKind = 'fish' | 'crab' | 'octopus';
+type CreatureKind = 'fish' | 'crab' | 'octopus' | 'shark' | 'hammerhead' | 'orca' | 'whale' | 'humpback' | 'manta' | 'krill';
 type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
@@ -184,18 +184,149 @@ const drawOctopus: DrawFn = (s, _flipped, phase) => {
   </svg>`;
 };
 
-interface CreatureDef { kind: CreatureKind; draw: DrawFn; }
+// ── Tubarão — grande, fluido, boca mostrando dentes ──────────────────────────
+const drawShark: DrawFn = (s, f, _p) => `<svg width="${s*3.2}" height="${s*1.3}" viewBox="0 0 64 26" style="transform:scaleX(${f?-1:1})">
+  <path d="M2 13 Q8 6 20 8 Q36 5 54 13 Q48 16 36 17 Q20 18 8 16 Z" fill="#4a6fa5"/>
+  <path d="M2 13 Q8 6 20 8 Q36 5 54 13 Q48 16 36 17 Q20 18 8 16 Z" fill="none" stroke="#2d4f7a" stroke-width="0.5"/>
+  <path d="M20 8 L26 0 L30 8 Z" fill="#3d5f8a"/>
+  <path d="M8 16 L4 22 L14 17 Z" fill="#3d5f8a"/>
+  <path d="M54 13 L64 10 L64 16 Z" fill="#4a6fa5"/>
+  <path d="M36 17 L38 22 L42 17 Z" fill="#3d5f8a"/>
+  <ellipse cx="7" cy="12" rx="3" ry="4" fill="#3d5f8a"/>
+  <path d="M4 14 Q6 17 10 15" stroke="white" stroke-width="0.8" fill="none"/>
+  <line x1="5" y1="15" x2="7" y2="16" stroke="white" stroke-width="0.5"/>
+  <line x1="7" y1="15.5" x2="9" y2="16" stroke="white" stroke-width="0.5"/>
+  <circle cx="5" cy="11" r="1.3" fill="white"/><circle cx="5.4" cy="11" r="0.6" fill="#111"/>
+  <rect x="7" y="11" width="6" height="1" rx="0.5" fill="rgba(255,255,255,0.15)"/>
+</svg>`
+
+// ── Tubarão-martelo ───────────────────────────────────────────────────────────
+const drawHammerhead: DrawFn = (s, f, _p) => `<svg width="${s*3}" height="${s*1.5}" viewBox="0 0 60 30" style="transform:scaleX(${f?-1:1})">
+  <path d="M10 15 Q20 9 38 10 Q52 10 58 15 Q52 18 38 19 Q20 19 10 17 Z" fill="#5a7a9a"/>
+  <path d="M22 10 L26 2 L30 10 Z" fill="#4a6a8a"/>
+  <path d="M10 17 L6 24 L16 18 Z" fill="#4a6a8a"/>
+  <path d="M58 15 L60 12 L60 18 Z" fill="#5a7a9a"/>
+  <path d="M0 12 Q4 7 8 12 Q4 17 0 18 Z" fill="#4a6a8a"/>
+  <circle cx="2" cy="10" r="1.2" fill="white"/><circle cx="2.4" cy="10" r="0.6" fill="#111"/>
+  <circle cx="2" cy="19" r="1.2" fill="white"/><circle cx="2.4" cy="19" r="0.6" fill="#111"/>
+  <path d="M5 14 Q7 16 10 15" stroke="white" stroke-width="0.7" fill="none"/>
+</svg>`;
+
+// ── Orca ─────────────────────────────────────────────────────────────────────
+const drawOrca: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s*1.8}" viewBox="0 0 70 36" style="transform:scaleX(${f?-1:1})">
+  <path d="M4 18 Q14 8 32 10 Q52 8 64 18 Q58 22 40 24 Q22 25 8 22 Z" fill="#111"/>
+  <ellipse cx="24" cy="18" rx="14" ry="7" fill="white" opacity="0.9"/>
+  <ellipse cx="8" cy="14" rx="4" ry="5" fill="white" opacity="0.8"/>
+  <path d="M30 10 L36 0 L42 10 Z" fill="#111"/>
+  <path d="M8 22 L4 30 L16 23 Z" fill="#111"/>
+  <path d="M64 18 L70 14 L70 22 Z" fill="#111"/>
+  <path d="M46 24 L48 30 L52 24 Z" fill="#111"/>
+  <circle cx="8" cy="11" r="2" fill="white"/><circle cx="8.6" cy="11" r="1" fill="#111"/>
+  <ellipse cx="18" cy="8" rx="3" ry="1.5" fill="#333" opacity="0.4"/>
+</svg>`;
+
+// ── Baleia-azul ───────────────────────────────────────────────────────────────
+const drawWhale: DrawFn = (s, f, phase) => {
+  const tailWag = Math.sin(phase * 0.4) * 4;
+  return `<svg width="${s*5}" height="${s*2}" viewBox="0 0 100 40" style="transform:scaleX(${f?-1:1})">
+    <path d="M6 20 Q20 10 50 12 Q75 10 90 18 Q80 24 55 26 Q25 28 10 24 Z" fill="#2a6496"/>
+    <path d="M6 20 Q20 10 50 12 Q75 10 90 18 Q80 24 55 26 Q25 28 10 24 Z" fill="none" stroke="#1a4f7a" stroke-width="0.5"/>
+    <ellipse cx="50" cy="18" rx="25" ry="5" fill="#3a7ab5" opacity="0.3"/>
+    <path d="M90 18 L100 ${14+tailWag} L100 ${22+tailWag} Z" fill="#1e5a8a"/>
+    <path d="M60 26 L65 34 L72 26 Z" fill="#1e5a8a"/>
+    <path d="M10 24 L5 30 L18 25 Z" fill="#1e5a8a"/>
+    <path d="M8 16 Q12 10 18 14" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+    <circle cx="8" cy="14" r="2.5" fill="#1e5a8a"/>
+    <circle cx="7" cy="13" r="1.5" fill="white"/><circle cx="7.5" cy="13" r="0.7" fill="#111"/>
+    <ellipse cx="25" cy="10" rx="4" ry="1.5" fill="rgba(255,255,255,0.15)"/>
+  </svg>`;
+};
+
+// ── Baleia jubarte (humpback) ─────────────────────────────────────────────────
+const drawHumpback: DrawFn = (s, f, phase) => {
+  const tailWag = Math.sin(phase * 0.35) * 5;
+  return `<svg width="${s*4.5}" height="${s*2.2}" viewBox="0 0 90 44" style="transform:scaleX(${f?-1:1})">
+    <path d="M6 24 Q18 10 40 12 Q62 10 80 20 Q70 28 45 30 Q22 32 8 28 Z" fill="#3d5a6e"/>
+    <path d="M40 12 Q46 3 52 12" fill="#2e4a5e"/>
+    <path d="M80 20 L90 ${16+tailWag} L90 ${24+tailWag} Z" fill="#2e4a5e"/>
+    <path d="M55 30 L60 38 L68 30 Z" fill="#2e4a5e"/>
+    <path d="M8 28 L3 34 L16 29 Z" fill="#2e4a5e"/>
+    <path d="M14 14 Q20 8 28 12" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="28" cy="12" rx="8" ry="3" fill="rgba(150,180,200,0.2)"/>
+    <circle cx="9" cy="18" r="2" fill="white"/><circle cx="9.6" cy="18" r="1" fill="#111"/>
+    <path d="M8 24 Q10 28 18 26" stroke="rgba(255,255,255,0.35)" stroke-width="1" fill="none"/>
+  </svg>`;
+};
+
+// ── Manta ─────────────────────────────────────────────────────────────────────
+const drawManta: DrawFn = (s, f, phase) => {
+  const flap = Math.sin(phase * 0.6) * 4;
+  return `<svg width="${s*3.5}" height="${s*2}" viewBox="0 0 70 40" style="transform:scaleX(${f?-1:1})">
+    <path d="M35 20 Q10 ${10+flap} 0 22 Q10 ${28-flap} 35 22 Z" fill="#2c3e50"/>
+    <path d="M35 20 Q60 ${10+flap} 70 22 Q60 ${28-flap} 35 22 Z" fill="#2c3e50"/>
+    <ellipse cx="35" cy="21" rx="10" ry="7" fill="#34495e"/>
+    <path d="M35 22 L42 40" stroke="#2c3e50" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="30" cy="19" rx="3" ry="2" fill="#1a252f" opacity="0.7"/>
+    <path d="M28 17 Q30 15 34 16" stroke="#667" stroke-width="1" fill="none"/>
+    <circle cx="29" cy="18" r="1.2" fill="white"/><circle cx="29.4" cy="18" r="0.6" fill="#111"/>
+    <circle cx="41" cy="18" r="1.2" fill="white"/><circle cx="41.4" cy="18" r="0.6" fill="#111"/>
+    <ellipse cx="35" cy="24" rx="6" ry="2" fill="rgba(200,220,255,0.12)"/>
+  </svg>`;
+};
+
+// ── Krill — minúsculo e translúcido, ultra raro ───────────────────────────────
+const drawKrill: DrawFn = (s, f, phase) => {
+  const legs = Array.from({ length: 5 }, (_, i) => {
+    const x = 6 + i * 4;
+    const sw = Math.sin(phase + i * 0.7) * 2;
+    return `<path d="M${x} 8 L${x-1} ${12+sw}" stroke="rgba(255,180,140,0.7)" stroke-width="0.8" fill="none"/>`;
+  }).join('');
+  return `<svg width="${s*0.9}" height="${s*0.6}" viewBox="0 0 28 14" style="transform:scaleX(${f?-1:1})">
+    ${legs}
+    <path d="M4 7 Q14 3 24 7 Q20 10 14 10 Q8 10 4 7 Z" fill="rgba(255,160,120,0.65)"/>
+    <path d="M24 7 L28 5 L28 9 Z" fill="rgba(255,140,100,0.6)"/>
+    <circle cx="4" cy="6" r="1.2" fill="rgba(255,100,80,0.8)"/><circle cx="4" cy="6" r="0.6" fill="#111"/>
+    <path d="M3 5 L0 3 M3 6 L0 6" stroke="rgba(255,160,120,0.8)" stroke-width="0.7" fill="none"/>
+  </svg>`;
+};
+
+interface CreatureDef {
+  kind: CreatureKind;
+  draw: DrawFn;
+  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+  sizeOverride?: number; // se definido, ignora getFishSize (em px, valor base do SVG)
+}
+
+// Peso de cada raridade no pool de sorteio
+const RARITY_WEIGHT = { common: 12, uncommon: 5, rare: 2, legendary: 1 } as const;
 
 const CREATURES: CreatureDef[] = [
-  ...FISH.map(draw => ({ kind: 'fish' as const, draw })),
-  { kind: 'crab', draw: drawCrab },
-  { kind: 'octopus', draw: drawOctopus },
+  // ── Comuns ──────────────────────────────────────────────────────────────────
+  ...FISH.map(draw => ({ kind: 'fish' as const, draw, rarity: 'common' as const })),
+  { kind: 'crab',       draw: drawCrab,      rarity: 'common' },
+  { kind: 'octopus',    draw: drawOctopus,   rarity: 'common' },
+  // ── Incomuns ────────────────────────────────────────────────────────────────
+  { kind: 'manta',      draw: drawManta,     rarity: 'uncommon', sizeOverride: 34 },
+  { kind: 'shark',      draw: drawShark,     rarity: 'uncommon', sizeOverride: 36 },
+  // ── Raros ───────────────────────────────────────────────────────────────────
+  { kind: 'hammerhead', draw: drawHammerhead,rarity: 'rare',     sizeOverride: 40 },
+  { kind: 'orca',       draw: drawOrca,      rarity: 'rare',     sizeOverride: 44 },
+  { kind: 'humpback',   draw: drawHumpback,  rarity: 'rare',     sizeOverride: 48 },
+  // ── Lendários ───────────────────────────────────────────────────────────────
+  { kind: 'whale',      draw: drawWhale,     rarity: 'legendary', sizeOverride: 58 },
+  { kind: 'krill',      draw: drawKrill,     rarity: 'legendary', sizeOverride: 10 },
 ];
+
+// Pool ponderada: cada criatura aparece N vezes conforme seu peso de raridade.
+// hash % CREATURE_POOL.length dá índice final com probabilidade proporcional.
+const CREATURE_POOL: number[] = CREATURES.flatMap((c, idx) =>
+  Array(RARITY_WEIGHT[c.rarity]).fill(idx)
+);
 
 function getCreatureType(username: string): number {
   let hash = 0;
   for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
-  return Math.abs(hash) % CREATURES.length;
+  return CREATURE_POOL[Math.abs(hash) % CREATURE_POOL.length];
 }
 
 function getFishSize(username: string): number {
@@ -360,8 +491,10 @@ export default function AquariumScene() {
         const H = wrap.offsetHeight;
 
         const typeIdx = getCreatureType(u.username);
-        const kind = CREATURES[typeIdx].kind;
-        const size = getFishSize(u.username);
+        const creatureDef = CREATURES[typeIdx];
+        const kind = creatureDef.kind;
+        const size = creatureDef.sizeOverride ?? getFishSize(u.username);
+        const rarity = creatureDef.rarity;
         const flipped = Math.random() > 0.5;
 
         // Elemento do peixe
@@ -416,9 +549,16 @@ export default function AquariumScene() {
 
         // Destaca o peixe do usuário logado
         const isMe = user?.username === u.username;
+        const rarityBadge = rarity === 'legendary'
+          ? `<span style="color:#f59e0b;font-size:10px"> ✦ lendário</span>`
+          : rarity === 'rare'
+          ? `<span style="color:#a78bfa;font-size:10px"> ★ raro</span>`
+          : rarity === 'uncommon'
+          ? `<span style="color:#34d399;font-size:10px"> · incomum</span>`
+          : '';
         tipEl.innerHTML = isMe
-          ? `<span style="color:#22d3ee">@${u.username}</span> <span style="color:#fbbf24;font-size:11px">← você</span>`
-          : `<span style="color:#22d3ee">@${u.username}</span>${u.full_name ? `<span style="color:#94a3b8;font-size:11px"> · ${u.full_name}</span>` : ''}`;
+          ? `<span style="color:#22d3ee">@${u.username}</span> <span style="color:#fbbf24;font-size:11px">← você</span>${rarityBadge}`
+          : `<span style="color:#22d3ee">@${u.username}</span>${u.full_name ? `<span style="color:#94a3b8;font-size:11px"> · ${u.full_name}</span>` : ''}${rarityBadge}`;
 
         document.body.appendChild(tipEl);
 
@@ -440,12 +580,20 @@ export default function AquariumScene() {
           el.style.filter = 'drop-shadow(0 0 4px rgba(34,211,238,0.4))';
         }
 
-        const speed = 0.5 + Math.random() * 1.0;
+        // Criaturas raras/lendárias se movem mais devagar — tamanho maior já as faz destacar
+        const speedMultiplier = rarity === 'legendary' ? 0.25
+          : rarity === 'rare'     ? 0.4
+          : rarity === 'uncommon' ? 0.65
+          : 1.0;
+        const speed = (0.5 + Math.random() * 1.0) * speedMultiplier;
+
+        // Zona vertical disponível varia por raridade: grandes ficam longe do teto
+        const yMin = rarity === 'legendary' || rarity === 'rare' ? H * 0.35 : 60;
 
         let x: number, y: number, vx: number, vy: number;
         if (kind === 'crab') {
           x = 40 + Math.random() * (W - 160);
-          y = H - 72 - size * 0.7; // pousa na areia, ajustado de novo no loop
+          y = H - 72 - size * 0.7;
           vx = (Math.random() > 0.5 ? 1 : -1) * speed * 0.6;
           vy = 0;
         } else if (kind === 'octopus') {
@@ -455,9 +603,9 @@ export default function AquariumScene() {
           vy = (Math.random() - 0.5) * 0.3;
         } else {
           x = 40 + Math.random() * (W - 160);
-          y = 60 + Math.random() * (H - 200);
-          vx = speed * (flipped ? 1 : -1); // cabeça do SVG é à esquerda → sem flip nada p/ esquerda
-          vy = (Math.random() - 0.5) * 0.5;
+          y = yMin + Math.random() * (H - yMin - 120);
+          vx = speed * (flipped ? 1 : -1);
+          vy = (Math.random() - 0.5) * 0.4 * speedMultiplier;
         }
 
         const fish: FishState = {
@@ -471,8 +619,12 @@ export default function AquariumScene() {
             ? 0.02 + Math.random() * 0.015
             : kind === 'crab'
               ? 0.05 + Math.random() * 0.02
-              : 0.035 + Math.random() * 0.03,
-          turnTimer: 100 + Math.floor(Math.random() * 150),
+              : rarity === 'legendary' || rarity === 'rare'
+                ? 0.015 + Math.random() * 0.01   // grandes se movem mais suavemente
+                : 0.035 + Math.random() * 0.03,
+          turnTimer: rarity === 'legendary' ? 220 + Math.floor(Math.random() * 200)
+            : rarity === 'rare' ? 160 + Math.floor(Math.random() * 180)
+            : 100 + Math.floor(Math.random() * 150),
           turnCounter: Math.floor(Math.random() * 100),
           lastMsgTs: 0,
           messageUntil: 0,
