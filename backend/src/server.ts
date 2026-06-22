@@ -10,6 +10,7 @@ import rateLimit from 'express-rate-limit';
 import usersRoutes from './routes/users';
 import authRoutes from './routes/auth';
 import logsRoutes from './routes/logs';
+import messagesRoutes from './routes/messages';
 import { config } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -55,6 +56,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/logs', apiLimiter, logsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/messages', apiLimiter, messagesRoutes);
 
 // ── 404 & Error Handler ───────────────────────────────────────
 app.use((_req, res) => {
