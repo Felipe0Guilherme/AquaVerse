@@ -24,11 +24,11 @@ export async function sendMessage(
   try {
     const authReq = req as AuthRequest;
 
+    // O JWT (ver types/index.ts) só guarda `sub` (uuid do usuário) e `email` —
+    // não tem username. Por isso busca o profile antes de gravar a mensagem.
+    const userId = authReq.user?.sub;
 
-    const userId = authReq.user?.id;
-    const username = authReq.user?.username;
-
-    if (!userId || !username) {
+    if (!userId) {
       res.status(401).json({ success: false, error: 'Authentication required.' });
       return;
     }
@@ -48,9 +48,21 @@ export async function sendMessage(
     }
 
     const supabase = getSupabaseAdmin();
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      res.status(401).json({ success: false, error: 'User profile not found.' });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('messages')
-      .insert({ user_id: userId, username, text })
+      .insert({ user_id: userId, username: profile.username, text })
       .select('id, username, text, created_at')
       .single();
 
