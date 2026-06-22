@@ -12,9 +12,9 @@ import { AuthRequest } from '../types';
 import { getSupabaseAdmin } from '../config/supabase';
 
 const MAX_TEXT_LENGTH = 80;
-// Um pouco maior que os 25s que o balão fica visível no frontend,
+// Um pouco maior que os 10s que o balão fica visível no frontend (MESSAGE_DISPLAY_MS),
 // pra dar margem de sobra ao polling de 3 em 3 segundos.
-const RECENT_WINDOW_SECONDS = 30;
+const RECENT_WINDOW_SECONDS = 15;
 
 export async function sendMessage(
   req: Request,

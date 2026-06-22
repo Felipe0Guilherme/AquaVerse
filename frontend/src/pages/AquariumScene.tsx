@@ -221,6 +221,11 @@ interface FishState {
   turnCounter: number;
 }
 
+// Quanto tempo o balão de chat fica visível acima do peixe.
+// Se mudar aqui, ajusta também o RECENT_WINDOW_SECONDS no messagesController.ts
+// do backend (precisa ser um pouco maior que isso, pra dar margem ao polling).
+const MESSAGE_DISPLAY_MS = 10_000;
+
 export default function AquariumScene() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -276,7 +281,7 @@ export default function AquariumScene() {
         const ts = new Date(m.created_at).getTime();
         if (ts > f.lastMsgTs) {
           f.lastMsgTs = ts;
-          f.messageUntil = Date.now() + 25_000;
+          f.messageUntil = Date.now() + MESSAGE_DISPLAY_MS;
           f.bubbleEl.textContent = m.text;
         }
       }
@@ -305,7 +310,7 @@ export default function AquariumScene() {
       const f = fishList.current.find(fs => fs.username === user.username);
       if (f) {
         f.lastMsgTs = Date.now();
-        f.messageUntil = Date.now() + 25_000;
+        f.messageUntil = Date.now() + MESSAGE_DISPLAY_MS;
         f.bubbleEl.textContent = text;
       }
     } catch {
