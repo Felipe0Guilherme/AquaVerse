@@ -383,6 +383,8 @@ export default function AquariumScene() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const wrapRef = useRef<HTMLDivElement>(null);
+  // Posição do mouse dentro do aquário; null = fora do aquário
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const fishList = useRef<FishState[]>([]);
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
@@ -692,8 +694,39 @@ export default function AquariumScene() {
         const fw = f.el.offsetWidth  || f.size * 2.2;
         const fh = f.el.offsetHeight || f.size;
 
-        if (f.kind === 'crab') {
-          // Anda de lado na areia, com pausas — corpo fica de frente p/ câmera, sem flip
+        const isMyFish = user?.username === f.username;
+        const mouse    = mouseRef.current;
+
+        // ── Mouse-follow: só o peixe do usuário logado, só quando mouse está no aquário ──
+        if (isMyFish && mouse && f.kind !== 'crab') {
+          // Centro do peixe
+          const cx = f.x + fw / 2;
+          const cy = f.y + fh / 2;
+          const dx = mouse.x - cx;
+          const dy = mouse.y - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+          // Velocidade proporcional à distância (mais longe = mais rápido), clamped
+          const followSpeed = Math.min(dist * 0.08, 4.5);
+          f.vx += (dx / dist) * followSpeed * 0.18;
+          f.vy += (dy / dist) * followSpeed * 0.18;
+
+          // Clamp de velocidade máxima
+          const maxV = 4;
+          const v = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+          if (v > maxV) { f.vx = (f.vx / v) * maxV; f.vy = (f.vy / v) * maxV; }
+
+          // Flip reflete a direção horizontal de movimento
+          if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
+
+          f.x += f.vx;
+          f.y += f.vy;
+
+          // Amortecimento
+          f.vx *= 0.88;
+          f.vy *= 0.88;
+
+        } else if (f.kind === 'crab') {
           if (f.turnCounter >= f.turnTimer) {
             f.turnCounter = 0;
             f.turnTimer = 70 + Math.floor(Math.random() * 130);
@@ -701,22 +734,18 @@ export default function AquariumScene() {
               const dir = Math.random() > 0.5 ? 1 : -1;
               f.vx = dir * (0.4 + Math.random() * 0.6);
             } else if (Math.random() < 0.3) {
-              f.vx = 0; // pausa
+              f.vx = 0;
             } else if (Math.random() < 0.4) {
               f.vx = -f.vx;
             }
           }
           f.x += f.vx;
-          // a arte do caranguejo deixa as pernas na altura ~0.85 do viewBox (não na borda exata
-          // do svg) — por isso alinhamos pela ponta da perna, não pelo fundo da bounding box,
-          // senão ele fica com um respiro vazio embaixo e parece flutuar sobre a areia.
           f.y = sandTopY - fh * 0.846 + 4;
 
           if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
           if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
 
         } else if (f.kind === 'octopus') {
-          // Flutua livre na coluna d'água, pulsando — corpo simétrico, sem flip
           if (f.turnCounter >= f.turnTimer) {
             f.turnCounter = 0;
             f.turnTimer = 90 + Math.floor(Math.random() * 160);
@@ -732,7 +761,6 @@ export default function AquariumScene() {
           if (f.y + fh > floorY) { f.y = floorY - fh; f.vy = -Math.abs(f.vy); }
 
         } else {
-          // Peixe: nado lateral com flip sincronizado à direção
           if (f.turnCounter >= f.turnTimer) {
             f.turnCounter = 0;
             f.turnTimer = 100 + Math.floor(Math.random() * 150);
@@ -758,6 +786,74 @@ export default function AquariumScene() {
           }
           if (f.y + fh > floorY) {
             f.y = floorY - fh; f.vy = -Math.abs(f.vy);
+          }
+        }
+
+        // ── Bordas para o peixe do usuário logado (o bloco acima não clampeia) ──
+        if (isMyFish) {
+          if (f.x < 8)            { f.x = 8;            f.vx = Math.abs(f.vx) * 0.5; }
+          if (f.x + fw > W - 8)   { f.x = W - fw - 8;   f.vx = -Math.abs(f.vx) * 0.5; }
+          if (f.y < ceilY)        { f.y = ceilY;         f.vy = Math.abs(f.vy) * 0.5; }
+          if (f.y + fh > floorY)  { f.y = floorY - fh;  f.vy = -Math.abs(f.vy) * 0.5; }
+        }
+
+        // ── Colisões ──────────────────────────────────────────────────────────
+        // Só calcula colisões a partir do "meu peixe" com os outros, e entre
+        // dois peixes de usuários logados. Evita o O(n²) completo.
+        if (isMyFish) {
+          for (const other of fishList.current) {
+            if (other === f) continue;
+
+            const ofw = other.el.offsetWidth  || other.size * 2.2;
+            const ofh = other.el.offsetHeight || other.size;
+
+            // Centro de cada criatura
+            const ax = f.x + fw / 2;
+            const ay = f.y + fh / 2;
+            const bx = other.x + ofw / 2;
+            const by = other.y + ofh / 2;
+
+            const dx = bx - ax;
+            const dy = by - ay;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            // Raio de colisão: soma dos "raios" aproximados de cada criatura
+            const radiusA = Math.max(fw, fh) * 0.45;
+            const radiusB = Math.max(ofw, ofh) * 0.45;
+            const minDist = radiusA + radiusB;
+
+            if (dist < minDist) {
+              // Normaliza a direção de empurrão
+              const nx = dx / dist;
+              const ny = dy / dist;
+              const overlap = minDist - dist;
+
+              const isOtherLoggedIn = false; // sem multi-login simultâneo visível aqui
+
+              if (isOtherLoggedIn) {
+                // Dois peixes de usuários logados: empurrão mútuo simétrico
+                const push = overlap * 0.5;
+                f.x     -= nx * push; f.y     -= ny * push;
+                other.x += nx * push; other.y += ny * push;
+                const impulse = 3.5;
+                f.vx     -= nx * impulse; f.vy     -= ny * impulse;
+                other.vx += nx * impulse; other.vy += ny * impulse;
+              } else {
+                // Meu peixe empurra o outro com força; o meu não para
+                other.x += nx * overlap * 0.9;
+                other.y += ny * overlap * 0.9;
+                const pushForce = 4.5 + Math.abs(f.vx + f.vy) * 0.4;
+                other.vx += nx * pushForce;
+                other.vy += ny * pushForce * 0.6;
+                // Devolve a velocidade do empurrado pro caranguejo/peixe voltar à posição normal
+                other.vx = Math.max(-5, Math.min(5, other.vx));
+                other.vy = Math.max(-4, Math.min(4, other.vy));
+                // Flip do peixe empurrado conforme direção do empurrão
+                if (other.kind !== 'crab' && other.kind !== 'octopus') {
+                  if (Math.abs(nx) > 0.3) other.flipped = nx > 0;
+                }
+              }
+            }
           }
         }
 
@@ -864,6 +960,11 @@ export default function AquariumScene() {
       <div
         ref={wrapRef}
         className="relative w-full max-w-5xl overflow-hidden"
+        onMouseMove={e => {
+          const rect = wrapRef.current?.getBoundingClientRect();
+          if (rect) mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }}
+        onMouseLeave={() => { mouseRef.current = null; }}
         style={{
           height: '520px',
           background: 'linear-gradient(180deg, #0a2a4a 0%, #0d3b6e 35%, #0a4f7a 65%, #0d5c8a 100%)',
