@@ -368,7 +368,7 @@ const drawNudibranch: DrawFn = (s, f, phase) => {
 };
 
 // Marisquinho gigante (Giant Clam) — fica no fundo, abre e fecha
-const drawGiantClam: DrawFn = (s, f, phase) => {
+const drawGiantClam: DrawFn = (s, _f, phase) => {
   const open = (Math.sin(phase * 0.3) * 0.5 + 0.5) * 8;
   return `<svg width="${s*2}" height="${s*1.3}" viewBox="0 0 40 26">
     <ellipse cx="20" cy="${18+open*0.3}" rx="18" ry="${6-open*0.2}" fill="#6a8fb5"/>
