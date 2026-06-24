@@ -18,7 +18,7 @@ type CreatureKind =
   // Peixes Cartilaginosos
   | 'shark' | 'hammerhead' | 'whaleshark' | 'sawfish'
   // Crustáceos
-  | 'crab' | 'lobster' | 'mantisshrimp' | 'barnacle'
+  | 'crab' | 'lobster' | 'mantisshrimp'
   // Moluscos
   | 'octopus' | 'nautilus' | 'nudibranch' | 'giantclam'
   // Equinodermos
@@ -170,7 +170,7 @@ const drawTrumpetfish: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s
   <ellipse cx="4" cy="5" rx="3.5" ry="2.5" fill="#c07850"/>
   <circle cx="2.5" cy="4" r="1.2" fill="white"/><circle cx="2.9" cy="4" r="0.6" fill="#111"/>
   <path d="M60 4 L70 2 L70 8 Z" fill="#d4956a"/>
-</svg>`,
+</svg>`
 
 // Peixe-papagaio (Parrotfish) — bico de papagaio, cores vibrantes
 const drawParrotfish: DrawFn = (s, f, _p) => `<svg width="${s*2.3}" height="${s*1.1}" viewBox="0 0 46 22" style="transform:scaleX(${f?-1:1})">
@@ -182,7 +182,7 @@ const drawParrotfish: DrawFn = (s, f, _p) => `<svg width="${s*2.3}" height="${s*
   <path d="M5 11 Q4 8 6 9 Q5 12 7 13 Z" fill="#e05020"/>
   <circle cx="6.5" cy="9.5" r="1.4" fill="white"/><circle cx="6.9" cy="9.5" r="0.7" fill="#111"/>
   <path d="M40 11 L46 6 L46 16 Z" fill="#e0a020"/>
-</svg>`,
+</svg>`
 
 // Ídolo-mouro (Moorish Idol) — corpo alto, preto/branco/amarelo, barbatana dorsal longa
 const drawMoorishIdol: DrawFn = (s, f, _p) => `<svg width="${s*1.6}" height="${s*2}" viewBox="0 0 32 40" style="transform:scaleX(${f?-1:1})">
@@ -193,7 +193,7 @@ const drawMoorishIdol: DrawFn = (s, f, _p) => `<svg width="${s*1.6}" height="${s
   <path d="M26 16 L32 12 L32 20 Z" fill="white"/>
   <ellipse cx="9" cy="20" rx="3.5" ry="5" fill="#1a1a1a"/>
   <circle cx="7" cy="18" r="1.5" fill="white"/><circle cx="7.4" cy="18" r="0.7" fill="#111"/>
-</svg>`,
+</svg>`
 
 // Peixe-cirurgião (Surgeonfish) — espinho na base da cauda, corpo oval
 const drawSurgeonfish: DrawFn = (s, f, _p) => `<svg width="${s*2}" height="${s*1.1}" viewBox="0 0 40 22" style="transform:scaleX(${f?-1:1})">
@@ -204,7 +204,7 @@ const drawSurgeonfish: DrawFn = (s, f, _p) => `<svg width="${s*2}" height="${s*1
   <circle cx="6.5" cy="10" r="1.5" fill="white"/><circle cx="6.9" cy="10" r="0.7" fill="#111"/>
   <path d="M34 11 L40 6 L40 16 Z" fill="#2196a0"/>
   <path d="M34 13 L37 16 L34 16 Z" fill="#e0e0e0"/>
-</svg>`,
+</svg>`
 
 // Garoupa (Grouper) — corpo robusto com manchas
 const drawGrouper: DrawFn = (s, f, _p) => `<svg width="${s*2.2}" height="${s*1.2}" viewBox="0 0 44 24" style="transform:scaleX(${f?-1:1})">
@@ -217,7 +217,7 @@ const drawGrouper: DrawFn = (s, f, _p) => `<svg width="${s*2.2}" height="${s*1.2
   <ellipse cx="9" cy="12" rx="4.5" ry="6" fill="#7a3a10"/>
   <circle cx="6.5" cy="11" r="1.5" fill="white"/><circle cx="6.9" cy="11" r="0.7" fill="#111"/>
   <path d="M38 12 L44 6 L44 18 Z" fill="#8b4513"/>
-</svg>`,
+</svg>`
 
 // Peixe-lua / Mola-mola — corpo quase circular, sem cauda real
 const drawSunfish: DrawFn = (s, f, _p) => `<svg width="${s*1.8}" height="${s*2}" viewBox="0 0 36 40" style="transform:scaleX(${f?-1:1})">
@@ -229,7 +229,7 @@ const drawSunfish: DrawFn = (s, f, _p) => `<svg width="${s*1.8}" height="${s*2}"
   <ellipse cx="10" cy="18" rx="4" ry="5" fill="#8aa5ba"/>
   <circle cx="8" cy="17" r="2" fill="white"/><circle cx="8.6" cy="17" r="1" fill="#111"/>
   <circle cx="18" cy="20" r="3" fill="rgba(255,255,255,0.1)"/>
-</svg>`,
+</svg>`
 
 // Peixe-cachimbo (Pipefish) — como trombeta mas mais fino e curvado
 const drawPipefish: DrawFn = (s, f, phase) => {
@@ -241,7 +241,7 @@ const drawPipefish: DrawFn = (s, f, phase) => {
     <circle cx="2" cy="6" r="1.1" fill="white"/><circle cx="2.3" cy="6" r="0.55" fill="#111"/>
     <path d="M56 6 L60 4 L60 10 Z" fill="#4a8c5a"/>
   </svg>`;
-},
+}
 
 // Peixe-sapo-palhaço (Clown Frogfish) — com isco luminoso, camuflagem
 const drawClownFrogfish: DrawFn = (s, f, phase) => {
@@ -276,7 +276,7 @@ const drawWhaleShark: DrawFn = (s, f, _p) => `<svg width="${s*5.5}" height="${s*
   <ellipse cx="8" cy="20" rx="5" ry="6" fill="#3a6a8b"/>
   <path d="M4 22 Q6 26 12 24" stroke="white" stroke-width="0.8" fill="none"/>
   <circle cx="6" cy="17" r="2" fill="white"/><circle cx="6.6" cy="17" r="1" fill="#111"/>
-</svg>`,
+</svg>`
 
 // Peixe-serra (Sawfish)
 const drawSawfish: DrawFn = (s, f, _p) => `<svg width="${s*4}" height="${s*1.2}" viewBox="0 0 80 24" style="transform:scaleX(${f?-1:1})">
@@ -287,7 +287,7 @@ const drawSawfish: DrawFn = (s, f, _p) => `<svg width="${s*4}" height="${s*1.2}"
   <path d="M44 17 L46 22 L50 17 Z" fill="#5a6a4a"/>
   <ellipse cx="8" cy="12" rx="4" ry="5" fill="#6a7a5a"/>
   <circle cx="6" cy="10.5" r="1.4" fill="white"/><circle cx="6.4" cy="10.5" r="0.7" fill="#111"/>
-</svg>`,
+</svg>`
 
 // ════════════════════════════════════════════════════════════════
 // CRUSTÁCEOS EXTRAS
@@ -603,7 +603,7 @@ const drawShark: DrawFn = (s, f, _p) => `<svg width="${s*3.2}" height="${s*1.3}"
   <line x1="7" y1="15.5" x2="9" y2="16" stroke="white" stroke-width="0.5"/>
   <circle cx="5" cy="11" r="1.3" fill="white"/><circle cx="5.4" cy="11" r="0.6" fill="#111"/>
   <rect x="7" y="11" width="6" height="1" rx="0.5" fill="rgba(255,255,255,0.15)"/>
-</svg>`,
+</svg>`
 
 // ── Tubarão-martelo ───────────────────────────────────────────────────────────
 const drawHammerhead: DrawFn = (s, f, _p) => `<svg width="${s*3}" height="${s*1.5}" viewBox="0 0 60 30" style="transform:scaleX(${f?-1:1})">
@@ -706,20 +706,51 @@ interface CreatureDef {
 const RARITY_WEIGHT = { common: 12, uncommon: 5, rare: 2, legendary: 1 } as const;
 
 const CREATURES: CreatureDef[] = [
-  // ── Comuns ──────────────────────────────────────────────────────────────────
+  // ── Peixes Ósseos comuns ─────────────────────────────────────────────────────
   ...FISH.map(draw => ({ kind: 'fish' as const, draw, rarity: 'common' as const })),
-  { kind: 'crab',       draw: drawCrab,      rarity: 'common' },
-  { kind: 'octopus',    draw: drawOctopus,   rarity: 'common' },
-  // ── Incomuns ────────────────────────────────────────────────────────────────
-  { kind: 'manta',      draw: drawManta,     rarity: 'uncommon', sizeOverride: 34 },
-  { kind: 'shark',      draw: drawShark,     rarity: 'uncommon', sizeOverride: 36 },
-  // ── Raros ───────────────────────────────────────────────────────────────────
-  { kind: 'hammerhead', draw: drawHammerhead,rarity: 'rare',     sizeOverride: 40 },
-  { kind: 'orca',       draw: drawOrca,      rarity: 'rare',     sizeOverride: 44 },
-  { kind: 'humpback',   draw: drawHumpback,  rarity: 'rare',     sizeOverride: 48 },
-  // ── Lendários ───────────────────────────────────────────────────────────────
-  { kind: 'whale',      draw: drawWhale,     rarity: 'legendary', sizeOverride: 58 },
-  { kind: 'krill',      draw: drawKrill,     rarity: 'legendary', sizeOverride: 10 },
+  { kind: 'seahorse',     draw: drawSeahorse,     rarity: 'common' },
+  { kind: 'pipefish',     draw: drawPipefish,     rarity: 'common' },
+  { kind: 'parrotfish',   draw: drawParrotfish,   rarity: 'common' },
+  { kind: 'surgeonfish',  draw: drawSurgeonfish,  rarity: 'common' },
+  { kind: 'grouper',      draw: drawGrouper,      rarity: 'common' },
+  { kind: 'moorishidol',  draw: drawMoorishIdol,  rarity: 'common' },
+  // ── Crustáceos comuns ────────────────────────────────────────────────────────
+  { kind: 'crab',         draw: drawCrab,         rarity: 'common' },
+  // ── Moluscos comuns ──────────────────────────────────────────────────────────
+  { kind: 'octopus',      draw: drawOctopus,      rarity: 'common' },
+  { kind: 'nudibranch',   draw: drawNudibranch,   rarity: 'common' },
+  // ── Equinodermos comuns ──────────────────────────────────────────────────────
+  { kind: 'starfish',     draw: drawStarfish,     rarity: 'common' },
+
+  // ── Incomuns ─────────────────────────────────────────────────────────────────
+  { kind: 'trumpetfish',  draw: drawTrumpetfish,  rarity: 'uncommon' },
+  { kind: 'clownfrogfish',draw: drawClownFrogfish, rarity: 'uncommon' },
+  { kind: 'lobster',      draw: drawLobster,      rarity: 'uncommon', sizeOverride: 28 },
+  { kind: 'mantisshrimp', draw: drawMantisShrimp, rarity: 'uncommon' },
+  { kind: 'nautilus',     draw: drawNautilus,     rarity: 'uncommon' },
+  { kind: 'giantclam',    draw: drawGiantClam,    rarity: 'uncommon' },
+  { kind: 'seaurchin',    draw: drawSeaUrchin,    rarity: 'uncommon' },
+  { kind: 'jellyfish',    draw: drawJellyfish,    rarity: 'uncommon' },
+  { kind: 'manta',        draw: drawManta,        rarity: 'uncommon', sizeOverride: 34 },
+  { kind: 'shark',        draw: drawShark,        rarity: 'uncommon', sizeOverride: 36 },
+  { kind: 'seaturtle',    draw: drawSeaTurtle,    rarity: 'uncommon', sizeOverride: 32 },
+  { kind: 'dugong',       draw: drawDugong,       rarity: 'uncommon', sizeOverride: 34 },
+
+  // ── Raros ────────────────────────────────────────────────────────────────────
+  { kind: 'sunfish',      draw: drawSunfish,      rarity: 'rare',     sizeOverride: 38 },
+  { kind: 'sawfish',      draw: drawSawfish,      rarity: 'rare',     sizeOverride: 36 },
+  { kind: 'hammerhead',   draw: drawHammerhead,   rarity: 'rare',     sizeOverride: 40 },
+  { kind: 'orca',         draw: drawOrca,         rarity: 'rare',     sizeOverride: 44 },
+  { kind: 'humpback',     draw: drawHumpback,     rarity: 'rare',     sizeOverride: 48 },
+  { kind: 'dolphin',      draw: drawDolphin,      rarity: 'rare',     sizeOverride: 36 },
+  { kind: 'sealion',      draw: drawSealion,      rarity: 'rare',     sizeOverride: 34 },
+  { kind: 'seaSnake',     draw: drawSeaSnake,     rarity: 'rare',     sizeOverride: 28 },
+
+  // ── Lendários ────────────────────────────────────────────────────────────────
+  { kind: 'whale',        draw: drawWhale,        rarity: 'legendary', sizeOverride: 58 },
+  { kind: 'whaleshark',   draw: drawWhaleShark,   rarity: 'legendary', sizeOverride: 52 },
+  { kind: 'krill',        draw: drawKrill,        rarity: 'legendary', sizeOverride: 10 },
+  { kind: 'seaslug',      draw: drawNudibranch,   rarity: 'legendary', sizeOverride: 8  }, // micro-nudibranch lendário
 ];
 
 // Pool ponderada: cada criatura aparece N vezes conforme seu peso de raridade.
@@ -1131,24 +1162,53 @@ export default function AquariumScene() {
           f.vx *= 0.88;
           f.vy *= 0.88;
 
-        } else if (f.kind === 'crab') {
+        } else if (f.kind === 'crab' || f.kind === 'lobster' || f.kind === 'starfish' || f.kind === 'seaurchin' || f.kind === 'giantclam' ) {
+          // Criaturas de fundo — ficam fixas na areia, movimento lateral lento (exceto estáticas)
+          if (f.kind !== 'starfish' && f.kind !== 'seaurchin' && f.kind !== 'giantclam' ) {
+            if (f.turnCounter >= f.turnTimer) {
+              f.turnCounter = 0;
+              f.turnTimer = 70 + Math.floor(Math.random() * 130);
+              if (f.vx === 0) {
+                const dir = Math.random() > 0.5 ? 1 : -1;
+                f.vx = dir * (0.3 + Math.random() * 0.5);
+              } else if (Math.random() < 0.3) {
+                f.vx = 0;
+              } else if (Math.random() < 0.4) {
+                f.vx = -f.vx;
+              }
+            }
+            f.x += f.vx;
+            if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
+            if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
+          } else if (f.kind === 'starfish' || f.kind === 'seaurchin') {
+            // Movimento muito lento, rastejando
+            if (f.turnCounter >= f.turnTimer) {
+              f.turnCounter = 0;
+              f.turnTimer = 200 + Math.floor(Math.random() * 300);
+              f.vx = (Math.random() - 0.5) * 0.15;
+            }
+            f.x += f.vx;
+            if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
+            if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
+          }
+          // Ancora todas na areia
+          f.y = sandTopY - fh * 0.85 + 4;
+
+        } else if (f.kind === 'jellyfish' || f.kind === 'seahorse' || f.kind === 'nautilus') {
+          // Flutuantes verticais — sobem e descem suavemente, derivam levemente na horizontal
           if (f.turnCounter >= f.turnTimer) {
             f.turnCounter = 0;
-            f.turnTimer = 70 + Math.floor(Math.random() * 130);
-            if (f.vx === 0) {
-              const dir = Math.random() > 0.5 ? 1 : -1;
-              f.vx = dir * (0.4 + Math.random() * 0.6);
-            } else if (Math.random() < 0.3) {
-              f.vx = 0;
-            } else if (Math.random() < 0.4) {
-              f.vx = -f.vx;
-            }
+            f.turnTimer = 120 + Math.floor(Math.random() * 180);
+            f.vx = Math.max(-0.4, Math.min(0.4, f.vx + (Math.random() - 0.5) * 0.2));
+            f.vy = Math.max(-0.5, Math.min(0.5, (Math.random() - 0.5) * 0.4));
           }
           f.x += f.vx;
-          f.y = sandTopY - fh * 0.846 + 4;
+          f.y += f.vy + Math.sin(f.wobble) * 0.4;
 
           if (f.x < 8) { f.x = 8; f.vx = Math.abs(f.vx); }
           if (f.x + fw > W - 8) { f.x = W - fw - 8; f.vx = -Math.abs(f.vx); }
+          if (f.y < ceilY) { f.y = ceilY; f.vy = Math.abs(f.vy); }
+          if (f.y + fh > floorY) { f.y = floorY - fh; f.vy = -Math.abs(f.vy); }
 
         } else if (f.kind === 'octopus') {
           if (f.turnCounter >= f.turnTimer) {
