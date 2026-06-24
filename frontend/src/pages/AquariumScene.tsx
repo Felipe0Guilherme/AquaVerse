@@ -761,29 +761,26 @@ const CREATURE_POOL: number[] = CREATURES.flatMap((c, idx) =>
 
 function getCreatureType(
   username: string,
-  typeCounts: Map<number, number>,   // criaturaIdx → quantos já têm esse tipo
+  typeCounts: Map<number, number>,
+  shuffleSeed: number,   // muda a cada roleta do admin → hash diferente → criatura diferente
   maxPerType = 2
 ): number {
+  // Incorpora o seed no hash: seed=0 mantém o comportamento original
+  const input = shuffleSeed > 0 ? `${username}:${shuffleSeed}` : username;
   let hash = 0;
-  for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
+  for (const c of input) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
   const poolLen = CREATURE_POOL.length;
   const startPos = Math.abs(hash) % poolLen;
 
-  // Tenta a preferência natural do hash primeiro.
-  // Se esse tipo já atingiu o limite, sobe pelo pool até achar um disponível.
-  // A direção de busca usa um segundo hash derivado do nome, pra dois usuários
-  // "deslocados" não caírem sempre no mesmo tipo de reserva.
   let hash2 = 0;
-  for (const c of username) hash2 = (hash2 * 17 + c.charCodeAt(0)) & 0xffffffff;
-  const step = (Math.abs(hash2) % (poolLen - 1)) + 1; // passo ímpar garante varredura completa
+  for (const c of input) hash2 = (hash2 * 17 + c.charCodeAt(0)) & 0xffffffff;
+  const step = (Math.abs(hash2) % (poolLen - 1)) + 1;
 
   for (let i = 0; i < poolLen; i++) {
     const pos = (startPos + i * step) % poolLen;
     const idx = CREATURE_POOL[pos];
     if ((typeCounts.get(idx) ?? 0) < maxPerType) return idx;
   }
-
-  // Fallback improvável (todas as criaturas com 2+ usuários): retorna a preferência natural
   return CREATURE_POOL[startPos];
 }
 
@@ -856,6 +853,39 @@ export default function AquariumScene() {
   const [chatInput, setChatInput] = useState('');
   const [sending, setSending] = useState(false);
 
+  // ── Admin: roleta de criaturas ────────────────────────────────
+  const ADMIN_USERNAME = 'Sonim';
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const lastSeedRef = useRef(0);
+  const [reshuffling, setReshuffling] = useState(false);
+
+  const fetchShuffleSeed = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{ success: boolean; data: { seed: number } }>('/admin/shuffle-seed');
+      const newSeed = data.data?.seed ?? 0;
+      if (newSeed !== lastSeedRef.current) {
+        lastSeedRef.current = newSeed;
+        setShuffleSeed(newSeed);
+      }
+    } catch { /* silently ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchShuffleSeed();
+    const interval = setInterval(fetchShuffleSeed, 4_000);
+    return () => clearInterval(interval);
+  }, [fetchShuffleSeed]);
+
+  const handleReshuffle = async () => {
+    if (reshuffling) return;
+    setReshuffling(true);
+    try {
+      await apiClient.post('/admin/reshuffle');
+      await fetchShuffleSeed(); // aplica imediatamente pro próprio admin
+    } catch { /* silently ignore */ }
+    finally { setTimeout(() => setReshuffling(false), 1500); }
+  };
+
   // Busca mensagens recentes (últimos ~30s) e atualiza o balão do peixe correspondente.
   // Usa lastMsgTs por peixe pra não "renovar" o balão a cada poll enquanto a msg
   // ainda estiver dentro da janela do backend — só atualiza se for de fato uma msg nova.
@@ -912,10 +942,16 @@ export default function AquariumScene() {
     }
   };
 
-  // Spawna peixes quando a lista de usuários mudar
+  // Spawna peixes quando a lista de usuários mudar ou quando o admin aciona a roleta
   useEffect(() => {
     if (!wrapRef.current || loading) return;
     const wrap = wrapRef.current;
+
+    // Quando o seed muda (roleta do admin), remove TODOS os peixes pra re-sortear
+    if (shuffleSeed > 0 && fishList.current.length > 0) {
+      fishList.current.forEach(f => { f.el.remove(); f.tipEl.remove(); f.bubbleEl.remove(); });
+      fishList.current = [];
+    }
 
     // Remove peixes que não existem mais
     const currentUsernames = new Set(users.map(u => u.username));
@@ -948,7 +984,7 @@ export default function AquariumScene() {
 
       // Sorteia o tipo ANTES do setTimeout (com o mapa atual) e já incrementa
       // o contador, pra usuários seguintes na mesma rodada não pegarem o mesmo.
-      const reservedTypeIdx = getCreatureType(u.username, typeCounts);
+      const reservedTypeIdx = getCreatureType(u.username, typeCounts, shuffleSeed);
       typeCounts.set(reservedTypeIdx, (typeCounts.get(reservedTypeIdx) ?? 0) + 1);
 
       setTimeout(() => {
@@ -1110,7 +1146,7 @@ export default function AquariumScene() {
     });
 
     return () => {};
-  }, [users, loading, user]);
+  }, [users, loading, user, shuffleSeed]);
 
   // Animação
   useEffect(() => {
@@ -1569,6 +1605,30 @@ export default function AquariumScene() {
           >
             Enviar
           </button>
+
+          {/* Botão de roleta — visível só pro admin (Sonim) */}
+          {user.username === ADMIN_USERNAME && (
+            <button
+              type="button"
+              onClick={handleReshuffle}
+              disabled={reshuffling}
+              title="Rolar a roleta — todos os peixes trocam de espécie"
+              className="px-3 py-2 text-sm font-bold rounded-lg transition"
+              style={{
+                background: reshuffling
+                  ? 'rgba(251,191,36,0.3)'
+                  : 'linear-gradient(135deg,#f59e0b,#ef4444)',
+                color: '#fff',
+                cursor: reshuffling ? 'default' : 'pointer',
+                boxShadow: reshuffling ? 'none' : '0 0 12px rgba(245,158,11,0.5)',
+                fontSize: '18px',
+                lineHeight: 1,
+                animation: reshuffling ? 'spin 0.6s linear infinite' : 'none',
+              }}
+            >
+              🎲
+            </button>
+          )}
         </form>
       )}
 
@@ -1578,6 +1638,10 @@ export default function AquariumScene() {
       </p>
 
       <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
         @keyframes sway {
           0%, 100% { transform: rotate(-10deg); }
           50% { transform: rotate(10deg); }
