@@ -12,7 +12,23 @@ interface AquaUser {
 }
 
 // ── Definições dos tipos de criatura ───────────────────────────
-type CreatureKind = 'fish' | 'crab' | 'octopus' | 'shark' | 'hammerhead' | 'orca' | 'whale' | 'humpback' | 'manta' | 'krill';
+type CreatureKind =
+  // Peixes Ósseos
+  | 'fish' | 'seahorse' | 'pipefish' | 'clownfrogfish' | 'trumpetfish' | 'moorishidol' | 'surgeonfish' | 'parrotfish' | 'grouper' | 'sunfish'
+  // Peixes Cartilaginosos
+  | 'shark' | 'hammerhead' | 'whaleshark' | 'sawfish'
+  // Crustáceos
+  | 'crab' | 'lobster' | 'mantisshrimp' | 'barnacle'
+  // Moluscos
+  | 'octopus' | 'nautilus' | 'nudibranch' | 'giantclam'
+  // Equinodermos
+  | 'starfish' | 'seaurchin' | 'seaslug'
+  // Répteis Marinhos
+  | 'seaturtle' | 'seaSnake'
+  // Mamíferos Marinhos
+  | 'orca' | 'whale' | 'humpback' | 'dolphin' | 'dugong' | 'sealion'
+  // Outros
+  | 'manta' | 'krill' | 'jellyfish';
 type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
@@ -129,6 +145,395 @@ const FISH: DrawFn[] = [
   </svg>`,
 ];
 
+// ════════════════════════════════════════════════════════════════
+// PEIXES ÓSSEOS EXTRAS
+// ════════════════════════════════════════════════════════════════
+
+// Cavalo-marinho — fica em pé, nada verticalmente
+const drawSeahorse: DrawFn = (s, f, phase) => {
+  const sway = Math.sin(phase * 0.7) * 3;
+  return `<svg width="${s*0.9}" height="${s*2.2}" viewBox="0 0 18 44" style="transform:rotate(${sway}deg) scaleX(${f?-1:1})">
+    <path d="M9 4 Q14 8 13 16 Q13 24 10 30 Q8 36 9 42" stroke="#d4a017" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M9 4 Q4 8 5 16 Q5 24 8 30" stroke="#b8880e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <circle cx="9" cy="4" r="4" fill="#d4a017"/>
+    <path d="M9 0 Q14 2 13 4" stroke="#c49010" stroke-width="1" fill="none"/>
+    <circle cx="7" cy="3" r="1.2" fill="white"/><circle cx="7.4" cy="3" r="0.6" fill="#111"/>
+    <path d="M13 12 L17 10 M13 16 L17 15 M13 20 L17 20" stroke="#b8880e" stroke-width="1" fill="none"/>
+    <path d="M9 40 Q12 42 14 40 Q12 44 9 42 Z" fill="#a07800"/>
+  </svg>`;
+};
+
+// Trombeta-do-mar (Trumpetfish) — corpo finíssimo e longo
+const drawTrumpetfish: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s*0.5}" viewBox="0 0 70 10" style="transform:scaleX(${f?-1:1})">
+  <path d="M2 5 Q35 3 62 5 Q65 5 70 5" stroke="#d4956a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M2 5 Q35 6.5 62 5" stroke="#b87040" stroke-width="1" fill="none" opacity="0.5"/>
+  <ellipse cx="4" cy="5" rx="3.5" ry="2.5" fill="#c07850"/>
+  <circle cx="2.5" cy="4" r="1.2" fill="white"/><circle cx="2.9" cy="4" r="0.6" fill="#111"/>
+  <path d="M60 4 L70 2 L70 8 Z" fill="#d4956a"/>
+</svg>`,
+
+// Peixe-papagaio (Parrotfish) — bico de papagaio, cores vibrantes
+const drawParrotfish: DrawFn = (s, f, _p) => `<svg width="${s*2.3}" height="${s*1.1}" viewBox="0 0 46 22" style="transform:scaleX(${f?-1:1})">
+  <ellipse cx="23" cy="11" rx="17" ry="8" fill="#3cb371"/>
+  <ellipse cx="23" cy="11" rx="17" ry="8" fill="none" stroke="#2a8a52" stroke-width="0.5"/>
+  <path d="M10 6 Q16 11 10 16" stroke="#e0a020" stroke-width="2.5" fill="none"/>
+  <path d="M18 4 Q23 8 28 4" stroke="#5cd89a" stroke-width="1.5" fill="none"/>
+  <ellipse cx="9" cy="11" rx="4.5" ry="6" fill="#2a8a52"/>
+  <path d="M5 11 Q4 8 6 9 Q5 12 7 13 Z" fill="#e05020"/>
+  <circle cx="6.5" cy="9.5" r="1.4" fill="white"/><circle cx="6.9" cy="9.5" r="0.7" fill="#111"/>
+  <path d="M40 11 L46 6 L46 16 Z" fill="#e0a020"/>
+</svg>`,
+
+// Ídolo-mouro (Moorish Idol) — corpo alto, preto/branco/amarelo, barbatana dorsal longa
+const drawMoorishIdol: DrawFn = (s, f, _p) => `<svg width="${s*1.6}" height="${s*2}" viewBox="0 0 32 40" style="transform:scaleX(${f?-1:1})">
+  <ellipse cx="16" cy="24" rx="11" ry="13" fill="white"/>
+  <path d="M6 16 Q16 18 26 16 Q26 28 16 32 Q6 28 6 16 Z" fill="#1a1a1a"/>
+  <path d="M6 24 Q16 26 26 24 Q26 28 16 32 Q6 28 6 24 Z" fill="#ffd700"/>
+  <path d="M16 10 L13 0 L19 0 Z" fill="#1a1a1a"/>
+  <path d="M26 16 L32 12 L32 20 Z" fill="white"/>
+  <ellipse cx="9" cy="20" rx="3.5" ry="5" fill="#1a1a1a"/>
+  <circle cx="7" cy="18" r="1.5" fill="white"/><circle cx="7.4" cy="18" r="0.7" fill="#111"/>
+</svg>`,
+
+// Peixe-cirurgião (Surgeonfish) — espinho na base da cauda, corpo oval
+const drawSurgeonfish: DrawFn = (s, f, _p) => `<svg width="${s*2}" height="${s*1.1}" viewBox="0 0 40 22" style="transform:scaleX(${f?-1:1})">
+  <ellipse cx="20" cy="11" rx="14" ry="8" fill="#2196a0"/>
+  <path d="M14 5 Q20 8 26 5" stroke="#1a7a82" stroke-width="1.5" fill="none"/>
+  <path d="M14 17 Q20 14 26 17" stroke="#1a7a82" stroke-width="1.5" fill="none"/>
+  <ellipse cx="9" cy="11" rx="4" ry="5.5" fill="#1a7a82"/>
+  <circle cx="6.5" cy="10" r="1.5" fill="white"/><circle cx="6.9" cy="10" r="0.7" fill="#111"/>
+  <path d="M34 11 L40 6 L40 16 Z" fill="#2196a0"/>
+  <path d="M34 13 L37 16 L34 16 Z" fill="#e0e0e0"/>
+</svg>`,
+
+// Garoupa (Grouper) — corpo robusto com manchas
+const drawGrouper: DrawFn = (s, f, _p) => `<svg width="${s*2.2}" height="${s*1.2}" viewBox="0 0 44 24" style="transform:scaleX(${f?-1:1})">
+  <ellipse cx="22" cy="12" rx="16" ry="9" fill="#8b4513"/>
+  <circle cx="16" cy="10" r="2" fill="#6b2e08" opacity="0.6"/>
+  <circle cx="22" cy="14" r="2.5" fill="#6b2e08" opacity="0.6"/>
+  <circle cx="28" cy="9" r="1.8" fill="#6b2e08" opacity="0.6"/>
+  <circle cx="26" cy="15" r="1.5" fill="#6b2e08" opacity="0.5"/>
+  <path d="M14 4 Q22 6 30 4" stroke="#6b2e08" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="9" cy="12" rx="4.5" ry="6" fill="#7a3a10"/>
+  <circle cx="6.5" cy="11" r="1.5" fill="white"/><circle cx="6.9" cy="11" r="0.7" fill="#111"/>
+  <path d="M38 12 L44 6 L44 18 Z" fill="#8b4513"/>
+</svg>`,
+
+// Peixe-lua / Mola-mola — corpo quase circular, sem cauda real
+const drawSunfish: DrawFn = (s, f, _p) => `<svg width="${s*1.8}" height="${s*2}" viewBox="0 0 36 40" style="transform:scaleX(${f?-1:1})">
+  <ellipse cx="18" cy="20" rx="15" ry="17" fill="#9eb5c8"/>
+  <ellipse cx="18" cy="20" rx="15" ry="17" fill="none" stroke="#7a9ab0" stroke-width="0.6"/>
+  <path d="M33 14 L36 10 L36 30 L33 26" fill="#8aa5ba"/>
+  <path d="M18 3 L15 0 L21 0 Z" fill="#8aa5ba"/>
+  <path d="M18 37 L15 40 L21 40 Z" fill="#8aa5ba"/>
+  <ellipse cx="10" cy="18" rx="4" ry="5" fill="#8aa5ba"/>
+  <circle cx="8" cy="17" r="2" fill="white"/><circle cx="8.6" cy="17" r="1" fill="#111"/>
+  <circle cx="18" cy="20" r="3" fill="rgba(255,255,255,0.1)"/>
+</svg>`,
+
+// Peixe-cachimbo (Pipefish) — como trombeta mas mais fino e curvado
+const drawPipefish: DrawFn = (s, f, phase) => {
+  const wave = Math.sin(phase * 0.5) * 3;
+  return `<svg width="${s*3}" height="${s*0.7}" viewBox="0 0 60 14" style="transform:scaleX(${f?-1:1})">
+    <path d="M2 7 Q20 ${7+wave} 40 ${7-wave} Q55 ${7+wave*0.5} 58 7" stroke="#4a8c5a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M2 7 Q20 ${7.5+wave} 40 ${7.5-wave} Q55 ${7.5+wave*0.5} 58 7.5" stroke="#2a6c3a" stroke-width="1" fill="none" opacity="0.5"/>
+    <ellipse cx="3.5" cy="7" rx="3" ry="2.5" fill="#3a7c4a"/>
+    <circle cx="2" cy="6" r="1.1" fill="white"/><circle cx="2.3" cy="6" r="0.55" fill="#111"/>
+    <path d="M56 6 L60 4 L60 10 Z" fill="#4a8c5a"/>
+  </svg>`;
+},
+
+// Peixe-sapo-palhaço (Clown Frogfish) — com isco luminoso, camuflagem
+const drawClownFrogfish: DrawFn = (s, f, phase) => {
+  const lure = Math.sin(phase * 1.2) * 3;
+  return `<svg width="${s*1.6}" height="${s*1.4}" viewBox="0 0 32 28" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="16" cy="16" rx="13" ry="10" fill="#e8a040"/>
+    <circle cx="12" cy="14" r="4" fill="#c87020" opacity="0.5"/>
+    <circle cx="20" cy="18" r="3" fill="#c87020" opacity="0.4"/>
+    <circle cx="16" cy="10" r="2.5" fill="#c87020" opacity="0.4"/>
+    <path d="M16 6 Q18 ${3+lure} 17 ${1+lure}" stroke="#d4a060" stroke-width="1.2" fill="none"/>
+    <circle cx="17" cy="${1+lure}" r="1.5" fill="#ffe060" opacity="0.9"/>
+    <ellipse cx="7" cy="15" rx="5" ry="6" fill="#d09030"/>
+    <path d="M3 17 Q5 20 9 18" stroke="white" stroke-width="1" fill="none"/>
+    <circle cx="5" cy="14" r="1.8" fill="white"/><circle cx="5.5" cy="14" r="0.9" fill="#111"/>
+    <path d="M28 14 L32 10 L32 22 Z" fill="#e8a040"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// PEIXES CARTILAGINOSOS EXTRAS
+// ════════════════════════════════════════════════════════════════
+
+// Tubarão-baleia — o maior peixe do mundo, listras brancas
+const drawWhaleShark: DrawFn = (s, f, _p) => `<svg width="${s*5.5}" height="${s*2}" viewBox="0 0 110 40" style="transform:scaleX(${f?-1:1})">
+  <path d="M4 20 Q22 10 55 12 Q80 10 98 20 Q88 26 60 28 Q30 30 10 26 Z" fill="#4a7a9b"/>
+  <path d="M4 20 Q22 10 55 12 Q80 10 98 20 Q88 26 60 28 Q30 30 10 26 Z" fill="none" stroke="#2a5a7b" stroke-width="0.5"/>
+  ${[1,2,3,4,5].map(i=>`<circle cx="${15+i*15}" cy="${12+i%2*4}" r="2.5" fill="rgba(255,255,255,0.25)"/>`).join('')}
+  ${[1,2,3].map(i=>`<path d="M${20+i*20} 14 Q${28+i*20} 16 ${20+i*20} 18" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>`).join('')}
+  <path d="M40 12 L46 2 L52 12 Z" fill="#3a6a8b"/>
+  <path d="M98 20 L110 14 L110 26 Z" fill="#4a7a9b"/>
+  <path d="M65 28 L70 36 L76 28 Z" fill="#3a6a8b"/>
+  <ellipse cx="8" cy="20" rx="5" ry="6" fill="#3a6a8b"/>
+  <path d="M4 22 Q6 26 12 24" stroke="white" stroke-width="0.8" fill="none"/>
+  <circle cx="6" cy="17" r="2" fill="white"/><circle cx="6.6" cy="17" r="1" fill="#111"/>
+</svg>`,
+
+// Peixe-serra (Sawfish)
+const drawSawfish: DrawFn = (s, f, _p) => `<svg width="${s*4}" height="${s*1.2}" viewBox="0 0 80 24" style="transform:scaleX(${f?-1:1})">
+  <path d="M4 12 Q12 6 30 8 Q50 6 68 12 Q58 16 36 17 Q18 18 8 15 Z" fill="#7a8a6a"/>
+  <path d="M4 12 L0 8 L18 8" stroke="#5a6a4a" stroke-width="2" fill="none"/>
+  ${[0,1,2,3,4,5,6].map(i=>`<line x1="${2+i*2.4}" y1="8" x2="${1.5+i*2.4}" y2="${5 - (i%2)*3}" stroke="#4a5a3a" stroke-width="0.8"/>`).join('')}
+  <path d="M68 12 L80 8 L80 16 Z" fill="#7a8a6a"/>
+  <path d="M44 17 L46 22 L50 17 Z" fill="#5a6a4a"/>
+  <ellipse cx="8" cy="12" rx="4" ry="5" fill="#6a7a5a"/>
+  <circle cx="6" cy="10.5" r="1.4" fill="white"/><circle cx="6.4" cy="10.5" r="0.7" fill="#111"/>
+</svg>`,
+
+// ════════════════════════════════════════════════════════════════
+// CRUSTÁCEOS EXTRAS
+// ════════════════════════════════════════════════════════════════
+
+// Lagosta — antenas compridas, cauda em leque
+const drawLobster: DrawFn = (s, f, phase) => {
+  const tail = Math.sin(phase * 0.8) * 2;
+  return `<svg width="${s*2.5}" height="${s*1.1}" viewBox="0 0 50 22" style="transform:scaleX(${f?-1:1})">
+    <path d="M2 5 Q8 4 14 7" stroke="#c0392b" stroke-width="1.2" fill="none"/>
+    <path d="M2 4 Q8 2 14 6" stroke="#c0392b" stroke-width="1" fill="none" opacity="0.6"/>
+    ${[0,1,2,3,4].map(i=>`<path d="M${16+i*3} 14 L${14+i*3} ${19+Math.sin(phase+i)*2}" stroke="#a93226" stroke-width="1.5" fill="none" stroke-linecap="round"/>`).join('')}
+    <ellipse cx="20" cy="10" rx="8" ry="5" fill="#c0392b"/>
+    <path d="M28 8 Q38 6 44 10 Q38 14 28 12 Z" fill="#a93226"/>
+    <path d="M44 ${10+tail} L50 ${8+tail} L50 ${12+tail} Z" fill="#c0392b"/>
+    <path d="M36 12 L38 18 L42 12 Z" fill="#a93226"/>
+    <ellipse cx="14" cy="10" rx="4" ry="5" fill="#b03020"/>
+    <circle cx="12" cy="8.5" r="1.5" fill="white"/><circle cx="12.4" cy="8.5" r="0.7" fill="#111"/>
+    <path d="M10 8 Q8 6 5 5 M10 10 Q7 10 4 10" stroke="#c0392b" stroke-width="1.2" fill="none"/>
+  </svg>`;
+};
+
+// Camarão-louva-a-deus (Mantis Shrimp) — cores neon iridescentes
+const drawMantisShrimp: DrawFn = (s, f, phase) => {
+  const legs = Array.from({length:6}, (_,i) => {
+    const x = 12 + i * 4;
+    const sw = Math.sin(phase + i*0.9) * 2;
+    return `<path d="M${x} 12 L${x-1} ${17+sw}" stroke="#40e0d0" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*2.5}" height="${s}" viewBox="0 0 50 20" style="transform:scaleX(${f?-1:1})">
+    ${legs}
+    <path d="M4 10 Q25 5 42 10 Q38 14 25 14 Q10 14 4 10 Z" fill="#2ecc71"/>
+    <path d="M4 10 Q25 7 42 10" stroke="#40e0d0" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M4 10 Q25 8.5 42 10" stroke="#9b59b6" stroke-width="0.8" fill="none" opacity="0.7"/>
+    <path d="M42 10 L50 7 L50 13 Z" fill="#e74c3c"/>
+    <path d="M28 14 L30 18 L34 14 Z" fill="#27ae60"/>
+    <ellipse cx="6" cy="10" rx="4" ry="4.5" fill="#27ae60"/>
+    <path d="M3 9 L0 7 M3 10 L0 10 M3 11 L0 13" stroke="#40e0d0" stroke-width="1" fill="none"/>
+    <circle cx="4.5" cy="8.5" r="1.5" fill="white"/><circle cx="4.9" cy="8.5" r="0.7" fill="#e74c3c"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// MOLUSCOS EXTRAS
+// ════════════════════════════════════════════════════════════════
+
+// Nautilus — concha espiral
+const drawNautilus: DrawFn = (s, f, phase) => {
+  const spin = phase * 0.3;
+  return `<svg width="${s*1.6}" height="${s*1.6}" viewBox="0 0 32 32" style="transform:scaleX(${f?-1:1}) rotate(${spin.toFixed(2)}rad)">
+    <circle cx="16" cy="16" r="14" fill="#f5e6c8"/>
+    <circle cx="16" cy="16" r="14" fill="none" stroke="#c4a060" stroke-width="0.6"/>
+    <path d="M16 2 Q28 4 30 16 Q28 28 16 30 Q4 28 2 16 Q4 4 16 2" fill="none" stroke="#c4a060" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <circle cx="16" cy="16" r="8" fill="#e8d4a8"/>
+    <circle cx="16" cy="16" r="4" fill="#d4b880"/>
+    <circle cx="16" cy="16" r="1.5" fill="#b89840"/>
+    ${[0,1,2,3,4,5].map(i=>`<line x1="16" y1="16" x2="${(16+12*Math.cos(i*1.047)).toFixed(1)}" y2="${(16+12*Math.sin(i*1.047)).toFixed(1)}" stroke="#c4a060" stroke-width="0.5" opacity="0.5"/>`).join('')}
+    <path d="M16 14 Q20 15 20 18 Q18 20 16 18" fill="none" stroke="#8b6020" stroke-width="1" opacity="0.6"/>
+    ${Array.from({length:8},(_,i)=>`<path d="M${(16+14*Math.cos(i*0.785)).toFixed(1)} ${(16+14*Math.sin(i*0.785)).toFixed(1)} L${(16+10*Math.cos(i*0.785+0.15)).toFixed(1)} ${(16+10*Math.sin(i*0.785+0.15)).toFixed(1)}" stroke="#a08040" stroke-width="1.5" fill="none"/>`).join('')}
+  </svg>`;
+};
+
+// Nudibranquio — lesma do mar, cores vibrantes e galas
+const drawNudibranch: DrawFn = (s, f, phase) => {
+  const galas = Array.from({length:10},(_,i)=>{
+    const x = 6 + i*3.5;
+    const h = 4 + Math.sin(phase+i*0.7)*2;
+    return `<path d="M${x} 8 Q${x+1} ${8-h} ${x} ${8-h*1.5}" stroke="#ff6b9d" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*2.3}" height="${s*1.2}" viewBox="0 0 46 24" style="transform:scaleX(${f?-1:1})">
+    ${galas}
+    <path d="M4 14 Q23 10 42 14 Q38 18 23 18 Q8 18 4 14 Z" fill="#ff4500"/>
+    <path d="M4 14 Q23 12 42 14" stroke="#ff8c00" stroke-width="1.5" fill="none" opacity="0.7"/>
+    <path d="M40 14 L46 11 L46 17 Z" fill="#ff4500"/>
+    <path d="M4 12 L0 9 M4 13 L0 13" stroke="#ff6b9d" stroke-width="1.2" fill="none"/>
+    <circle cx="4.5" cy="13.5" r="1.5" fill="white"/><circle cx="4.9" cy="13.5" r="0.7" fill="#111"/>
+  </svg>`;
+};
+
+// Marisquinho gigante (Giant Clam) — fica no fundo, abre e fecha
+const drawGiantClam: DrawFn = (s, f, phase) => {
+  const open = (Math.sin(phase * 0.3) * 0.5 + 0.5) * 8;
+  return `<svg width="${s*2}" height="${s*1.3}" viewBox="0 0 40 26">
+    <ellipse cx="20" cy="${18+open*0.3}" rx="18" ry="${6-open*0.2}" fill="#6a8fb5"/>
+    <ellipse cx="20" cy="${18+open*0.3}" rx="18" ry="${6-open*0.2}" fill="none" stroke="#4a6f95" stroke-width="0.7"/>
+    <ellipse cx="20" cy="${14-open}" rx="16" ry="${5+open*0.3}" fill="#7aa0c5"/>
+    <ellipse cx="20" cy="${14-open}" rx="16" ry="${5+open*0.3}" fill="none" stroke="#4a6f95" stroke-width="0.7"/>
+    ${open > 3 ? `<ellipse cx="20" cy="16" rx="10" ry="3" fill="#7fffcb" opacity="0.6"/>` : ''}
+    <path d="M4 18 Q6 22 10 20 Q14 24 20 22 Q26 24 30 20 Q34 22 36 18" stroke="#4a6f95" stroke-width="1" fill="none" opacity="0.5"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// EQUINODERMOS
+// ════════════════════════════════════════════════════════════════
+
+// Estrela-do-mar — 5 braços, fica na areia
+const drawStarfish: DrawFn = (s, _f, phase) => {
+  const pulse = 1 + Math.sin(phase * 0.4) * 0.04;
+  const arms = Array.from({length:5},(_,i)=>{
+    const angle = (i * 72 - 90) * Math.PI / 180;
+    const x2 = (16 + 13*Math.cos(angle)).toFixed(1);
+    const y2 = (16 + 13*Math.sin(angle)).toFixed(1);
+    const cx1 = (16 + 7*Math.cos(angle-0.4)).toFixed(1);
+    const cy1 = (16 + 7*Math.sin(angle-0.4)).toFixed(1);
+    const cx2 = (16 + 7*Math.cos(angle+0.4)).toFixed(1);
+    const cy2 = (16 + 7*Math.sin(angle+0.4)).toFixed(1);
+    return `<path d="M16 16 Q${cx1} ${cy1} ${x2} ${y2} Q${cx2} ${cy2} 16 16" fill="#e85c3a"/>`;
+  }).join('');
+  return `<svg width="${s*1.8}" height="${s*1.8}" viewBox="0 0 32 32" style="transform:scale(${pulse.toFixed(3)})">
+    ${arms}
+    <circle cx="16" cy="16" r="5" fill="#d04020"/>
+    <circle cx="16" cy="16" r="2" fill="#c03010"/>
+  </svg>`;
+};
+
+// Ouriço-do-mar — bola com espinhos, fica na areia
+const drawSeaUrchin: DrawFn = (s, _f, phase) => {
+  const spines = Array.from({length:16},(_,i)=>{
+    const angle = (i * 22.5) * Math.PI / 180;
+    const len = 9 + Math.sin(phase * 0.5 + i) * 1.5;
+    const x2 = (14 + len*Math.cos(angle)).toFixed(1);
+    const y2 = (14 + len*Math.sin(angle)).toFixed(1);
+    return `<line x1="14" y1="14" x2="${x2}" y2="${y2}" stroke="#4a1a8a" stroke-width="1" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*1.6}" height="${s*1.6}" viewBox="0 0 28 28">
+    ${spines}
+    <circle cx="14" cy="14" r="8" fill="#6b2daa"/>
+    <circle cx="14" cy="14" r="8" fill="none" stroke="#4a1a8a" stroke-width="0.6"/>
+    <circle cx="14" cy="14" r="3" fill="#4a1a8a"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// RÉPTEIS MARINHOS
+// ════════════════════════════════════════════════════════════════
+
+// Tartaruga marinha — nada graciosamente
+const drawSeaTurtle: DrawFn = (s, f, phase) => {
+  const flap = Math.sin(phase * 0.6) * 8;
+  return `<svg width="${s*2.4}" height="${s*1.8}" viewBox="0 0 48 36" style="transform:scaleX(${f?-1:1})">
+    <path d="M14 18 L6 ${12+flap} M14 18 L5 ${22-flap}" stroke="#2e7d32" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M34 18 L42 ${12+flap} M34 18 L43 ${22-flap}" stroke="#2e7d32" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="24" cy="18" rx="13" ry="10" fill="#388e3c"/>
+    <path d="M13 12 Q24 8 35 12 Q35 24 24 28 Q13 24 13 12 Z" fill="none" stroke="#1b5e20" stroke-width="1" opacity="0.6"/>
+    <path d="M13 18 Q24 16 35 18" stroke="#1b5e20" stroke-width="1" fill="none" opacity="0.5"/>
+    <path d="M19 10 Q24 8 29 10 Q24 12 19 10 Z" fill="#1b5e20" opacity="0.4"/>
+    <path d="M24 28 L22 34 L26 34 Z" stroke="#2e7d32" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="13" cy="18" rx="5" ry="6" fill="#2e7d32"/>
+    <circle cx="11" cy="16" r="2" fill="white"/><circle cx="11.6" cy="16" r="1" fill="#111"/>
+  </svg>`;
+};
+
+// Cobra-do-mar — corpo longo e sinuoso
+const drawSeaSnake: DrawFn = (s, f, phase) => {
+  const w1 = Math.sin(phase * 0.6) * 8;
+  const w2 = Math.sin(phase * 0.6 + 1) * 8;
+  const w3 = Math.sin(phase * 0.6 + 2) * 8;
+  return `<svg width="${s*3.5}" height="${s*1.2}" viewBox="0 0 70 24" style="transform:scaleX(${f?-1:1})">
+    <path d="M4 12 Q16 ${12+w1} 28 12 Q40 ${12+w2} 52 12 Q60 ${12+w3} 66 12"
+          stroke="#558b2f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M4 12 Q16 ${12+w1} 28 12 Q40 ${12+w2} 52 12 Q60 ${12+w3} 66 12"
+          stroke="#33691e" stroke-width="2" fill="none" stroke-dasharray="4,6" opacity="0.7"/>
+    <ellipse cx="6" cy="12" rx="5" ry="4" fill="#33691e"/>
+    <path d="M2 10 L0 8 M2 12 L0 12 M2 14 L0 16" stroke="#ffe000" stroke-width="1" fill="none"/>
+    <circle cx="4.5" cy="10.5" r="1.5" fill="white"/><circle cx="4.9" cy="10.5" r="0.75" fill="#111"/>
+    <path d="M66 11 L70 10 L70 14 L66 13 Z" fill="#558b2f"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// MAMÍFEROS MARINHOS EXTRAS
+// ════════════════════════════════════════════════════════════════
+
+// Golfinho — ágil, saltitante
+const drawDolphin: DrawFn = (s, f, phase) => {
+  const arc = Math.sin(phase * 0.5) * 5;
+  return `<svg width="${s*3}" height="${s*1.6}" viewBox="0 0 60 32" style="transform:scaleX(${f?-1:1})">
+    <path d="M4 ${18+arc} Q16 ${10+arc} 34 ${14+arc} Q50 ${12+arc} 56 ${18+arc}" fill="none" stroke="#607d8b" stroke-width="10" stroke-linecap="round"/>
+    <path d="M4 ${18+arc} Q16 ${10+arc} 34 ${14+arc} Q50 ${12+arc} 56 ${18+arc}" fill="none" stroke="#78909c" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="34" cy="${14+arc}" rx="12" ry="4" fill="#cfd8dc" opacity="0.6"/>
+    <path d="M28 ${10+arc} L32 ${3+arc} L36 ${10+arc} Z" fill="#546e7a"/>
+    <path d="M56 ${18+arc} L62 ${14+arc} L62 ${22+arc} Z" fill="#607d8b"/>
+    <path d="M46 ${22+arc} L48 ${28+arc} L52 ${22+arc} Z" fill="#546e7a"/>
+    <ellipse cx="7" cy="${18+arc}" rx="5" ry="4.5" fill="#546e7a"/>
+    <circle cx="5" cy="${16+arc}" r="1.8" fill="white"/><circle cx="5.5" cy="${16+arc}" r="0.9" fill="#111"/>
+  </svg>`;
+};
+
+// Dugongo / Peixe-boi — robusto, lento, herbívoro
+const drawDugong: DrawFn = (s, f, phase) => {
+  const tail = Math.sin(phase * 0.3) * 3;
+  return `<svg width="${s*3.2}" height="${s*1.6}" viewBox="0 0 64 32" style="transform:scaleX(${f?-1:1})">
+    <path d="M6 16 Q20 8 40 10 Q58 10 60 16 Q56 22 38 24 Q18 26 8 22 Z" fill="#8d9e8a"/>
+    <path d="M6 16 Q20 8 40 10 Q58 10 60 16" fill="none" stroke="#6d7e6a" stroke-width="0.5"/>
+    <ellipse cx="30" cy="15" rx="15" ry="5" fill="#9dae9a" opacity="0.4"/>
+    <path d="M60 15 L64 ${11+tail} L64 ${19+tail} Z" fill="#7d8e7a"/>
+    <path d="M44 24 L46 30 L50 24 Z" fill="#7d8e7a"/>
+    <path d="M14 20 L10 26 L18 22 Z" fill="#7d8e7a"/>
+    <ellipse cx="8" cy="16" rx="5" ry="7" fill="#7d8e7a"/>
+    <circle cx="6" cy="13" r="2" fill="white"/><circle cx="6.6" cy="13" r="1" fill="#111"/>
+    <path d="M4 15 Q2 14 0 16" stroke="#8d9e8a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M4 17 Q2 18 0 16" stroke="#8d9e8a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+// Leão-marinho — nada em espiral, brincalhão
+const drawSealion: DrawFn = (s, f, phase) => {
+  const spin = Math.sin(phase * 0.5) * 6;
+  return `<svg width="${s*2.5}" height="${s*1.5}" viewBox="0 0 50 30" style="transform:scaleX(${f?-1:1}) rotate(${spin}deg)">
+    <path d="M8 15 Q20 8 36 12 Q44 14 46 18 Q40 22 28 22 Q14 24 8 18 Z" fill="#a0785a"/>
+    <path d="M8 15 Q20 8 36 12 Q44 14 46 18" fill="none" stroke="#7a5a3a" stroke-width="0.5"/>
+    <path d="M46 18 L50 15 L50 21 Z" fill="#8a6040"/>
+    <path d="M28 22 L30 28 L34 22 Z" fill="#8a6040"/>
+    <path d="M14 20 L8 26 L16 22 Z" fill="#8a6040"/>
+    <ellipse cx="10" cy="15" rx="6" ry="7" fill="#8a6040"/>
+    <circle cx="8" cy="12" r="2.2" fill="white"/><circle cx="8.7" cy="12" r="1.1" fill="#111"/>
+    <path d="M6 16 Q4 17 2 15" stroke="#b08060" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M5 18 Q3 20 2 18" stroke="#b08060" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M8 8 Q10 6 13 7" stroke="#7a5a3a" stroke-width="1" fill="none"/>
+    <path d="M8 8 Q7 5 10 5" stroke="#7a5a3a" stroke-width="1" fill="none"/>
+  </svg>`;
+};
+
+// ════════════════════════════════════════════════════════════════
+// OUTROS
+// ════════════════════════════════════════════════════════════════
+
+// Água-viva — agora sim uma água-viva real (diferente do polvo)
+const drawJellyfish: DrawFn = (s, _f, phase) => {
+  const pulse = 1 + Math.sin(phase * 0.5) * 0.08;
+  const tentacles = Array.from({length:8},(_,i)=>{
+    const x = 8 + i * 4.2;
+    const w1 = Math.sin(phase + i*0.8) * 6;
+    const w2 = Math.sin(phase*0.7 + i) * 4;
+    const len = 20 + Math.sin(phase*0.3+i)*4;
+    return `<path d="M${x} 16 Q${x+w1} ${16+len*0.5} ${x+w2} ${16+len}" stroke="rgba(180,100,220,0.6)" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*1.8}" height="${s*2.2}" viewBox="0 0 36 44" style="transform:scale(${pulse.toFixed(3)})">
+    ${tentacles}
+    <path d="M4 14 Q18 2 32 14 Q32 18 18 20 Q4 18 4 14 Z" fill="rgba(180,100,220,0.75)"/>
+    <path d="M4 14 Q18 4 32 14" fill="none" stroke="rgba(220,160,255,0.5)" stroke-width="2"/>
+    <ellipse cx="18" cy="12" rx="8" ry="3" fill="rgba(220,160,255,0.3)"/>
+  </svg>`;
+};
+
 // ── Caranguejo — anda de lado na areia, corpo sempre de frente p/ câmera (não precisa flip) ──
 const drawCrab: DrawFn = (s, _flipped, phase) => {
   const legs = [0, 1, 2].map(i => {
@@ -198,7 +603,7 @@ const drawShark: DrawFn = (s, f, _p) => `<svg width="${s*3.2}" height="${s*1.3}"
   <line x1="7" y1="15.5" x2="9" y2="16" stroke="white" stroke-width="0.5"/>
   <circle cx="5" cy="11" r="1.3" fill="white"/><circle cx="5.4" cy="11" r="0.6" fill="#111"/>
   <rect x="7" y="11" width="6" height="1" rx="0.5" fill="rgba(255,255,255,0.15)"/>
-</svg>`
+</svg>`,
 
 // ── Tubarão-martelo ───────────────────────────────────────────────────────────
 const drawHammerhead: DrawFn = (s, f, _p) => `<svg width="${s*3}" height="${s*1.5}" viewBox="0 0 60 30" style="transform:scaleX(${f?-1:1})">
