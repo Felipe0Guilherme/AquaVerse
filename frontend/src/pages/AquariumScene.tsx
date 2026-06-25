@@ -32,116 +32,186 @@ type CreatureKind =
 type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
-  // 0 — Clownfish (laranja)
-  (s, f) => `<svg width="${s*2.2}" height="${s}" viewBox="0 0 44 20" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="22" cy="10" rx="16" ry="8" fill="#e8620a"/>
-    <rect x="14" y="3" width="3" height="14" fill="white" opacity="0.9"/>
-    <rect x="24" y="4" width="2.5" height="12" fill="white" opacity="0.9"/>
-    <ellipse cx="10" cy="10" rx="5" ry="6" fill="#d45800"/>
-    <circle cx="7" cy="9" r="1.5" fill="white"/><circle cx="7.4" cy="9" r="0.7" fill="#111"/>
-    <path d="M38 10 L44 5 L44 15 Z" fill="#e8620a"/>
+  // 0 — Palhaço (Clownfish) — laranja com listras brancas e bordas pretas
+  (s, f) => `<svg width="${s*2.3}" height="${s*1.35}" viewBox="0 0 46 27" style="transform:scaleX(${f?-1:1})">
+    <path d="M17 6 Q22 0 30 2 Q34 0 37 6" fill="#E8521A" stroke="#C03510" stroke-width="0.8"/>
+    <path d="M8 13 Q7 4 20 3 Q35 2 41 13 Q34 24 20 24 Q7 22 8 13Z" fill="#FF6B2B" stroke="#C03510" stroke-width="1.3"/>
+    <path d="M13 17 Q22 22 36 17 Q38 21 20 23 Q9 22 13 17Z" fill="rgba(255,200,130,0.5)"/>
+    <path d="M11 4 Q15 3 16 6 L16 22 Q14 23 11 22 Q9 18 9 13 Q9 8 11 4Z" fill="white" stroke="#222" stroke-width="0.9"/>
+    <path d="M25 3 Q28 2 29 5 L29 22 Q27 23 25 22 Q23 5 25 3Z" fill="white" stroke="#222" stroke-width="0.9"/>
+    <path d="M17 15 Q12 21 14 24 Q18 21 18 17Z" fill="rgba(232,82,26,0.7)" stroke="#C03510" stroke-width="0.5"/>
+    <path d="M41 10 Q50 4 48 13 Q50 22 41 17Z" fill="#E8521A" stroke="#C03510" stroke-width="0.9"/>
+    <circle cx="10" cy="11" r="4" fill="white" stroke="#222" stroke-width="0.6"/>
+    <circle cx="10.9" cy="11.6" r="2.4" fill="#1a1a1a"/>
+    <circle cx="9.7" cy="10.4" r="1" fill="white"/>
+    <path d="M5 14 Q6.5 17 9 14" stroke="#C03510" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 1 — Blue Tang (azul)
-  (s, f) => `<svg width="${s*2.2}" height="${s}" viewBox="0 0 44 20" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="22" cy="10" rx="15" ry="9" fill="#1a6bb5"/>
-    <path d="M15 6 Q20 10 15 14" stroke="#ffd700" stroke-width="2" fill="none"/>
-    <ellipse cx="10" cy="10" rx="4.5" ry="6.5" fill="#1560a0"/>
-    <circle cx="7" cy="9" r="1.5" fill="white"/><circle cx="7.4" cy="9" r="0.7" fill="#111"/>
-    <path d="M38 10 L44 4 L43 10 L44 16 Z" fill="#ffd700"/>
+
+  // 1 — Tang Azul (Blue Tang) — azul royal, cauda amarela
+  (s, f) => `<svg width="${s*2.3}" height="${s*1.35}" viewBox="0 0 46 27" style="transform:scaleX(${f?-1:1})">
+    <path d="M18 5 Q22 0 30 2 Q34 0 37 5" fill="#1565C0" stroke="#0D47A1" stroke-width="0.8"/>
+    <path d="M8 13 Q7 4 20 3 Q35 2 41 13 Q34 24 20 24 Q7 22 8 13Z" fill="#1E88E5" stroke="#0D47A1" stroke-width="1.3"/>
+    <path d="M12 16 Q22 22 37 17 Q38 21 20 23 Q8 22 12 16Z" fill="rgba(100,190,255,0.35)"/>
+    <path d="M29 5 Q38 3 41 13 Q38 23 29 22 Q27 5 29 5Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.7"/>
+    <path d="M17 15 Q12 20 14 24 Q18 21 18 17Z" fill="rgba(21,101,192,0.7)"/>
+    <path d="M41 10 Q50 5 48 13 Q50 21 41 17Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <path d="M41 13 L44 11 L44 15Z" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="10" cy="11" r="4" fill="white" stroke="#0D47A1" stroke-width="0.6"/>
+    <circle cx="10.9" cy="11.6" r="2.4" fill="#1a1a1a"/>
+    <circle cx="9.7" cy="10.4" r="1" fill="white"/>
+    <path d="M5 14 Q6.5 17 9 14" stroke="#0D47A1" stroke-width="1.1" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 2 — Angelfish (amarelo)
-  (s, f) => `<svg width="${s*1.8}" height="${s*1.4}" viewBox="0 0 36 28" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="18" cy="16" rx="10" ry="10" fill="#f5c842"/>
-    <path d="M18 6 L12 0 L18 8 L24 0 Z" fill="#f5c842"/>
-    <path d="M18 26 L12 34 L18 28 L24 34 Z" fill="#f5c842"/>
-    <rect x="13" y="7" width="2" height="18" fill="#333" opacity="0.4"/>
-    <rect x="18" y="7" width="2" height="18" fill="#333" opacity="0.4"/>
-    <ellipse cx="10" cy="14" rx="4" ry="5" fill="#e6b830"/>
-    <circle cx="7.5" cy="13" r="1.5" fill="white"/><circle cx="7.9" cy="13" r="0.7" fill="#111"/>
-    <path d="M29 16 L36 11 L36 21 Z" fill="#f5c842"/>
+
+  // 2 — Acará Bandeira (Angelfish) — corpo alto, listras preto/dourado
+  (s, f) => `<svg width="${s*1.7}" height="${s*1.9}" viewBox="0 0 34 38" style="transform:scaleX(${f?-1:1})">
+    <path d="M17 8 L11 0 L17 10Z" fill="#F5C020" stroke="#C49010" stroke-width="0.6"/>
+    <path d="M17 30 L11 38 L17 28Z" fill="#F5C020" stroke="#C49010" stroke-width="0.6"/>
+    <path d="M7 19 Q6 9 17 7 Q27 9 27 19 Q27 29 17 31 Q6 29 7 19Z" fill="#F5C020" stroke="#C49010" stroke-width="1.3"/>
+    <path d="M13 17 Q17 21 17 28 Q14 27 13 24 Q11 22 11 19Z" fill="rgba(255,220,120,0.5)"/>
+    <path d="M11 8 Q13 7 14 9 L14 30 Q12 31 11 30 Q9 27 9 19 Q9 11 11 8Z" fill="#1a1a1a"/>
+    <path d="M20 8 Q22 7 23 9 L23 30 Q21 31 20 30 Q19 9 20 8Z" fill="#1a1a1a"/>
+    <path d="M8 19 L2 14 L2 24Z" fill="#F5C020" stroke="#C49010" stroke-width="0.6"/>
+    <path d="M27 19 L32 14 L32 24Z" fill="#F5C020" stroke="#C49010" stroke-width="0.6"/>
+    <ellipse cx="9" cy="17" rx="3" ry="4.5" fill="#C49010"/>
+    <circle cx="7.5" cy="15.5" r="2.2" fill="white" stroke="#1a1a1a" stroke-width="0.5"/>
+    <circle cx="8.1" cy="16" r="1.3" fill="#1a1a1a"/>
+    <circle cx="7.4" cy="15.2" r="0.55" fill="white"/>
+    <path d="M5 18 Q5.5 20 7 18" stroke="#C49010" stroke-width="0.9" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 3 — Betta (roxo)
-  (s, f) => `<svg width="${s*2.5}" height="${s*1.2}" viewBox="0 0 50 24" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="20" cy="12" rx="14" ry="7" fill="#8b1a6b"/>
-    <path d="M8 6 Q4 12 8 18 Q6 18 4 22 Q6 16 8 18" fill="#6d0d54" opacity="0.8"/>
-    <path d="M34 8 Q44 2 50 6 Q44 12 50 18 Q44 14 34 16 Z" fill="#a020c0" opacity="0.7"/>
-    <ellipse cx="9" cy="12" rx="4" ry="5.5" fill="#7a1560"/>
-    <circle cx="6" cy="11" r="1.5" fill="white"/><circle cx="6.4" cy="11" r="0.7" fill="#111"/>
+
+  // 3 — Betta (Peixe-lutador) — roxo/vermelho, barbatanas ondulantes
+  (s, f) => `<svg width="${s*2.8}" height="${s*1.5}" viewBox="0 0 56 30" style="transform:scaleX(${f?-1:1})">
+    <path d="M36 10 Q44 0 54 4 Q50 10 54 16 Q44 14 36 18Z" fill="#6A1B9A" stroke="#4A148C" stroke-width="0.7" opacity="0.88"/>
+    <path d="M8 6 Q5 15 8 22 Q5 22 2 27 Q4 20 6 18 Q4 14 6 12 Q4 10 6 8Z" fill="#8E24AA" stroke="#4A148C" stroke-width="0.6" opacity="0.85"/>
+    <path d="M18 5 Q22 0 28 3" stroke="#CE93D8" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M8 15 Q22 9 36 14 Q30 22 22 22 Q12 22 8 15Z" fill="#9C27B0" stroke="#4A148C" stroke-width="1.3"/>
+    <path d="M11 15 Q22 13 35 15" stroke="rgba(206,147,216,0.4)" stroke-width="1" fill="none"/>
+    <path d="M10 18 Q14 24 18 23 Q16 19 10 18Z" fill="#AB47BC" opacity="0.75"/>
+    <circle cx="10" cy="13" r="3.8" fill="white" stroke="#4A148C" stroke-width="0.5"/>
+    <circle cx="10.9" cy="13.5" r="2.2" fill="#1a1a1a"/>
+    <circle cx="9.8" cy="12.4" r="0.9" fill="white"/>
+    <path d="M6 16 Q7 18.5 9 16" stroke="#4A148C" stroke-width="1.1" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 4 — Peixe verde
-  (s, f) => `<svg width="${s*2.2}" height="${s}" viewBox="0 0 44 20" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="22" cy="10" rx="16" ry="7" fill="#1a8c6a"/>
-    <ellipse cx="10" cy="10" rx="4.5" ry="5.5" fill="#158055"/>
-    <circle cx="7" cy="9" r="1.5" fill="white"/><circle cx="7.4" cy="9" r="0.7" fill="#111"/>
-    <path d="M38 10 L44 5 L44 15 Z" fill="#1a8c6a"/>
-    <path d="M22 4 L24 16" stroke="#0a5a40" stroke-width="1" fill="none" opacity="0.5"/>
-    <path d="M28 4 L30 16" stroke="#0a5a40" stroke-width="1" fill="none" opacity="0.5"/>
+
+  // 4 — Baiacu (Pufferfish) — redondo, espinhos, olhão expressivo
+  (s, f) => `<svg width="${s*1.8}" height="${s*1.55}" viewBox="0 0 36 31" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 2 L14 0 M20 1 L20 0 M24 2 L25 0 M11 4 L8 2 M11 27 L8 29 M16 28 L15 31 M22 27 L23 31" stroke="#4CAF50" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <circle cx="16" cy="15" r="12.5" fill="#8BC34A" stroke="#558B2F" stroke-width="1.3"/>
+    <path d="M7 12 Q16 6 28 12 Q28 20 16 24 Q7 20 7 12Z" fill="rgba(220,255,180,0.45)"/>
+    <path d="M28 10 Q34 10 35 15 Q34 20 28 20Z" fill="#7CB342" stroke="#558B2F" stroke-width="0.8"/>
+    <circle cx="10.5" cy="13" r="5" fill="white" stroke="#558B2F" stroke-width="0.7"/>
+    <circle cx="11.5" cy="13.5" r="3.2" fill="#1a1a1a"/>
+    <circle cx="10.3" cy="12.1" r="1.3" fill="white"/>
+    <path d="M4 18 Q5.5 21 7.5 18" stroke="#33691E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="22" cy="14" r="1.4" fill="#558B2F" opacity="0.35"/>
+    <circle cx="26" cy="12" r="1" fill="#558B2F" opacity="0.3"/>
+    <circle cx="19" cy="20" r="1" fill="#558B2F" opacity="0.3"/>
   </svg>`,
-  // 5 — Baiacu (rosa)
-  (s, f) => `<svg width="${s*1.5}" height="${s}" viewBox="0 0 30 20" style="transform:scaleX(${f?-1:1})">
-    <circle cx="13" cy="10" r="9" fill="#e87070"/>
-    <circle cx="8" cy="8" r="2" fill="white"/><circle cx="8.5" cy="8" r="1" fill="#111"/>
-    <path d="M22 10 L30 6 L30 14 Z" fill="#e87070"/>
-    <circle cx="13" cy="13" r="1" fill="#c05050" opacity="0.5"/>
-    <circle cx="17" cy="11" r="0.8" fill="#c05050" opacity="0.4"/>
+
+  // 5 — Donzela (Damselfish) — azul com cauda amarela
+  (s, f) => `<svg width="${s*2.1}" height="${s*1.3}" viewBox="0 0 42 26" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 5 Q20 0 26 2 Q30 0 33 5" fill="#1565C0" stroke="#0D47A1" stroke-width="0.8"/>
+    <path d="M7 13 Q6 4 19 3 Q33 2 38 13 Q31 23 19 23 Q6 22 7 13Z" fill="#1E88E5" stroke="#0D47A1" stroke-width="1.3"/>
+    <path d="M26 4 Q35 2 38 13 Q35 23 26 22 Q24 5 26 4Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <path d="M10 16 Q19 21 30 17 Q32 20 19 22 Q8 21 10 16Z" fill="rgba(100,180,255,0.3)"/>
+    <path d="M16 15 Q11 20 13 23 Q17 21 17 17Z" fill="rgba(21,101,192,0.7)"/>
+    <path d="M38 10 Q46 6 44 13 Q46 20 38 17Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <circle cx="9" cy="11" r="3.8" fill="white" stroke="#0D47A1" stroke-width="0.6"/>
+    <circle cx="9.9" cy="11.6" r="2.2" fill="#1a1a1a"/>
+    <circle cx="8.8" cy="10.5" r="0.9" fill="white"/>
+    <path d="M5 14 Q6.5 16.5 9 14" stroke="#0D47A1" stroke-width="1" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 6 — Peixe prata/cinza
-  (s, f) => `<svg width="${s*2}" height="${s}" viewBox="0 0 40 20" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="20" cy="10" rx="14" ry="7" fill="#8ab4c8"/>
-    <ellipse cx="20" cy="10" rx="14" ry="7" fill="none" stroke="#6a94a8" stroke-width="0.5"/>
-    <path d="M18 4 Q22 10 18 16" stroke="#6a94a8" stroke-width="1" fill="none"/>
-    <ellipse cx="9" cy="10" rx="4" ry="5.5" fill="#7aa4b8"/>
-    <circle cx="6.5" cy="9" r="1.5" fill="white"/><circle cx="6.9" cy="9" r="0.7" fill="#111"/>
-    <path d="M34 10 L40 5 L40 15 Z" fill="#8ab4c8"/>
+
+  // 6 — Sardinha prateada — metálica, bando escolar
+  (s, f) => `<svg width="${s*2.5}" height="${s*0.9}" viewBox="0 0 50 18" style="transform:scaleX(${f?-1:1})">
+    <path d="M7 9 Q6 3 21 2 Q38 1 44 9 Q38 16 21 16 Q6 15 7 9Z" fill="#B8D0E0" stroke="#7A9AB8" stroke-width="1"/>
+    <path d="M9 11 Q26 15 42 11 Q40 15 21 16 Q8 15 9 11Z" fill="rgba(255,255,255,0.55)"/>
+    <path d="M9 7 Q26 4 42 7" stroke="rgba(100,160,220,0.35)" stroke-width="1.5" fill="none"/>
+    <path d="M22 2 Q30 9 22 16" stroke="rgba(80,130,180,0.25)" stroke-width="1.5" fill="none"/>
+    <path d="M32 2 Q39 9 32 16" stroke="rgba(80,130,180,0.2)" stroke-width="1.2" fill="none"/>
+    <path d="M44 7 Q52 4 50 9 Q52 14 44 11Z" fill="#B8D0E0" stroke="#7A9AB8" stroke-width="0.8"/>
+    <ellipse cx="26" cy="9" rx="4" ry="1.2" fill="rgba(255,255,255,0.55)" transform="rotate(-20 26 9)"/>
+    <circle cx="8" cy="8" r="3.2" fill="white" stroke="#7A9AB8" stroke-width="0.5"/>
+    <circle cx="8.7" cy="8.4" r="1.9" fill="#1a1a1a"/>
+    <circle cx="7.8" cy="7.5" r="0.8" fill="white"/>
+    <path d="M4 10 Q5 12 7 10" stroke="#7A9AB8" stroke-width="0.9" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 7 — Peixe dourado
-  (s, f) => `<svg width="${s*2.2}" height="${s}" viewBox="0 0 44 20" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="22" cy="10" rx="16" ry="7.5" fill="#d4a017"/>
-    <ellipse cx="22" cy="10" rx="16" ry="7.5" fill="none" stroke="#a07800" stroke-width="0.5"/>
-    <ellipse cx="10" cy="10" rx="5" ry="6" fill="#c49010"/>
-    <circle cx="7" cy="9" r="1.5" fill="white"/><circle cx="7.4" cy="9" r="0.7" fill="#111"/>
-    <path d="M38 10 L44 5 L44 15 Z" fill="#d4a017"/>
-    <path d="M20 3 Q22 10 20 17" stroke="#a07800" stroke-width="1" fill="none" opacity="0.6"/>
+
+  // 7 — Peixe Dourado (Goldfish) — laranja/dourado, barbatanas fluidas
+  (s, f) => `<svg width="${s*2.4}" height="${s*1.4}" viewBox="0 0 48 28" style="transform:scaleX(${f?-1:1})">
+    <path d="M18 6 Q23 0 30 3 Q34 1 37 6" fill="#D4820A" stroke="#A85500" stroke-width="0.8"/>
+    <path d="M8 14 Q7 5 21 4 Q36 3 42 14 Q36 25 21 25 Q7 24 8 14Z" fill="#F0970C" stroke="#A85500" stroke-width="1.3"/>
+    <path d="M13 18 Q23 24 37 18 Q39 22 21 24 Q8 23 13 18Z" fill="rgba(255,220,120,0.55)"/>
+    <path d="M18 5 Q24 9 22 14" stroke="rgba(160,90,5,0.2)" stroke-width="2" fill="none"/>
+    <path d="M28 4 Q34 8 32 14" stroke="rgba(160,90,5,0.15)" stroke-width="1.5" fill="none"/>
+    <path d="M16 16 Q11 22 13 26 Q17 23 17 18Z" fill="rgba(210,120,10,0.7)"/>
+    <path d="M42 10 Q54 2 52 14 Q54 26 42 18Z" fill="#E08A08" stroke="#A85500" stroke-width="0.9"/>
+    <path d="M43 14 Q50 11 49 14 Q50 17 43 14Z" fill="rgba(255,255,255,0.2)"/>
+    <circle cx="10" cy="12" r="4.2" fill="white" stroke="#A85500" stroke-width="0.6"/>
+    <circle cx="10.9" cy="12.6" r="2.5" fill="#1a1a1a"/>
+    <circle cx="9.7" cy="11.4" r="1" fill="white"/>
+    <path d="M5 15 Q6.5 18 9 15" stroke="#A85500" stroke-width="1.1" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 8 — Peixe-borboleta (preto e branco)
-  (s, f) => `<svg width="${s*2}" height="${s*1.3}" viewBox="0 0 40 26" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="20" cy="13" rx="15" ry="9" fill="#1a1a1a"/>
-    <rect x="10" y="4" width="3" height="18" fill="white"/>
-    <rect x="20" y="4" width="3" height="18" fill="white"/>
-    <ellipse cx="9" cy="13" rx="4.5" ry="5.5" fill="#000"/>
-    <circle cx="6.5" cy="12" r="1.5" fill="white"/><circle cx="6.9" cy="12" r="0.7" fill="#111"/>
-    <path d="M34 13 L40 7 L40 19 Z" fill="#1a1a1a"/>
+
+  // 8 — Peixe-borboleta (Butterflyfish) — branco/preto/amarelo, olho camuflado
+  (s, f) => `<svg width="${s*2.2}" height="${s*1.5}" viewBox="0 0 44 30" style="transform:scaleX(${f?-1:1})">
+    <path d="M17 6 Q22 0 28 3 Q32 1 35 6" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <path d="M17 26 Q22 30 28 27 Q32 30 35 26" fill="#FDD835" stroke="#F9A825" stroke-width="0.6"/>
+    <path d="M8 15 Q7 6 20 5 Q36 4 40 15 Q35 26 20 26 Q7 25 8 15Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1.3"/>
+    <path d="M12 7 Q14 5 16 7 L16 24 Q13 25 12 24 Q10 21 10 15 Q10 9 12 7Z" fill="#212121"/>
+    <path d="M25 5 Q27 4 28 6 L28 25 Q26 26 25 25 Q24 5 25 5Z" fill="#212121"/>
+    <path d="M8 15 Q12 19 18 16 Q16 12 8 15Z" fill="rgba(255,230,100,0.4)"/>
+    <path d="M40 11 Q46 8 44 15 Q46 22 40 19Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <circle cx="9.5" cy="13.5" r="4" fill="white" stroke="#F9A825" stroke-width="0.5"/>
+    <circle cx="10.4" cy="13.5" r="2.3" fill="#1a1a1a"/>
+    <circle cx="9.4" cy="12.5" r="1" fill="white"/>
+    <path d="M5 16 Q6.5 18.5 9 16" stroke="#C88A00" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <circle cx="8" cy="10.5" r="2.2" fill="#1a1a1a" opacity="0.3"/>
   </svg>`,
-  // 9 — Néon (corpo fino, faixa azul neon + vermelha)
-  (s, f) => `<svg width="${s*2.4}" height="${s*0.8}" viewBox="0 0 48 16" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="24" cy="8" rx="18" ry="5" fill="#0a3d62"/>
-    <rect x="6" y="7" width="36" height="2" fill="#00e5ff"/>
-    <rect x="6" y="9.5" width="36" height="1.5" fill="#e02424"/>
-    <ellipse cx="9" cy="8" rx="3.5" ry="4" fill="#082c47"/>
-    <circle cx="6.5" cy="7.3" r="1.2" fill="white"/><circle cx="6.8" cy="7.3" r="0.6" fill="#111"/>
-    <path d="M40 8 L48 4 L48 12 Z" fill="#0a3d62"/>
+
+  // 9 — Neon Tetra — corpo escuro, faixa elétrica azul e barriga vermelha
+  (s, f) => `<svg width="${s*2.5}" height="${s*0.88}" viewBox="0 0 50 17.5" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 8.5 Q7 3 21 2 Q38 1 44 8.5 Q38 15 21 15 Q7 14 8 8.5Z" fill="#0D1B2A" stroke="#071020" stroke-width="0.9"/>
+    <path d="M8 7.5 Q28 5 44 8" stroke="#00E5FF" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.95"/>
+    <path d="M8 9.5 Q20 12 38 9.5 Q40 13 21 14 Q8 13 8 9.5Z" fill="#E53935" opacity="0.88"/>
+    <path d="M44 6 Q50 3 48 8.5 Q50 14 44 11Z" fill="#0D1B2A" stroke="#071020" stroke-width="0.7"/>
+    <circle cx="8.5" cy="7.5" r="3.2" fill="white" stroke="#071020" stroke-width="0.5"/>
+    <circle cx="9.2" cy="7.9" r="1.9" fill="#1a1a1a"/>
+    <circle cx="8.3" cy="7" r="0.8" fill="white"/>
+    <path d="M4 9.5 Q5.2 11.5 7.5 9.5" stroke="#071020" stroke-width="0.9" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 10 — Imperador (listras azul/amarelo)
-  (s, f) => `<svg width="${s*1.9}" height="${s*1.2}" viewBox="0 0 38 24" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="19" cy="12" rx="12" ry="9" fill="#1a3a8c"/>
-    <path d="M9 4 Q19 8 29 4" stroke="#f5c842" stroke-width="2" fill="none"/>
-    <path d="M8 10 Q19 14 30 10" stroke="#f5c842" stroke-width="2" fill="none"/>
-    <path d="M9 17 Q19 20 29 17" stroke="#f5c842" stroke-width="2" fill="none"/>
-    <ellipse cx="9" cy="12" rx="4" ry="5.5" fill="#142e70"/>
-    <circle cx="6.5" cy="11" r="1.5" fill="white"/><circle cx="6.9" cy="11" r="0.7" fill="#111"/>
-    <path d="M30 12 L38 6 L37 12 L38 18 Z" fill="#f5c842"/>
+
+  // 10 — Imperador (Emperor Angelfish) — azul com faixas amarelas diagonais
+  (s, f) => `<svg width="${s*2.2}" height="${s*1.4}" viewBox="0 0 44 28" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 6 Q20 0 28 3 Q32 1 35 6" fill="#1A237E" stroke="#0D1A6E" stroke-width="0.8"/>
+    <path d="M8 14 Q7 5 20 4 Q36 3 40 14 Q34 24 20 24 Q7 23 8 14Z" fill="#1565C0" stroke="#0D47A1" stroke-width="1.3"/>
+    <path d="M11 6 Q16 10 20 6 Q24 10 28 6 Q32 10 36 7" stroke="#FDD835" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M10 13 Q18 17 26 13 Q30 17 36 14" stroke="#FDD835" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M11 20 Q18 23 26 20 Q30 23 36 21" stroke="#FDD835" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M40 10 Q48 6 46 14 Q48 22 40 18Z" fill="#FDD835" stroke="#F9A825" stroke-width="0.8"/>
+    <path d="M16 15 Q11 20 13 24 Q17 22 17 17Z" fill="rgba(21,101,192,0.7)"/>
+    <ellipse cx="9" cy="13" rx="3.5" ry="5" fill="#0D47A1"/>
+    <circle cx="7.5" cy="11.5" r="3.8" fill="white" stroke="#0D1A6E" stroke-width="0.6"/>
+    <circle cx="8.3" cy="12" r="2.2" fill="#1a1a1a"/>
+    <circle cx="7.3" cy="11" r="0.9" fill="white"/>
+    <path d="M5 14 Q6.5 16.5 8.5 14" stroke="#0D1A6E" stroke-width="1.1" fill="none" stroke-linecap="round"/>
   </svg>`,
-  // 11 — Peixe-leão (espinhos longos, listras vermelho/branco)
-  (s, f) => `<svg width="${s*2.3}" height="${s*1.6}" viewBox="0 0 46 32" style="transform:scaleX(${f?-1:1})">
-    <path d="M14 8 L12 0 M18 7 L17 0 M22 7 L23 0 M26 8 L28 0" stroke="#c81e3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-    <ellipse cx="22" cy="16" rx="14" ry="8" fill="#e8e0d8"/>
-    <rect x="13" y="9" width="2.5" height="14" fill="#c81e3a"/>
-    <rect x="20" y="9" width="2.5" height="14" fill="#c81e3a"/>
-    <rect x="27" y="9" width="2.5" height="14" fill="#c81e3a"/>
-    <path d="M8 20 L4 28 M11 22 L8 30 M14 23 L12 31" stroke="#c81e3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-    <ellipse cx="10" cy="16" rx="4.5" ry="5.5" fill="#d8c8b8"/>
-    <circle cx="7" cy="15" r="1.5" fill="white"/><circle cx="7.4" cy="15" r="0.7" fill="#111"/>
-    <path d="M36 16 L46 9 L46 23 Z" fill="#e8e0d8"/>
+
+  // 11 — Peixe-leão (Lionfish) — creme com faixas vermelhas e espinhos venenosos
+  (s, f) => `<svg width="${s*2.6}" height="${s*1.9}" viewBox="0 0 52 38" style="transform:scaleX(${f?-1:1})">
+    <path d="M18 10 L16 2 M22 9 L21 1 M26 9 L27 1 M31 10 L33 2" stroke="#C62828" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M10 23 L6 31 M13 26 L10 33 M16 27 L14 34" stroke="#C62828" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M9 20 L4 22 M10 16 L5 16 M10 12 L5 10" stroke="#C62828" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M9 18 Q8 9 23 8 Q39 7 44 18 Q38 29 22 29 Q8 28 9 18Z" fill="#FAFAFA" stroke="#C62828" stroke-width="1.3"/>
+    <path d="M13 18 Q22 24 34 18 Q36 22 22 27 Q9 26 13 18Z" fill="rgba(220,180,160,0.45)"/>
+    <path d="M12 10 Q14 8 15 11 L15 27 Q13 28 12 27 Q10 24 10 18 Q10 13 12 10Z" fill="#C62828"/>
+    <path d="M22 8 Q24 7 25 9 L25 28 Q23 29 22 28 Q21 9 22 8Z" fill="#C62828"/>
+    <path d="M32 9 Q34 8 35 10 L35 27 Q33 28 32 27 Q31 9 32 9Z" fill="#C62828"/>
+    <path d="M44 14 Q50 10 49 18 Q50 26 44 22Z" fill="#FAFAFA" stroke="#C62828" stroke-width="0.9"/>
+    <circle cx="11" cy="16" r="4.2" fill="white" stroke="#C62828" stroke-width="0.6"/>
+    <circle cx="11.9" cy="16.5" r="2.5" fill="#1a1a1a"/>
+    <circle cx="10.7" cy="15.3" r="1.05" fill="white"/>
+    <path d="M6 19 Q7.5 22.5 10.5 19" stroke="#C62828" stroke-width="1.3" fill="none" stroke-linecap="round"/>
   </svg>`,
 ];
 
@@ -151,18 +221,22 @@ const FISH: DrawFn[] = [
 
 // Cavalo-marinho — fica em pé, nada verticalmente
 const drawSeahorse: DrawFn = (s, f, phase) => {
-  const sway = Math.sin(phase * 0.7) * 3;
-  return `<svg width="${s*0.9}" height="${s*2.2}" viewBox="0 0 18 44" style="transform:rotate(${sway}deg) scaleX(${f?-1:1})">
-    <path d="M9 4 Q14 8 13 16 Q13 24 10 30 Q8 36 9 42" stroke="#d4a017" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M9 4 Q4 8 5 16 Q5 24 8 30" stroke="#b8880e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-    <circle cx="9" cy="4" r="4" fill="#d4a017"/>
-    <path d="M9 0 Q14 2 13 4" stroke="#c49010" stroke-width="1" fill="none"/>
-    <circle cx="7" cy="3" r="1.2" fill="white"/><circle cx="7.4" cy="3" r="0.6" fill="#111"/>
-    <path d="M13 12 L17 10 M13 16 L17 15 M13 20 L17 20" stroke="#b8880e" stroke-width="1" fill="none"/>
-    <path d="M9 40 Q12 42 14 40 Q12 44 9 42 Z" fill="#a07800"/>
+  const sway = Math.sin(phase * 0.7) * 4;
+  return `<svg width="${s*0.95}" height="${s*2.3}" viewBox="0 0 19 46" style="transform:rotate(${sway}deg) scaleX(${f?-1:1})">
+    <path d="M9 6 Q15 9 14 17 Q14 26 11 32 Q9 38 10 44" stroke="#C8901A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M9 6 Q3 9 4 17 Q4 26 7 32" stroke="#E0AA2A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M9 6 Q15 9 14 17 Q14 26 11 32 Q9 38 10 44" stroke="rgba(255,220,120,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M7 10 Q5 9 3 11 M7 14 Q5 13 3 14 M7 18 Q5 17 3 18 M7 22 Q5 21 3 22 M8 26 Q6 25 4 26" stroke="#B07A10" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <circle cx="9" cy="5" r="4.5" fill="#D4A020" stroke="#A07010" stroke-width="1"/>
+    <ellipse cx="9" cy="3" rx="3" ry="1.5" fill="#E0B830" opacity="0.6"/>
+    <path d="M9 0 Q13 2 12 5" stroke="#C8901A" stroke-width="1.2" fill="none"/>
+    <path d="M10 44 Q13 46 15 44 Q13 48 10 46 Z" fill="#A07010"/>
+    <circle cx="6.5" cy="4.5" r="1.8" fill="white" stroke="#A07010" stroke-width="0.5"/>
+    <circle cx="7" cy="4.8" r="1.1" fill="#1a1a1a"/>
+    <circle cx="6.5" cy="4.2" r="0.45" fill="white"/>
+    <path d="M14 19 L18 18 M14 23 L18 22 M14 27 L18 27" stroke="#C8901A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
-
 // Trombeta-do-mar (Trumpetfish) — corpo finíssimo e longo
 const drawTrumpetfish: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s*0.5}" viewBox="0 0 70 10" style="transform:scaleX(${f?-1:1})">
   <path d="M2 5 Q35 3 62 5 Q65 5 70 5" stroke="#d4956a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
@@ -427,20 +501,26 @@ const drawSeaUrchin: DrawFn = (s, _f, phase) => {
 
 // Tartaruga marinha — nada graciosamente
 const drawSeaTurtle: DrawFn = (s, f, phase) => {
-  const flap = Math.sin(phase * 0.6) * 8;
-  return `<svg width="${s*2.4}" height="${s*1.8}" viewBox="0 0 48 36" style="transform:scaleX(${f?-1:1})">
-    <path d="M14 18 L6 ${12+flap} M14 18 L5 ${22-flap}" stroke="#2e7d32" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M34 18 L42 ${12+flap} M34 18 L43 ${22-flap}" stroke="#2e7d32" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <ellipse cx="24" cy="18" rx="13" ry="10" fill="#388e3c"/>
-    <path d="M13 12 Q24 8 35 12 Q35 24 24 28 Q13 24 13 12 Z" fill="none" stroke="#1b5e20" stroke-width="1" opacity="0.6"/>
-    <path d="M13 18 Q24 16 35 18" stroke="#1b5e20" stroke-width="1" fill="none" opacity="0.5"/>
-    <path d="M19 10 Q24 8 29 10 Q24 12 19 10 Z" fill="#1b5e20" opacity="0.4"/>
-    <path d="M24 28 L22 34 L26 34 Z" stroke="#2e7d32" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <ellipse cx="13" cy="18" rx="5" ry="6" fill="#2e7d32"/>
-    <circle cx="11" cy="16" r="2" fill="white"/><circle cx="11.6" cy="16" r="1" fill="#111"/>
+  const flap = Math.sin(phase * 0.6) * 9;
+  return `<svg width="${s*2.4}" height="${s*1.85}" viewBox="0 0 48 37" style="transform:scaleX(${f?-1:1})">
+    <path d="M14 18 L5 ${11+flap} M14 19 L4 ${24-flap}" stroke="#2E7D32" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+    <path d="M34 18 L43 ${11+flap} M34 19 L44 ${24-flap}" stroke="#2E7D32" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M22 29 L20 35 L24 35 L26 29" stroke="#2E7D32" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M14 14 Q24 9 34 14 Q34 27 24 31 Q14 27 14 14Z" fill="#388E3C" stroke="#1B5E20" stroke-width="1.3"/>
+    <path d="M24 10 Q34 12 34 20" stroke="#1B5E20" stroke-width="1.2" fill="none" opacity="0.6"/>
+    <path d="M14 20 Q24 22 34 20" stroke="#1B5E20" stroke-width="1" fill="none" opacity="0.5"/>
+    <path d="M19 10 Q24 9 29 10 Q24 12 19 10Z" fill="#1B5E20" opacity="0.5"/>
+    <path d="M17 14 Q20 12 23 14 Q20 16 17 14Z" fill="#1B5E20" opacity="0.35"/>
+    <path d="M25 14 Q28 12 31 14 Q28 16 25 14Z" fill="#1B5E20" opacity="0.35"/>
+    <path d="M16 20 Q19 18 22 20 Q19 22 16 20Z" fill="#1B5E20" opacity="0.3"/>
+    <path d="M26 20 Q29 18 32 20 Q29 22 26 20Z" fill="#1B5E20" opacity="0.3"/>
+    <ellipse cx="13" cy="18" rx="5.5" ry="6.5" fill="#2E7D32"/>
+    <circle cx="10.5" cy="15.5" r="2.5" fill="white" stroke="#1B5E20" stroke-width="0.5"/>
+    <circle cx="11.2" cy="16" r="1.5" fill="#1a1a1a"/>
+    <circle cx="10.6" cy="15.3" r="0.6" fill="white"/>
+    <path d="M8 20 Q9 22 12 21" stroke="#1B5E20" stroke-width="0.9" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
-
 // Cobra-do-mar — corpo longo e sinuoso
 const drawSeaSnake: DrawFn = (s, f, phase) => {
   const w1 = Math.sin(phase * 0.6) * 8;
@@ -464,19 +544,23 @@ const drawSeaSnake: DrawFn = (s, f, phase) => {
 
 // Golfinho — ágil, saltitante
 const drawDolphin: DrawFn = (s, f, phase) => {
-  const arc = Math.sin(phase * 0.5) * 5;
-  return `<svg width="${s*3}" height="${s*1.6}" viewBox="0 0 60 32" style="transform:scaleX(${f?-1:1})">
-    <path d="M4 ${18+arc} Q16 ${10+arc} 34 ${14+arc} Q50 ${12+arc} 56 ${18+arc}" fill="none" stroke="#607d8b" stroke-width="10" stroke-linecap="round"/>
-    <path d="M4 ${18+arc} Q16 ${10+arc} 34 ${14+arc} Q50 ${12+arc} 56 ${18+arc}" fill="none" stroke="#78909c" stroke-width="6" stroke-linecap="round"/>
-    <ellipse cx="34" cy="${14+arc}" rx="12" ry="4" fill="#cfd8dc" opacity="0.6"/>
-    <path d="M28 ${10+arc} L32 ${3+arc} L36 ${10+arc} Z" fill="#546e7a"/>
-    <path d="M56 ${18+arc} L62 ${14+arc} L62 ${22+arc} Z" fill="#607d8b"/>
-    <path d="M46 ${22+arc} L48 ${28+arc} L52 ${22+arc} Z" fill="#546e7a"/>
-    <ellipse cx="7" cy="${18+arc}" rx="5" ry="4.5" fill="#546e7a"/>
-    <circle cx="5" cy="${16+arc}" r="1.8" fill="white"/><circle cx="5.5" cy="${16+arc}" r="0.9" fill="#111"/>
+  const arc = Math.sin(phase * 0.5) * 3;
+  return `<svg width="${s*3}" height="${s*1.7}" viewBox="0 0 60 34" style="transform:scaleX(${f?-1:1})">
+    <path d="M5 ${18+arc} Q18 ${9+arc} 36 ${13+arc} Q52 ${11+arc} 56 ${18+arc} Q50 ${23+arc} 36 ${24+arc} Q20 ${26+arc} 8 ${22+arc}Z" fill="#5B7F96" stroke="#3D5F76" stroke-width="1.1"/>
+    <path d="M10 ${21+arc} Q30 ${27+arc} 52 ${21+arc} Q50 ${26+arc} 32 ${28+arc} Q14 ${27+arc} 10 ${21+arc}Z" fill="rgba(220,240,255,0.45)"/>
+    <ellipse cx="36" cy="${15+arc}" rx="11" ry="4" fill="#7AA0BA" opacity="0.35"/>
+    <path d="M28 ${10+arc} Q32 ${3+arc} 38 ${10+arc}Z" fill="#3D5F76" stroke="#3D5F76" stroke-width="0.8"/>
+    <path d="M56 ${18+arc} L62 ${13+arc} L62 ${23+arc}Z" fill="#3D5F76"/>
+    <path d="M46 ${24+arc} L48 ${31+arc} L53 ${24+arc}Z" fill="#3D5F76"/>
+    <path d="M14 ${22+arc} L9 ${28+arc} L18 ${23+arc}Z" fill="#4A7090"/>
+    <ellipse cx="7" cy="${18+arc}" rx="5" ry="5.5" fill="#4A7090"/>
+    <path d="M4 ${16+arc} Q6 ${12+arc} 10 ${15+arc}" stroke="#7ABFE0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="5.5" cy="${16+arc}" r="2.8" fill="white" stroke="#3D5F76" stroke-width="0.5"/>
+    <circle cx="6.2" cy="${16.5+arc}" r="1.7" fill="#1a1a1a"/>
+    <circle cx="5.5" cy="${15.7+arc}" r="0.7" fill="white"/>
+    <path d="M3 ${19+arc} Q4 ${21.5+arc} 7 ${19.5+arc}" stroke="#3D5F76" stroke-width="1" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
-
 // Dugongo / Peixe-boi — robusto, lento, herbívoro
 const drawDugong: DrawFn = (s, f, phase) => {
   const tail = Math.sin(phase * 0.3) * 3;
@@ -518,91 +602,119 @@ const drawSealion: DrawFn = (s, f, phase) => {
 
 // Água-viva — agora sim uma água-viva real (diferente do polvo)
 const drawJellyfish: DrawFn = (s, _f, phase) => {
-  const pulse = 1 + Math.sin(phase * 0.5) * 0.08;
-  const tentacles = Array.from({length:8},(_,i)=>{
-    const x = 8 + i * 4.2;
-    const w1 = Math.sin(phase + i*0.8) * 6;
-    const w2 = Math.sin(phase*0.7 + i) * 4;
-    const len = 20 + Math.sin(phase*0.3+i)*4;
-    return `<path d="M${x} 16 Q${x+w1} ${16+len*0.5} ${x+w2} ${16+len}" stroke="rgba(180,100,220,0.6)" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+  const pulse = 1 + Math.sin(phase * 0.5) * 0.1;
+  const tentacles = Array.from({length: 8}, (_, i) => {
+    const bx = 7 + i * 4.4;
+    const w1 = Math.sin(phase + i * 0.9) * 7;
+    const w2 = Math.sin(phase * 0.8 + i) * 5;
+    const len = 22 + Math.sin(phase * 0.35 + i) * 5;
+    return `<path d="M${bx} 18 Q${bx+w1} ${18+len*0.5} ${bx+w2*0.6} ${18+len}" stroke="rgba(180,100,240,0.55)" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
   }).join('');
-  return `<svg width="${s*1.8}" height="${s*2.2}" viewBox="0 0 36 44" style="transform:scale(${pulse.toFixed(3)})">
+  const oralArms = Array.from({length: 4}, (_, i) => {
+    const bx = 13 + i * 6;
+    const w = Math.sin(phase * 0.7 + i) * 4;
+    return `<path d="M${bx} 18 Q${bx+w} 26 ${bx+w*0.5} 32" stroke="rgba(210,150,255,0.75)" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*1.8}" height="${s*2.3}" viewBox="0 0 42 46" style="transform:scale(${pulse.toFixed(3)})">
     ${tentacles}
-    <path d="M4 14 Q18 2 32 14 Q32 18 18 20 Q4 18 4 14 Z" fill="rgba(180,100,220,0.75)"/>
-    <path d="M4 14 Q18 4 32 14" fill="none" stroke="rgba(220,160,255,0.5)" stroke-width="2"/>
-    <ellipse cx="18" cy="12" rx="8" ry="3" fill="rgba(220,160,255,0.3)"/>
+    ${oralArms}
+    <path d="M5 15 Q21 2 37 15 Q37 20 21 22 Q5 20 5 15Z" fill="rgba(160,80,220,0.78)" stroke="rgba(200,120,255,0.5)" stroke-width="0.8"/>
+    <path d="M5 15 Q21 4 37 15" fill="none" stroke="rgba(240,200,255,0.45)" stroke-width="3"/>
+    <ellipse cx="21" cy="10" rx="10" ry="4" fill="rgba(220,160,255,0.35)"/>
+    <path d="M10 15 Q21 12 32 15" stroke="rgba(220,160,255,0.5)" stroke-width="1.5" fill="none"/>
+    <path d="M8 14 Q21 11 34 14" stroke="rgba(255,200,255,0.3)" stroke-width="1" fill="none"/>
   </svg>`;
 };
-
 // ── Caranguejo — anda de lado na areia, corpo sempre de frente p/ câmera (não precisa flip) ──
 const drawCrab: DrawFn = (s, _flipped, phase) => {
   const legs = [0, 1, 2].map(i => {
-    const baseX = 9 - i * 5;
-    const swing = Math.sin(phase + i * 1.3) * 3;
+    const bx = 9 - i * 4.2;
+    const sw = Math.sin(phase + i * 1.4) * 3;
     return `
-      <path d="M${baseX} 11 L${baseX - 4} ${22 + swing}" stroke="#b5421f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M${40 - baseX} 11 L${40 - baseX + 4} ${22 - swing}" stroke="#b5421f" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+      <path d="M${bx} 12 Q${bx-3} ${17+sw} ${bx-4} ${22+sw}" stroke="#B5341A" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <circle cx="${bx-4}" cy="${22+sw}" r="1.2" fill="#8D1F05"/>
+      <path d="M${42-bx} 12 Q${42-bx+3} ${17-sw} ${42-bx+4} ${22-sw}" stroke="#B5341A" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <circle cx="${42-bx+4}" cy="${22-sw}" r="1.2" fill="#8D1F05"/>`;
   }).join('');
-  return `<svg width="${s * 1.55}" height="${s}" viewBox="0 0 40 26">
+  return `<svg width="${s*1.7}" height="${s*1.05}" viewBox="0 0 44 28">
     ${legs}
-    <ellipse cx="20" cy="9" rx="13" ry="7" fill="#d65a2e"/>
-    <ellipse cx="20" cy="9" rx="13" ry="7" fill="none" stroke="#a8401c" stroke-width="0.6"/>
-    <path d="M7 6 Q2 2 5 0 Q10 3 8 7 Z" fill="#d65a2e"/>
-    <path d="M33 6 Q38 2 35 0 Q30 3 32 7 Z" fill="#d65a2e"/>
-    <line x1="13" y1="2" x2="12" y2="0" stroke="#b5421f" stroke-width="1.4"/>
-    <circle cx="12" cy="0" r="1.4" fill="white"/><circle cx="12" cy="0" r="0.7" fill="#111"/>
-    <line x1="27" y1="2" x2="28" y2="0" stroke="#b5421f" stroke-width="1.4"/>
-    <circle cx="28" cy="0" r="1.4" fill="white"/><circle cx="28" cy="0" r="0.7" fill="#111"/>
+    <path d="M8 13 Q8 5 22 4 Q36 5 36 13 Q36 21 22 23 Q8 21 8 13Z" fill="#D84315" stroke="#8D1F05" stroke-width="1.3"/>
+    <path d="M10 10 Q22 7 34 10" stroke="rgba(0,0,0,0.18)" stroke-width="1.2" fill="none"/>
+    <path d="M11 14 Q22 11 33 14" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+    <path d="M12 18 Q22 22 32 18 Q30 22 22 23 Q12 22 12 18Z" fill="rgba(255,160,100,0.4)"/>
+    <path d="M8 11 Q3 5 0 9 Q2 14 0 17 Q4 14 8 15Z" fill="#C62828" stroke="#8D1F05" stroke-width="1.1"/>
+    <path d="M0 9 Q-2 7 -1 10 Q-2 13 0 12" fill="#EF5350" stroke="#8D1F05" stroke-width="0.7"/>
+    <path d="M36 11 Q41 5 44 9 Q42 14 44 17 Q40 14 36 15Z" fill="#C62828" stroke="#8D1F05" stroke-width="1.1"/>
+    <path d="M44 9 Q46 7 45 10 Q46 13 44 12" fill="#EF5350" stroke="#8D1F05" stroke-width="0.7"/>
+    <line x1="15" y1="4" x2="13" y2="0" stroke="#8D1F05" stroke-width="1.6"/>
+    <circle cx="13" cy="-0.5" r="2.4" fill="white" stroke="#8D1F05" stroke-width="0.6"/>
+    <circle cx="13.5" cy="-0.1" r="1.4" fill="#1a1a1a"/>
+    <circle cx="12.8" cy="-0.8" r="0.6" fill="white"/>
+    <line x1="29" y1="4" x2="31" y2="0" stroke="#8D1F05" stroke-width="1.6"/>
+    <circle cx="31" cy="-0.5" r="2.4" fill="white" stroke="#8D1F05" stroke-width="0.6"/>
+    <circle cx="31.5" cy="-0.1" r="1.4" fill="#1a1a1a"/>
+    <circle cx="30.8" cy="-0.8" r="0.6" fill="white"/>
+    <path d="M17 20 Q22 22.5 27 20" stroke="#8D1F05" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
 
 // ── Polvo — manto redondo e grande, tentáculos abertos em leque com ventosas; corpo simétrico, não precisa flip ──
 const drawOctopus: DrawFn = (s, _flipped, phase) => {
   const tentacles = Array.from({ length: 8 }, (_, i) => {
-    const spread = (i - 3.5) / 3.5; // -1 (esquerda) a 1 (direita) — abre o "leque"
-    const baseX = 20 + spread * 13;
-    const wave = Math.sin(phase + i * 0.9) * 5;
-    const len = 24 + Math.sin(phase * 0.3 + i) * 3;
-    const midX = baseX + spread * 5 + wave * 0.6;
-    const tipX = baseX + spread * 7 + wave * 0.3;
-    const w = 4.5;
-    const suckers = [0.45, 0.75].map(t => {
-      const sx = (baseX + (midX - baseX) * t).toFixed(1);
-      const sy = (20 + len * t).toFixed(1);
-      return `<ellipse cx="${sx}" cy="${sy}" rx="1.5" ry="1" fill="#d99ce8" opacity="0.7"/>`;
+    const spread = (i - 3.5) / 3.5;
+    const bx = 20 + spread * 14;
+    const wave1 = Math.sin(phase + i * 0.9) * 6;
+    const wave2 = Math.sin(phase * 0.8 + i * 1.2) * 4;
+    const len = 26 + Math.sin(phase * 0.3 + i) * 3;
+    const w = 5 - Math.abs(spread) * 1.5;
+    const mx = bx + spread * 4 + wave1 * 0.7;
+    const tx = bx + spread * 6 + wave2 * 0.4;
+    const suckers = [0.4, 0.68, 0.88].map(t => {
+      const sx = (bx + (mx - bx) * t + (tx - mx) * Math.max(0, t - 0.5)).toFixed(1);
+      const sy = (22 + len * t).toFixed(1);
+      return `<circle cx="${sx}" cy="${sy}" r="1.3" fill="#e0aaff" opacity="0.75"/>`;
     }).join('');
     return `
-      <path d="M${(baseX - w / 2).toFixed(1)} 19
-               Q${(midX - w / 3).toFixed(1)} ${(20 + len * 0.6).toFixed(1)} ${tipX.toFixed(1)} ${(20 + len).toFixed(1)}
-               Q${(midX + w / 3).toFixed(1)} ${(20 + len * 0.6).toFixed(1)} ${(baseX + w / 2).toFixed(1)} 19 Z"
-            fill="#9b3fb5" opacity="0.92"/>
+      <path d="M${(bx-w/2).toFixed(1)} 21
+               C${(mx-w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(mx-w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${tx.toFixed(1)} ${(22+len).toFixed(1)}
+               C${(mx+w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${(mx+w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(bx+w/2).toFixed(1)} 21Z"
+            fill="#9C27B0" stroke="#6A1B9A" stroke-width="0.5"/>
       ${suckers}`;
   }).join('');
   const pulse = 1 + Math.sin(phase * 0.5) * 0.035;
-  return `<svg width="${s * 1.6}" height="${s * 1.5}" viewBox="0 0 40 48" style="transform:scale(${pulse.toFixed(3)})">
+  return `<svg width="${s*1.7}" height="${s*1.65}" viewBox="0 0 40 52" style="transform:scale(${pulse.toFixed(3)})">
     ${tentacles}
-    <ellipse cx="20" cy="14" rx="16" ry="13" fill="#b54fd1"/>
-    <ellipse cx="20" cy="14" rx="16" ry="13" fill="none" stroke="#8a35a8" stroke-width="0.6"/>
-    <ellipse cx="20" cy="6" rx="9" ry="3" fill="#c468da" opacity="0.5"/>
-    <circle cx="14" cy="12" r="3.6" fill="white"/><circle cx="14.9" cy="12" r="1.8" fill="#111"/>
-    <circle cx="26" cy="12" r="3.6" fill="white"/><circle cx="26.9" cy="12" r="1.8" fill="#111"/>
+    <path d="M5 18 Q4 4 20 2 Q36 4 35 18 Q36 26 28 28 Q20 32 12 28 Q4 26 5 18Z" fill="#BA68C8" stroke="#6A1B9A" stroke-width="1.2"/>
+    <path d="M7 12 Q20 8 33 12" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+    <ellipse cx="20" cy="6" rx="8" ry="3" fill="rgba(206,147,216,0.4)"/>
+    <circle cx="13" cy="15" r="4.2" fill="white" stroke="#6A1B9A" stroke-width="0.6"/>
+    <circle cx="14" cy="15.6" r="2.5" fill="#1a1a1a"/>
+    <circle cx="12.8" cy="14.5" r="1.05" fill="white"/>
+    <circle cx="27" cy="15" r="4.2" fill="white" stroke="#6A1B9A" stroke-width="0.6"/>
+    <circle cx="28" cy="15.6" r="2.5" fill="#1a1a1a"/>
+    <circle cx="26.8" cy="14.5" r="1.05" fill="white"/>
+    <path d="M16 25 Q20 27 24 25" stroke="#6A1B9A" stroke-width="1" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
 
 // ── Tubarão — grande, fluido, boca mostrando dentes ──────────────────────────
-const drawShark: DrawFn = (s, f, _p) => `<svg width="${s*3.2}" height="${s*1.3}" viewBox="0 0 64 26" style="transform:scaleX(${f?-1:1})">
-  <path d="M2 13 Q8 6 20 8 Q36 5 54 13 Q48 16 36 17 Q20 18 8 16 Z" fill="#4a6fa5"/>
-  <path d="M2 13 Q8 6 20 8 Q36 5 54 13 Q48 16 36 17 Q20 18 8 16 Z" fill="none" stroke="#2d4f7a" stroke-width="0.5"/>
-  <path d="M20 8 L26 0 L30 8 Z" fill="#3d5f8a"/>
-  <path d="M8 16 L4 22 L14 17 Z" fill="#3d5f8a"/>
-  <path d="M54 13 L64 10 L64 16 Z" fill="#4a6fa5"/>
-  <path d="M36 17 L38 22 L42 17 Z" fill="#3d5f8a"/>
-  <ellipse cx="7" cy="12" rx="3" ry="4" fill="#3d5f8a"/>
-  <path d="M4 14 Q6 17 10 15" stroke="white" stroke-width="0.8" fill="none"/>
-  <line x1="5" y1="15" x2="7" y2="16" stroke="white" stroke-width="0.5"/>
-  <line x1="7" y1="15.5" x2="9" y2="16" stroke="white" stroke-width="0.5"/>
-  <circle cx="5" cy="11" r="1.3" fill="white"/><circle cx="5.4" cy="11" r="0.6" fill="#111"/>
-  <rect x="7" y="11" width="6" height="1" rx="0.5" fill="rgba(255,255,255,0.15)"/>
+const drawShark: DrawFn = (s, f, _p) => `<svg width="${s*3.2}" height="${s*1.4}" viewBox="0 0 64 28" style="transform:scaleX(${f?-1:1})">
+  <path d="M4 14 Q6 5 22 7 Q40 4 56 14 Q48 18 32 19 Q16 20 8 18 Z" fill="#5D7FA8" stroke="#3A5A82" stroke-width="1"/>
+  <path d="M10 17 Q32 22 52 17 Q48 21 32 22 Q12 22 10 17Z" fill="#ECEFF1" opacity="0.85"/>
+  <path d="M22 7 L28 0 L34 7Z" fill="#4A6A90" stroke="#3A5A82" stroke-width="0.8"/>
+  <path d="M8 18 L4 25 L16 19Z" fill="#4A6A90" stroke="#3A5A82" stroke-width="0.7"/>
+  <path d="M56 14 L64 10 L64 18Z" fill="#5D7FA8" stroke="#3A5A82" stroke-width="0.8"/>
+  <path d="M38 19 L40 25 L45 19Z" fill="#4A6A90" stroke="#3A5A82" stroke-width="0.7"/>
+  <path d="M16 18 L14 22 L20 19Z" fill="#4A6A90"/>
+  <path d="M15 8 Q17 12 15 16" stroke="rgba(0,0,0,0.12)" stroke-width="1.5" fill="none"/>
+  <path d="M20 7 Q22 11 20 15" stroke="rgba(0,0,0,0.1)" stroke-width="1.2" fill="none"/>
+  <ellipse cx="7" cy="13" rx="3.5" ry="4.5" fill="#4A6A90"/>
+  <path d="M4 15 Q5 18 8 17 Q6 20 5 18" stroke="white" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <line x1="5" y1="17" x2="6.5" y2="18.5" stroke="white" stroke-width="0.8"/>
+  <line x1="6.8" y1="17.5" x2="8" y2="18.8" stroke="white" stroke-width="0.8"/>
+  <circle cx="5.5" cy="11" r="2.2" fill="white" stroke="#3A5A82" stroke-width="0.5"/>
+  <circle cx="6.1" cy="11.4" r="1.3" fill="#111"/>
+  <circle cx="5.4" cy="10.6" r="0.6" fill="white"/>
 </svg>`
 
 // ── Tubarão-martelo ───────────────────────────────────────────────────────────
@@ -618,32 +730,39 @@ const drawHammerhead: DrawFn = (s, f, _p) => `<svg width="${s*3}" height="${s*1.
 </svg>`;
 
 // ── Orca ─────────────────────────────────────────────────────────────────────
-const drawOrca: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s*1.8}" viewBox="0 0 70 36" style="transform:scaleX(${f?-1:1})">
-  <path d="M4 18 Q14 8 32 10 Q52 8 64 18 Q58 22 40 24 Q22 25 8 22 Z" fill="#111"/>
-  <ellipse cx="24" cy="18" rx="14" ry="7" fill="white" opacity="0.9"/>
-  <ellipse cx="8" cy="14" rx="4" ry="5" fill="white" opacity="0.8"/>
-  <path d="M30 10 L36 0 L42 10 Z" fill="#111"/>
-  <path d="M8 22 L4 30 L16 23 Z" fill="#111"/>
-  <path d="M64 18 L70 14 L70 22 Z" fill="#111"/>
-  <path d="M46 24 L48 30 L52 24 Z" fill="#111"/>
-  <circle cx="8" cy="11" r="2" fill="white"/><circle cx="8.6" cy="11" r="1" fill="#111"/>
-  <ellipse cx="18" cy="8" rx="3" ry="1.5" fill="#333" opacity="0.4"/>
+const drawOrca: DrawFn = (s, f, _p) => `<svg width="${s*3.5}" height="${s*1.9}" viewBox="0 0 70 38" style="transform:scaleX(${f?-1:1})">
+  <path d="M5 19 Q14 8 34 10 Q54 8 64 19 Q56 24 40 26 Q22 27 8 23Z" fill="#1A1A1A" stroke="#111" stroke-width="1"/>
+  <path d="M12 19 Q28 25 52 20 Q48 26 34 27 Q16 26 12 19Z" fill="#FAFAFA"/>
+  <ellipse cx="10" cy="15" rx="5" ry="6.5" fill="#FAFAFA"/>
+  <ellipse cx="32" cy="20" rx="9" ry="3.5" fill="#424242" opacity="0.45"/>
+  <path d="M32 10 L38 0 L44 10Z" fill="#1A1A1A" stroke="#111" stroke-width="1"/>
+  <path d="M8 23 L4 32 L18 24Z" fill="#1A1A1A"/>
+  <path d="M64 19 L70 14 L70 24Z" fill="#1A1A1A"/>
+  <path d="M46 26 L49 34 L55 26Z" fill="#1A1A1A"/>
+  <circle cx="9" cy="12" r="3.2" fill="white"/>
+  <circle cx="9.8" cy="12.5" r="1.9" fill="#111"/>
+  <circle cx="9.1" cy="11.7" r="0.8" fill="white"/>
+  <path d="M6 20 Q8 23 14 21" stroke="#555" stroke-width="0.9" fill="none"/>
 </svg>`;
 
 // ── Baleia-azul ───────────────────────────────────────────────────────────────
 const drawWhale: DrawFn = (s, f, phase) => {
   const tailWag = Math.sin(phase * 0.4) * 4;
-  return `<svg width="${s*5}" height="${s*2}" viewBox="0 0 100 40" style="transform:scaleX(${f?-1:1})">
-    <path d="M6 20 Q20 10 50 12 Q75 10 90 18 Q80 24 55 26 Q25 28 10 24 Z" fill="#2a6496"/>
-    <path d="M6 20 Q20 10 50 12 Q75 10 90 18 Q80 24 55 26 Q25 28 10 24 Z" fill="none" stroke="#1a4f7a" stroke-width="0.5"/>
-    <ellipse cx="50" cy="18" rx="25" ry="5" fill="#3a7ab5" opacity="0.3"/>
-    <path d="M90 18 L100 ${14+tailWag} L100 ${22+tailWag} Z" fill="#1e5a8a"/>
-    <path d="M60 26 L65 34 L72 26 Z" fill="#1e5a8a"/>
-    <path d="M10 24 L5 30 L18 25 Z" fill="#1e5a8a"/>
-    <path d="M8 16 Q12 10 18 14" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
-    <circle cx="8" cy="14" r="2.5" fill="#1e5a8a"/>
-    <circle cx="7" cy="13" r="1.5" fill="white"/><circle cx="7.5" cy="13" r="0.7" fill="#111"/>
-    <ellipse cx="25" cy="10" rx="4" ry="1.5" fill="rgba(255,255,255,0.15)"/>
+  return `<svg width="${s*5}" height="${s*2.2}" viewBox="0 0 100 44" style="transform:scaleX(${f?-1:1})">
+    <path d="M6 22 Q18 10 50 12 Q78 10 92 22 Q82 28 58 30 Q28 32 10 28Z" fill="#1E5D8A" stroke="#144070" stroke-width="1.2"/>
+    <path d="M10 24 Q40 32 86 24 Q80 32 50 34 Q20 32 10 24Z" fill="rgba(200,230,255,0.45)"/>
+    <ellipse cx="48" cy="16" rx="22" ry="5" fill="#2D7AB0" opacity="0.35"/>
+    <path d="M30 12 Q38 8 46 12" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M92 20 L100 ${15+tailWag} Q102 ${19+tailWag} 100 ${23+tailWag} L92 24Z" fill="#144070" stroke="#144070" stroke-width="0.5"/>
+    <path d="M100 ${15+tailWag} Q106 ${12+tailWag} 104 ${17+tailWag} Q106 ${22+tailWag} 100 ${23+tailWag}" fill="#1E5D8A"/>
+    <path d="M62 30 L66 38 L74 30Z" fill="#144070"/>
+    <path d="M10 28 L4 34 L18 30Z" fill="#144070"/>
+    <ellipse cx="9" cy="14" rx="3.5" ry="5" fill="#144070"/>
+    <path d="M8 16 Q10 10 16 13" stroke="rgba(255,255,255,0.35)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="7.5" cy="13" r="3" fill="white" stroke="#144070" stroke-width="0.5"/>
+    <circle cx="8.3" cy="13.5" r="1.8" fill="#1a1a1a"/>
+    <circle cx="7.6" cy="12.7" r="0.75" fill="white"/>
+    <ellipse cx="26" cy="10" rx="5" ry="2" fill="rgba(255,255,255,0.18)"/>
   </svg>`;
 };
 
@@ -665,17 +784,23 @@ const drawHumpback: DrawFn = (s, f, phase) => {
 
 // ── Manta ─────────────────────────────────────────────────────────────────────
 const drawManta: DrawFn = (s, f, phase) => {
-  const flap = Math.sin(phase * 0.6) * 4;
-  return `<svg width="${s*3.5}" height="${s*2}" viewBox="0 0 70 40" style="transform:scaleX(${f?-1:1})">
-    <path d="M35 20 Q10 ${10+flap} 0 22 Q10 ${28-flap} 35 22 Z" fill="#2c3e50"/>
-    <path d="M35 20 Q60 ${10+flap} 70 22 Q60 ${28-flap} 35 22 Z" fill="#2c3e50"/>
-    <ellipse cx="35" cy="21" rx="10" ry="7" fill="#34495e"/>
-    <path d="M35 22 L42 40" stroke="#2c3e50" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="30" cy="19" rx="3" ry="2" fill="#1a252f" opacity="0.7"/>
-    <path d="M28 17 Q30 15 34 16" stroke="#667" stroke-width="1" fill="none"/>
-    <circle cx="29" cy="18" r="1.2" fill="white"/><circle cx="29.4" cy="18" r="0.6" fill="#111"/>
-    <circle cx="41" cy="18" r="1.2" fill="white"/><circle cx="41.4" cy="18" r="0.6" fill="#111"/>
-    <ellipse cx="35" cy="24" rx="6" ry="2" fill="rgba(200,220,255,0.12)"/>
+  const flap = Math.sin(phase * 0.6) * 5;
+  return `<svg width="${s*3.5}" height="${s*2.1}" viewBox="0 0 70 42" style="transform:scaleX(${f?-1:1})">
+    <path d="M35 21 Q18 ${12+flap} 4 23 Q14 ${31-flap} 35 23Z" fill="#1B2A3A" stroke="#111828" stroke-width="0.8"/>
+    <path d="M35 21 Q52 ${12+flap} 66 23 Q56 ${31-flap} 35 23Z" fill="#1B2A3A" stroke="#111828" stroke-width="0.8"/>
+    <path d="M35 21 Q18 ${13+flap} 4 23 Q14 ${30-flap} 35 22.5Z" fill="#2C4A66" opacity="0.4"/>
+    <path d="M35 21 Q52 ${13+flap} 66 23 Q56 ${30-flap} 35 22.5Z" fill="#2C4A66" opacity="0.4"/>
+    <path d="M26 21 Q35 17 44 21 Q44 26 35 27 Q26 26 26 21Z" fill="#253545"/>
+    <path d="M35 23 Q38 32 40 42" stroke="#1B2A3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="30" cy="20" rx="3.5" ry="2.5" fill="#111" opacity="0.55"/>
+    <ellipse cx="40" cy="20" rx="3.5" ry="2.5" fill="#111" opacity="0.55"/>
+    <path d="M28 18 Q30 15 34 16" stroke="#4A6A8A" stroke-width="1.2" fill="none"/>
+    <path d="M36 16 Q40 15 42 18" stroke="#4A6A8A" stroke-width="1.2" fill="none"/>
+    <circle cx="29" cy="19" r="1.5" fill="white" stroke="#111" stroke-width="0.4"/>
+    <circle cx="29.6" cy="19.4" r="0.9" fill="#1a1a1a"/>
+    <circle cx="41" cy="19" r="1.5" fill="white" stroke="#111" stroke-width="0.4"/>
+    <circle cx="41.6" cy="19.4" r="0.9" fill="#1a1a1a"/>
+    <ellipse cx="35" cy="25" rx="5" ry="1.5" fill="rgba(200,230,255,0.15)"/>
   </svg>`;
 };
 
