@@ -1576,9 +1576,8 @@ export default function AquariumScene() {
         f.el.style.top  = f.y + 'px';
 
         // ── Badge de nível (XP) acima do peixe ───────────────────────────────
-        const userData = xpMap[f.username];
-        const level = userData?.level ?? 1;
-        const xp    = userData?.xp    ?? 0;
+      const userData = xpMap[f.username];
+      const level = userData?.level ?? 1;
         // Cor da borda por nível: cinza < 5, verde < 10, azul < 20, roxo < 30, dourado 30+
         const lvlColor = level >= 30 ? '#FFD700' : level >= 20 ? '#A855F7' : level >= 10 ? '#3B82F6' : level >= 5 ? '#22C55E' : '#9CA3AF';
         // Anel ao redor do peixe para lendários de alto nível
