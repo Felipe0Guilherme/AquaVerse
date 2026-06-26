@@ -978,6 +978,75 @@ export default function AquariumScene() {
   const [chatInput, setChatInput] = useState('');
   const [sending, setSending] = useState(false);
 
+  // ── Gamificação ───────────────────────────────────────────────
+  // XP / nível por usuário
+  const [xpMap, setXpMap]       = useState<Record<string, {xp:number; level:number}>>({});
+  // Alimentação
+  const [feeding, setFeeding]   = useState(false);
+  const foodRef                  = useRef<{x:number;y:number;until:number}|null>(null);
+  // Humor do aquário
+  const [msgCount, setMsgCount] = useState(0);
+  const msgCountRef              = useRef(0);
+  // Toast de avistamento
+  const [sighting, setSighting] = useState<string|null>(null);
+  const seenLegendaryRef        = useRef<Set<string>>(new Set());
+
+  const LEGENDARY_KINDS: CreatureKind[] = ['whale','whaleshark','krill','seaslug'];
+
+  // Humor calculado a partir de usuários online e mensagens recentes
+  const aquariumMood = (() => {
+    const u = users.length;
+    const m = msgCount;
+    if (u === 0)   return { emoji:'🌊', label:'Aquário vazio',     color:'rgba(100,150,200,0.7)' };
+    if (u >= 10 && m >= 8)  return { emoji:'🎉', label:'Festa no recife!', color:'rgba(250,200,50,0.9)' };
+    if (m >= 5)             return { emoji:'🌊', label:'Aquário agitado',  color:'rgba(34,211,238,0.85)' };
+    if (u >= 5)             return { emoji:'🐠', label:'Aquário cheio',    color:'rgba(100,220,180,0.85)' };
+    if (m === 0 && u <= 2)  return { emoji:'😴', label:'Aquário quieto',   color:'rgba(150,180,220,0.65)' };
+    return                         { emoji:'🐡', label:'Aquário tranquilo',color:'rgba(120,200,160,0.75)' };
+  })();
+
+  // Busca XP/nível de todos os usuários
+  const fetchXp = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{success:boolean;data:Record<string,{xp:number;level:number}>}>('/gamification/xp');
+      setXpMap(data.data ?? {});
+      // Detecta lendários recém-avistados
+      for (const f of fishList.current) {
+        if (LEGENDARY_KINDS.includes(f.kind) && !seenLegendaryRef.current.has(f.username)) {
+          seenLegendaryRef.current.add(f.username);
+          const label = f.kind === 'whale' ? 'Baleia-azul' : f.kind === 'whaleshark' ? 'Tubarão-baleia' : f.kind === 'krill' ? 'Krill' : 'Lesma-do-mar';
+          setSighting(`🌟 Uma ${label} foi avistada! É de @${f.username}`);
+          setTimeout(() => setSighting(null), 5000);
+        }
+      }
+    } catch { /* silently ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchXp();
+    const interval = setInterval(fetchXp, 10_000);
+    return () => clearInterval(interval);
+  }, [fetchXp]);
+
+  // Alimentação: lança comida e concede XP
+  const handleFeed = async () => {
+    if (feeding || !user || !wrapRef.current) return;
+    setFeeding(true);
+    const rect  = wrapRef.current.getBoundingClientRect();
+    const foodX = 60 + Math.random() * (rect.width - 120);
+    const foodY = rect.height * 0.4 + Math.random() * (rect.height * 0.25);
+    foodRef.current = { x: foodX, y: foodY, until: Date.now() + 4000 };
+    try {
+      await apiClient.post('/gamification/feed');
+      await fetchXp();
+    } catch { /* ignore */ }
+    setTimeout(() => { foodRef.current = null; setFeeding(false); }, 4200);
+  };
+
+  // Integra alimentação no loop — peixes nadam em direção à comida
+  const foodRefStable = foodRef;
+
+
   // ── Admin: roleta de criaturas ────────────────────────────────
   const ADMIN_USERNAME = 'Sonim';
   const [shuffleSeed, setShuffleSeed] = useState(0);
@@ -1021,7 +1090,12 @@ export default function AquariumScene() {
         data: { username: string; text: string; created_at: string }[];
       }>('/messages/recent');
 
-      for (const m of data.data ?? []) {
+      const msgs = data.data ?? [];
+      // Conta mensagens recentes pra calcular humor do aquário
+      msgCountRef.current = msgs.length;
+      setMsgCount(msgs.length);
+
+      for (const m of msgs) {
         const f = fishList.current.find(fs => fs.username === m.username);
         if (!f) continue;
         const ts = new Date(m.created_at).getTime();
@@ -1483,9 +1557,43 @@ export default function AquariumScene() {
           }
         }
 
+        // ── Atração pela comida ───────────────────────────────────────────────
+        const food = foodRefStable.current;
+        if (food && food.until > now && f.kind !== 'crab' && !isMyFish) {
+          const cx = f.x + fw / 2, cy = f.y + fh / 2;
+          const dx = food.x - cx, dy = food.y - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const pull = Math.min(dist * 0.06, 3.5);
+          f.vx += (dx / dist) * pull * 0.22;
+          f.vy += (dy / dist) * pull * 0.22;
+          const maxV = 3.5;
+          const v = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+          if (v > maxV) { f.vx = (f.vx / v) * maxV; f.vy = (f.vy / v) * maxV; }
+          if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
+        }
+
         f.el.style.left = f.x + 'px';
         f.el.style.top  = f.y + 'px';
-        f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble);
+
+        // ── Badge de nível (XP) acima do peixe ───────────────────────────────
+        const userData = xpMap[f.username];
+        const level = userData?.level ?? 1;
+        const xp    = userData?.xp    ?? 0;
+        // Cor da borda por nível: cinza < 5, verde < 10, azul < 20, roxo < 30, dourado 30+
+        const lvlColor = level >= 30 ? '#FFD700' : level >= 20 ? '#A855F7' : level >= 10 ? '#3B82F6' : level >= 5 ? '#22C55E' : '#9CA3AF';
+        // Anel ao redor do peixe para lendários de alto nível
+        const glowRing = LEGENDARY_KINDS.includes(f.kind) && level >= 5
+          ? `box-shadow:0 0 ${6+level/2}px ${lvlColor}, 0 0 ${12+level}px rgba(${lvlColor},0.3);`
+          : '';
+        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;${glowRing}`;
+
+        f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble)
+          + (level > 1 ? `<div style="
+              position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+              background:rgba(8,20,36,0.88);border:1px solid ${lvlColor};
+              color:${lvlColor};font-size:9px;font-weight:700;font-family:monospace;
+              padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;
+              letter-spacing:0.5px;">Lv${level}</div>` : '');
 
         // Balão de chat: segue o peixe enquanto a mensagem estiver "viva" (25s)
         if (f.messageUntil > now) {
@@ -1757,12 +1865,65 @@ export default function AquariumScene() {
           }
         `}</style>
 
-        {/* Loading */}
-        {loading && (
+        {/* ── Humor do aquário ── */}
+        <div style={{
+          position:'absolute', top:'12px', left:'14px', zIndex:20,
+          display:'flex', alignItems:'center', gap:'6px',
+          background:'rgba(8,20,36,0.75)', border:`1px solid ${aquariumMood.color}`,
+          borderRadius:'20px', padding:'4px 12px', pointerEvents:'none',
+          boxShadow:`0 0 12px rgba(0,0,0,0.3)`,
+        }}>
+          <span style={{fontSize:'15px'}}>{aquariumMood.emoji}</span>
+          <span style={{fontSize:'11px', fontFamily:'monospace', color: aquariumMood.color, fontWeight:600}}>
+            {aquariumMood.label}
+          </span>
+        </div>
+
+        {/* ── Toast de avistamento lendário ── */}
+        {sighting && (
+          <div style={{
+            position:'absolute', top:'50px', left:'50%', transform:'translateX(-50%)',
+            zIndex:25, background:'rgba(8,20,36,0.95)',
+            border:'1px solid #FFD700', borderRadius:'12px',
+            padding:'8px 18px', color:'#FFD700', fontSize:'13px',
+            fontFamily:'monospace', fontWeight:700, whiteSpace:'nowrap',
+            boxShadow:'0 0 24px rgba(255,215,0,0.4)',
+            animation:'fadeInOut 5s ease forwards',
+          }}>
+            {sighting}
+          </div>
+        )}
+
+        {/* ── Comida animada ── */}
+        {feeding && foodRef.current && (
+          <>
+            {Array.from({length:8},(_,i)=>(
+              <div key={i} style={{
+                position:'absolute',
+                left: `${foodRef.current!.x + (i-3.5)*14}px`,
+                top: `${foodRef.current!.y - 20}px`,
+                fontSize: `${10+i%3*4}px`,
+                zIndex:18, pointerEvents:'none',
+                animation:`foodfall ${0.6+i*0.15}s ease-in ${i*0.08}s forwards`,
+              }}>
+                {['🦐','🐟','🍤','🦐','🐠','🍤','🦐','🐟'][i]}
+              </div>
+            ))}
+            <div style={{
+              position:'absolute',
+              left:`${foodRef.current.x - 24}px`,
+              top:`${foodRef.current.y - 8}px`,
+              fontSize:'28px', zIndex:18, pointerEvents:'none',
+              animation:'foodpulse 0.6s ease-in-out infinite alternate',
+            }}>🍤</div>
+          </>
+        )}
+
+
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
             <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        )}
+        
 
         {/* Aquário vazio */}
         {!loading && users.length === 0 && (
@@ -1788,10 +1949,30 @@ export default function AquariumScene() {
 
       {/* Chat — só aparece pra quem está logado */}
       {user && (
-        <form
-          onSubmit={handleSendMessage}
-          className="w-full max-w-5xl mt-3 flex gap-2"
-        >
+        <div className="w-full max-w-5xl mt-3 flex flex-col gap-2">
+
+          {/* Barra de XP / nível do usuário logado */}
+          {(() => {
+            const me = xpMap[user.username];
+            if (!me) return null;
+            const xpInLevel = me.xp % 100;
+            const lvlColor = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
+            return (
+              <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                <span style={{ fontSize:'11px', fontFamily:'monospace', color: lvlColor, minWidth:'52px', fontWeight:700 }}>
+                  Lv {me.level}
+                </span>
+                <div style={{ flex:1, height:'6px', background:'rgba(255,255,255,0.08)', borderRadius:'4px', overflow:'hidden' }}>
+                  <div style={{ height:'100%', width:`${xpInLevel}%`, background:`linear-gradient(90deg, ${lvlColor}, #fff)`, borderRadius:'4px', transition:'width 0.5s ease' }}/>
+                </div>
+                <span style={{ fontSize:'10px', fontFamily:'monospace', color:'rgba(150,180,220,0.7)', minWidth:'68px', textAlign:'right' }}>
+                  {me.xp} XP total
+                </span>
+              </div>
+            );
+          })()}
+
+          <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             type="text"
             value={chatInput}
@@ -1820,6 +2001,23 @@ export default function AquariumScene() {
             Enviar
           </button>
 
+          {/* Botão alimentar */}
+          <button
+            type="button"
+            onClick={handleFeed}
+            disabled={feeding}
+            title="Alimentar os peixes (+25 XP)"
+            className="px-3 py-2 text-lg rounded-lg transition"
+            style={{
+              background: feeding ? 'rgba(255,180,60,0.25)' : 'rgba(255,160,40,0.18)',
+              border: `1px solid rgba(255,180,60,${feeding?0.2:0.45})`,
+              cursor: feeding ? 'default' : 'pointer',
+              animation: feeding ? 'spin 1s linear infinite' : 'none',
+            }}
+          >
+            🍤
+          </button>
+
           {/* Botão de roleta — visível só pro admin (Sonim) */}
           {user.username === ADMIN_USERNAME && (
             <button
@@ -1829,14 +2027,10 @@ export default function AquariumScene() {
               title="Rolar a roleta — todos os peixes trocam de espécie"
               className="px-3 py-2 text-sm font-bold rounded-lg transition"
               style={{
-                background: reshuffling
-                  ? 'rgba(251,191,36,0.3)'
-                  : 'linear-gradient(135deg,#f59e0b,#ef4444)',
-                color: '#fff',
-                cursor: reshuffling ? 'default' : 'pointer',
+                background: reshuffling ? 'rgba(251,191,36,0.3)' : 'linear-gradient(135deg,#f59e0b,#ef4444)',
+                color: '#fff', cursor: reshuffling ? 'default' : 'pointer',
                 boxShadow: reshuffling ? 'none' : '0 0 12px rgba(245,158,11,0.5)',
-                fontSize: '18px',
-                lineHeight: 1,
+                fontSize: '18px', lineHeight: 1,
                 animation: reshuffling ? 'spin 0.6s linear infinite' : 'none',
               }}
             >
@@ -1844,6 +2038,7 @@ export default function AquariumScene() {
             </button>
           )}
         </form>
+        </div>
       )}
 
       {/* Rodapé */}
@@ -1860,6 +2055,21 @@ export default function AquariumScene() {
           0%   { transform: translateY(0) translateX(0); opacity: 0.7; }
           50%  { transform: translateY(-180px) translateX(6px); opacity: 0.3; }
           100% { transform: translateY(-420px) translateX(-4px); opacity: 0; }
+        }
+        @keyframes foodfall {
+          0%   { transform: translateY(-30px) scale(0.6); opacity: 0; }
+          30%  { opacity: 1; }
+          100% { transform: translateY(30px) scale(1.1); opacity: 0.85; }
+        }
+        @keyframes foodpulse {
+          0%   { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,180,60,0.7)); }
+          100% { transform: scale(1.2); filter: drop-shadow(0 0 10px rgba(255,180,60,0.9)); }
+        }
+        @keyframes fadeInOut {
+          0%   { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+          12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+          75%  { opacity: 1; }
+          100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
         }
       `}</style>
     </div>
