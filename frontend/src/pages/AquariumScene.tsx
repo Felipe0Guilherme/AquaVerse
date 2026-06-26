@@ -1572,8 +1572,6 @@ export default function AquariumScene() {
           if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
         }
 
-        f.el.style.left = f.x + 'px';
-        f.el.style.top  = f.y + 'px';
 
         // ── Badge de nível (XP) acima do peixe ───────────────────────────────
       const userData = xpMap[f.username];
@@ -1584,7 +1582,7 @@ export default function AquariumScene() {
         const glowRing = LEGENDARY_KINDS.includes(f.kind) && level >= 5
           ? `box-shadow:0 0 ${6+level/2}px ${lvlColor}, 0 0 ${12+level}px rgba(${lvlColor},0.3);`
           : '';
-        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;${glowRing}`;
+        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;left:${f.x}px;top:${f.y}px;${glowRing}`;
 
         f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble)
           + (level > 1 ? `<div style="
