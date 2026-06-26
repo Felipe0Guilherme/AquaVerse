@@ -1593,80 +1593,169 @@ export default function AquariumScene() {
         onMouseLeave={() => { mouseRef.current = null; }}
         style={{
           height: '520px',
-          background: 'linear-gradient(180deg, #0a2a4a 0%, #0d3b6e 35%, #0a4f7a 65%, #0d5c8a 100%)',
+          background: 'linear-gradient(180deg, #020d1a 0%, #041628 18%, #062240 38%, #083060 58%, #0a3f78 78%, #0c4888 100%)',
           borderRadius: '20px',
-          border: '1px solid rgba(34,211,238,0.12)',
-          boxShadow: '0 0 60px rgba(13,59,110,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+          border: '1px solid rgba(34,211,238,0.15)',
+          boxShadow: '0 0 80px rgba(8,40,100,0.7), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 120px rgba(0,0,0,0.4)',
+          overflow: 'hidden',
         }}
       >
-        {/* Raios de luz */}
-        {[15, 35, 55, 75, 90].map((x, i) => (
+        {/* ── Gradiente de profundidade (camadas sobrepostas) ── */}
+        <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(20,80,160,0.35) 0%, transparent 70%)', pointerEvents:'none', zIndex:1 }}/>
+        <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 60% 40% at 20% 30%, rgba(0,60,120,0.2) 0%, transparent 65%)', pointerEvents:'none', zIndex:1 }}/>
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(0deg, rgba(0,0,0,0.45) 0%, transparent 45%)', pointerEvents:'none', zIndex:1 }}/>
+
+        {/* ── Raios de luz volumétricos ── */}
+        {[8,22,38,54,68,82].map((x,i) => (
           <div key={i} style={{
-            position: 'absolute',
-            top: 0, left: `${x}%`,
-            width: '60px',
-            height: '180px',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)',
-            transform: `skewX(${-10 + i * 5}deg)`,
-            pointerEvents: 'none',
-            zIndex: 1,
-          }} />
+            position:'absolute', top:0, left:`${x}%`,
+            width:`${30+i*8}px`, height:'65%',
+            background:`linear-gradient(180deg, rgba(120,200,255,${0.03+i%3*0.012}) 0%, transparent 100%)`,
+            transform:`skewX(${-18+i*7}deg)`,
+            transformOrigin:'top center',
+            pointerEvents:'none', zIndex:2,
+            animation:`lightray ${6+i*1.3}s ease-in-out ${i*0.8}s infinite alternate`,
+          }}/>
         ))}
 
-        {/* Plantas / algas */}
-        {[5, 14, 25, 38, 50, 63, 74, 84, 93].map((x, i) => (
-          <div key={i} style={{ position: 'absolute', bottom: '56px', left: `${x}%`, zIndex: 3 }}>
-            {[0, 1, 2].slice(0, 1 + i % 3).map(j => (
-              <div key={j} style={{
-                position: 'absolute',
-                bottom: 0,
-                left: `${j * 7}px`,
-                width: '5px',
-                height: `${28 + ((i + j) * 11) % 35}px`,
-                borderRadius: '3px 3px 0 0',
-                background: i % 3 === 0 ? '#1a6b38' : i % 3 === 1 ? '#2d8c4e' : '#0f5028',
-                transformOrigin: 'bottom center',
-                animation: `sway ${2.5 + j * 0.4}s ease-in-out ${j * 0.3 + i * 0.1}s infinite`,
-              }} />
+        {/* ── Partículas flutuantes (plâncton) ── */}
+        {Array.from({length:22},(_,i)=>(
+          <div key={i} style={{
+            position:'absolute',
+            width:`${1+i%3}px`, height:`${1+i%3}px`,
+            borderRadius:'50%',
+            background:`rgba(${180+i%60},${220+i%35},255,${0.15+i%4*0.06})`,
+            left:`${2+i*4.4}%`,
+            top:`${8+i%5*14}%`,
+            pointerEvents:'none', zIndex:2,
+            animation:`plankton ${8+i*0.9}s ease-in-out ${i*0.55}s infinite alternate`,
+          }}/>
+        ))}
+
+        {/* ── Bolhas animadas ── */}
+        {Array.from({length:16},(_,i)=>(
+          <div key={i} style={{
+            position:'absolute',
+            width:`${2+(i%5)*2.5}px`, height:`${2+(i%5)*2.5}px`,
+            borderRadius:'50%',
+            border:`1px solid rgba(180,230,255,${0.25+i%3*0.08})`,
+            background:`radial-gradient(circle at 35% 35%, rgba(255,255,255,0.18), rgba(255,255,255,0.02))`,
+            left:`${3+i*6}%`,
+            bottom:`${62+(i%5)*30}px`,
+            pointerEvents:'none', zIndex:3,
+            animation:`rise ${5+i*0.7}s ease-in ${i*0.9}s infinite`,
+          }}/>
+        ))}
+
+        {/* ── Pedras no fundo ── */}
+        {[4,14,28,42,57,70,82,92].map((x,i)=>(
+          <div key={i} style={{
+            position:'absolute',
+            bottom:`${52+(i%3)*6}px`,
+            left:`${x}%`,
+            width:`${18+i%4*12}px`, height:`${12+i%3*8}px`,
+            borderRadius:`${5+i%3*3}px ${8+i%4*3}px ${3+i%2*4}px ${6+i%3*3}px`,
+            background:`linear-gradient(145deg, #4a5568 0%, #2d3748 50%, #1a202c 100%)`,
+            boxShadow:`0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)`,
+            zIndex:3,
+          }}/>
+        ))}
+
+        {/* ── Corais SVG ── */}
+        {/* Coral ramo (branch coral) */}
+        {[6,34,66,88].map((x,i)=>(
+          <svg key={i} style={{position:'absolute',bottom:'52px',left:`${x}%`,zIndex:4,pointerEvents:'none'}}
+               width={28+i%2*14} height={50+i%3*20} viewBox="0 0 28 60">
+            <path d="M14 60 Q13 48 12 36 Q8 28 4 18 Q2 10 6 4" stroke={i%2?'#C2185B':'#D32F2F'} strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+            <path d="M14 60 Q15 46 16 32 Q20 24 24 14 Q26 8 22 2" stroke={i%2?'#E91E63':'#F44336'} strokeWidth="3" fill="none" strokeLinecap="round"/>
+            <path d="M13 45 Q9 40 5 36" stroke={i%2?'#AD1457':'#B71C1C'} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+            <path d="M15 38 Q20 33 23 28" stroke={i%2?'#AD1457':'#B71C1C'} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+            <path d="M12 30 Q8 26 6 20" stroke={i%2?'#C2185B':'#D32F2F'} strokeWidth="2" fill="none" strokeLinecap="round"/>
+            {[4,6,36,18].map((y,j)=>(
+              <circle key={j} cx={[6,22,5,23][j]} cy={y} r="2.5" fill={i%2?'#F48FB1':'#FF8A80'} opacity="0.9"/>
             ))}
-          </div>
+          </svg>
+        ))}
+        {/* Coral cogumelo (brain coral) */}
+        {[20,52,78].map((x,i)=>(
+          <svg key={i} style={{position:'absolute',bottom:'52px',left:`${x}%`,zIndex:4,pointerEvents:'none'}}
+               width={34+i*8} height={26+i*6} viewBox="0 0 40 30">
+            <ellipse cx="20" cy="18" rx="18" ry="12" fill={['#F57F17','#E65100','#BF360C'][i]} stroke={['#E65100','#BF360C','#8D1100'][i]} strokeWidth="1"/>
+            <ellipse cx="20" cy="18" rx="18" ry="12" fill="none" stroke={['#FFA000','#FF6D00','#DD2C00'][i]} strokeWidth="0.8" strokeDasharray="3,2"/>
+            {[0,1,2,3,4].map(j=>(
+              <path key={j} d={`M${6+j*7} 18 Q${9+j*7} 12 ${12+j*7} 18`} stroke={['#FFD740','#FFAB40','#FF6E40'][i%3]} strokeWidth="1.5" fill="none"/>
+            ))}
+            <ellipse cx="20" cy="18" rx="14" ry="8" fill="rgba(255,200,100,0.15)"/>
+          </svg>
+        ))}
+        {/* Coral tubular */}
+        {[44,92].map((x,i)=>(
+          <svg key={i} style={{position:'absolute',bottom:'52px',left:`${x}%`,zIndex:4,pointerEvents:'none'}}
+               width={36} height={55} viewBox="0 0 36 55">
+            {[0,1,2,3].map(j=>(
+              <g key={j}>
+                <path d={`M${6+j*8} 55 Q${5+j*8} ${30+j%2*8} ${4+j*8} ${20-j*3}`} stroke="#7B1FA2" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+                <circle cx={4+j*8} cy={20-j*3} r="3.5" fill="#CE93D8"/>
+                <circle cx={4+j*8} cy={20-j*3} r="1.5" fill="#F3E5F5"/>
+              </g>
+            ))}
+          </svg>
         ))}
 
-        {/* Bolhas */}
-        {Array.from({ length: 14 }, (_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: `${3 + (i % 5) * 2}px`,
-            height: `${3 + (i % 5) * 2}px`,
-            borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'rgba(255,255,255,0.04)',
-            left: `${4 + i * 6.5}%`,
-            bottom: `${65 + (i % 4) * 35}px`,
-            zIndex: 3,
-            animation: `rise ${4 + i * 0.6}s linear ${i * 0.7}s infinite`,
-          }} />
+        {/* ── Algas / plantas orgânicas ── */}
+        {[3,11,19,29,40,51,61,71,80,90].map((x,i)=>(
+          <svg key={i} style={{position:'absolute',bottom:'52px',left:`${x}%`,zIndex:4,pointerEvents:'none',
+            animation:`seaweed ${2.2+i%4*0.6}s ease-in-out ${i*0.25}s infinite alternate`}}
+               width={14+i%3*8} height={55+i%4*22} viewBox={`0 0 ${14+i%3*8} ${55+i%4*22}`}>
+            {(()=>{
+              const h=55+i%4*22, c=['#1B5E20','#2E7D32','#388E3C','#1565C0','#0D47A1'][i%5];
+              return(<>
+                <path d={`M${7+i%3*4} ${h} Q${4+i%2*6} ${h*0.6} ${8+i%3*3} ${h*0.3} Q${5+i%4*3} ${h*0.1} ${9+i%2*2} 0`}
+                  stroke={c} strokeWidth={3+i%3} fill="none" strokeLinecap="round" opacity="0.9"/>
+                <path d={`M${7+i%3*4} ${h} Q${10+i%2*4} ${h*0.55} ${6+i%3*4} ${h*0.25}`}
+                  stroke={['#4CAF50','#66BB6A','#42A5F5','#1E88E5','#43A047'][i%5]} strokeWidth={2+i%2} fill="none" strokeLinecap="round" opacity="0.7"/>
+              </>);
+            })()}
+          </svg>
         ))}
 
-        {/* Areia */}
+        {/* ── Areia texturizada ── */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '60px',
-          background: 'linear-gradient(180deg, #c8a96e 0%, #9a7035 100%)',
-          borderRadius: '0 0 20px 20px',
-          zIndex: 2,
+          position:'absolute', bottom:0, left:0, right:0, height:'60px',
+          background:'linear-gradient(180deg, #C9A96E 0%, #B8935A 40%, #8B6914 100%)',
+          borderRadius:'0 0 20px 20px',
+          boxShadow:'inset 0 4px 12px rgba(0,0,0,0.35)',
+          zIndex:5,
         }}>
-          {/* Ondulações na areia */}
-          {[10, 30, 50, 70, 90].map((x, i) => (
+          {/* Ondulações e sombras na areia */}
+          {[5,20,36,52,66,80,93].map((x,i)=>(
             <div key={i} style={{
-              position: 'absolute',
-              top: '-8px', left: `${x}%`,
-              width: '80px', height: '16px',
-              background: '#c8a96e',
-              borderRadius: '50%',
-            }} />
+              position:'absolute', top:'-6px', left:`${x}%`,
+              width:`${50+i%3*30}px`, height:'14px',
+              background:'#C9A96E',
+              borderRadius:'50%',
+              boxShadow:'0 -2px 6px rgba(0,0,0,0.2)',
+            }}/>
           ))}
+          <div style={{position:'absolute',top:0,left:0,right:0,height:'3px',background:'rgba(0,0,0,0.15)',borderRadius:'50%'}}/>
         </div>
+
+        {/* CSS das novas animações */}
+        <style>{`
+          @keyframes lightray {
+            0%   { opacity: 0.6; transform: skewX(var(--sk, -10deg)) scaleX(1); }
+            100% { opacity: 1;   transform: skewX(var(--sk, -10deg)) scaleX(1.15); }
+          }
+          @keyframes plankton {
+            0%   { transform: translate(0,0); opacity:0.6; }
+            50%  { transform: translate(3px,-8px); opacity:1; }
+            100% { transform: translate(-3px,4px); opacity:0.5; }
+          }
+          @keyframes seaweed {
+            0%   { transform-origin: bottom center; transform: rotate(-8deg); }
+            100% { transform-origin: bottom center; transform: rotate(8deg); }
+          }
+        `}</style>
 
         {/* Loading */}
         {loading && (
@@ -1767,14 +1856,10 @@ export default function AquariumScene() {
           from { transform: rotate(0deg); }
           to   { transform: rotate(360deg); }
         }
-        @keyframes sway {
-          0%, 100% { transform: rotate(-10deg); }
-          50% { transform: rotate(10deg); }
-        }
         @keyframes rise {
-          0%   { transform: translateY(0) translateX(0); opacity: 0.6; }
-          50%  { transform: translateY(-180px) translateX(8px); opacity: 0.25; }
-          100% { transform: translateY(-380px) translateX(-4px); opacity: 0; }
+          0%   { transform: translateY(0) translateX(0); opacity: 0.7; }
+          50%  { transform: translateY(-180px) translateX(6px); opacity: 0.3; }
+          100% { transform: translateY(-420px) translateX(-4px); opacity: 0; }
         }
       `}</style>
     </div>
