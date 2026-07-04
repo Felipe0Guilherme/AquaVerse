@@ -1,14 +1,12 @@
 // src/routes/admin.ts
 import { Router, RequestHandler } from 'express';
 import { authenticate } from '../middleware/auth';
-import { getShuffleSeed, triggerReshuffle } from '../controllers/adminController';
+import { getShuffleSeed, triggerReshuffle, grantSpecial } from '../controllers/adminController';
 
 const router = Router();
 
-// Pública — todos os clientes fazem polling desse endpoint
-router.get('/shuffle-seed', getShuffleSeed);
-
-// Protegida — só o admin pode acionar (controller valida o email)
+router.get('/shuffle-seed',            getShuffleSeed);
 router.post('/reshuffle', authenticate as RequestHandler, triggerReshuffle);
+router.post('/grant-special', authenticate as RequestHandler, grantSpecial);
 
 export default router;

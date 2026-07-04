@@ -1,68 +1,82 @@
-// src/middleware/errorHandler.ts
-// ============================================================
-// Centralised error handling middleware.
-//
-// Express requires 4 parameters for error handlers — the (err)
-// signature is what distinguishes them from regular middleware.
-//
-// Returns consistent JSON envelopes so the frontend can always
-// rely on the same error shape regardless of where it originated.
-// ============================================================
+// src/server.ts
+import 'dotenv/config'; 
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
-import { Request, Response, NextFunction } from 'express';
-import { ZodError } from 'zod';
-import { config } from '../config/env';
+import usersRoutes from './routes/users';
+import authRoutes from './routes/auth';
+import logsRoutes from './routes/logs';
+import messagesRoutes from './routes/messages';
+import adminRoutes from './routes/admin';
+import gamificationRoutes from './routes/gamification';
+import { config } from './config/env';
+import { errorHandler } from './middleware/errorHandler';
 
-export class AppError extends Error {
-  constructor(
-    public readonly statusCode: number,
-    message: string,
-    public readonly isOperational = true
-  ) {
-    super(message);
-    Object.setPrototypeOf(this, new.target.prototype);
-    Error.captureStackTrace(this);
-  }
-}
+const app = express();
 
-export function errorHandler(
-  err: Error,
-  _req: Request,
-  res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _next: NextFunction
-): void {
-  // ── Zod validation errors ─────────────────────────────────
-  if (err instanceof ZodError) {
-    res.status(422).json({
-      success: false,
-      error: 'Validation failed',
-      details: err.errors.map((e) => ({
-        field: e.path.join('.'),
-        message: e.message,
-      })),
-    });
-    return;
-  }
+// ── Security & Middlewares ──────────────────────────────────
+app.use(helmet());
+app.use(
+  cors({
+    origin: config.clientUrl,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-  // ── Known operational errors ──────────────────────────────
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({
-      success: false,
-      error: err.message,
-    });
-    return;
-  }
+app.use(express.json({ limit: '10kb' })); 
+app.use(cookieParser(config.cookie.secret));
+app.use(compression());
 
-  // ── Unknown / programmer errors ───────────────────────────
-  // Never leak stack traces or internal messages in production.
-  console.error('Unhandled error:', err);
+// ── Rate limiting ─────────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-  res.status(500).json({
-    success: false,
-    error: config.isProduction
-      ? 'An internal server error occurred.'
-      : err.message,
-    ...(config.isProduction ? {} : { stack: err.stack }),
-  });
-}
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ── Health check ────────────────────────────────────────────
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ── API Routes ────────────────────────────────────────────────
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/logs', apiLimiter, logsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/messages', apiLimiter, messagesRoutes);
+app.use('/api/admin',        apiLimiter, adminRoutes);
+app.use('/api/gamification', apiLimiter, gamificationRoutes);
+
+// ── 404 & Error Handler ───────────────────────────────────────
+app.use((_req, res) => {
+  res.status(404).json({ success: false, error: 'Route not found.' });
+});
+
+app.use(errorHandler);
+
+
+app.listen(config.port, () => {
+  console.log(`
+  ╔══════════════════════════════════════════╗
+  ║   🐠 AquaMonitor API                     ║
+  ║   Listening on: http://localhost:${config.port}   ║
+  ╚══════════════════════════════════════════╝
+  `);
+});
+
+export default app;

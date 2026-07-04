@@ -62,3 +62,33 @@ export async function triggerReshuffle(
     next(error);
   }
 }
+
+// POST /api/admin/grant-special — concede peixe especial a um usuário
+export async function grantSpecial(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    if (authReq.user?.email !== ADMIN_EMAIL) {
+      res.status(403).json({ success: false, error: 'Forbidden.' });
+      return;
+    }
+    const { username, kind } = req.body;
+    const validSpecials = ['anglerfish','electriceel','ghostfish','oarfish','coelacanth','mimic'];
+    if (!username || !validSpecials.includes(kind)) {
+      res.status(400).json({ success: false, error: 'Invalid username or kind.' });
+      return;
+    }
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
+      .from('profiles')
+      .update({ special_creature: kind })
+      .eq('username', username);
+    if (error) throw error;
+    res.json({ success: true, data: { username, kind } });
+  } catch (err) {
+    next(err);
+  }
+}

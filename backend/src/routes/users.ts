@@ -12,7 +12,7 @@ router.get('/aquarium', async (_req: Request, res: Response) => {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('username, full_name, created_at')
+      .select('username, full_name, created_at, special_creature')
       .order('created_at', { ascending: true })
       .limit(100); // até 100 peixes no aquário
 

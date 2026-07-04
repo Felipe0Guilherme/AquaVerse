@@ -9,26 +9,22 @@ interface AquaUser {
   username: string;
   full_name: string | null;
   created_at: string;
+  special_creature?: string | null;  // peixe especial concedido pelo admin
 }
 
 // ── Definições dos tipos de criatura ───────────────────────────
 type CreatureKind =
-  // Peixes Ósseos
   | 'fish' | 'seahorse' | 'pipefish' | 'clownfrogfish' | 'trumpetfish' | 'moorishidol' | 'surgeonfish' | 'parrotfish' | 'grouper' | 'sunfish'
-  // Peixes Cartilaginosos
   | 'shark' | 'hammerhead' | 'whaleshark' | 'sawfish'
-  // Crustáceos
   | 'crab' | 'lobster' | 'mantisshrimp'
-  // Moluscos
   | 'octopus' | 'nautilus' | 'nudibranch' | 'giantclam'
-  // Equinodermos
   | 'starfish' | 'seaurchin' | 'seaslug'
-  // Répteis Marinhos
   | 'seaturtle' | 'seaSnake'
-  // Mamíferos Marinhos
   | 'orca' | 'whale' | 'humpback' | 'dolphin' | 'dugong' | 'sealion'
-  // Outros
-  | 'manta' | 'krill' | 'jellyfish';
+  | 'manta' | 'krill' | 'jellyfish'
+  | 'anglerfish' | 'electriceel' | 'ghostfish' | 'oarfish' | 'coelacanth' | 'mimic';
+
+type SpecialPower = 'attract'|'electric'|'ghost'|'speed'|'xpaura'|'mimic'|null;
 type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
@@ -212,6 +208,212 @@ const FISH: DrawFn[] = [
     <circle cx="11.9" cy="16.5" r="2.5" fill="#1a1a1a"/>
     <circle cx="10.7" cy="15.3" r="1.05" fill="white"/>
     <path d="M6 19 Q7.5 22.5 10.5 19" stroke="#C62828" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 12 — Mandarinfish — padrão psicodélico azul/laranja/verde
+  (s, f) => `<svg width="${s*2}" height="${s*1.2}" viewBox="0 0 40 24" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 12 Q7 4 20 3 Q34 2 38 12 Q32 21 20 21 Q7 20 8 12Z" fill="#1565C0"/>
+    <path d="M10 8 Q20 6 34 9" stroke="#FF6F00" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M9 12 Q20 10 35 12" stroke="#00BCD4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M10 16 Q20 15 34 16" stroke="#FF6F00" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M20 3 Q22 0 26 2" stroke="#4CAF50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M17 21 Q19 24 22 22" stroke="#4CAF50" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="10" cy="11" rx="4" ry="5.5" fill="#0D47A1"/>
+    <circle cx="8" cy="9.5" r="2.2" fill="white" stroke="#0D47A1" stroke-width="0.5"/>
+    <circle cx="8.7" cy="10" r="1.3" fill="#1a1a1a"/>
+    <circle cx="8.1" cy="9.2" r="0.55" fill="white"/>
+    <path d="M5 13 Q6.5 15.5 9 13" stroke="#FF6F00" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M38 9 L44 6 L44 15 Q40 15 38 12Z" fill="#1565C0"/>
+  </svg>`,
+
+  // 13 — Peixe-palhaço preto (Maroon Clownfish) — vinho com listras douradas
+  (s, f) => `<svg width="${s*2.2}" height="${s*1.3}" viewBox="0 0 44 26" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 5 Q21 0 28 2 Q32 0 36 5" fill="#6D1C1C" stroke="#4A0A0A" stroke-width="0.8"/>
+    <path d="M8 13 Q7 4 20 3 Q35 2 40 13 Q33 23 20 23 Q7 22 8 13Z" fill="#8B2020" stroke="#4A0A0A" stroke-width="1.3"/>
+    <path d="M11 4 Q14 3 15 6 L15 21 Q13 22 11 21 Q9 18 9 13 Q9 8 11 4Z" fill="#D4A017" stroke="#A07010" stroke-width="0.8"/>
+    <path d="M26 3 Q29 2 30 5 L30 21 Q28 22 26 21 Q25 4 26 3Z" fill="#D4A017" stroke="#A07010" stroke-width="0.8"/>
+    <path d="M14 16 Q9 22 11 25 Q15 22 15 18Z" fill="rgba(139,32,32,0.7)"/>
+    <path d="M40 9 L48 4 L47 13 L48 21 L40 17Z" fill="#8B2020" stroke="#4A0A0A" stroke-width="0.9"/>
+    <circle cx="10" cy="11" r="4.2" fill="white" stroke="#4A0A0A" stroke-width="0.6"/>
+    <circle cx="10.9" cy="11.5" r="2.5" fill="#1a1a1a"/>
+    <circle cx="9.7" cy="10.3" r="1.05" fill="white"/>
+    <path d="M5 14 Q6.5 17 9 14" stroke="#4A0A0A" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 14 — Peixe-espada (Swordtail) — verde esmeralda, cauda com espada vermelha
+  (s, f) => `<svg width="${s*3}" height="${s*1.05}" viewBox="0 0 60 21" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 5 Q21 1 27 3 Q31 1 34 5" fill="#1B5E20" stroke="#0A3D10" stroke-width="0.8"/>
+    <path d="M8 10 Q7 3 21 2 Q37 1 43 10 Q36 19 21 19 Q7 18 8 10Z" fill="#2E7D32" stroke="#0A3D10" stroke-width="1.3"/>
+    <path d="M11 13 Q22 18 38 13 Q40 17 21 18 Q8 17 11 13Z" fill="rgba(100,200,100,0.35)"/>
+    <path d="M43 10 L52 8 L52 12Z" fill="#2E7D32" stroke="#0A3D10" stroke-width="0.8"/>
+    <path d="M43 13 L60 19 L52 13Z" fill="#C62828" stroke="#8D1F05" stroke-width="0.7"/>
+    <ellipse cx="10" cy="10" rx="3.8" ry="5" fill="#1B5E20"/>
+    <circle cx="8" cy="8.5" r="2.2" fill="white" stroke="#0A3D10" stroke-width="0.5"/>
+    <circle cx="8.7" cy="9" r="1.3" fill="#1a1a1a"/>
+    <circle cx="8.1" cy="8.2" r="0.55" fill="white"/>
+    <path d="M5 11.5 Q6.5 13.5 9 11.5" stroke="#0A3D10" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 15 — Koi — branco com manchas laranjas e pretas, barbatanas longas
+  (s, f) => `<svg width="${s*2.8}" height="${s*1.3}" viewBox="0 0 56 26" style="transform:scaleX(${f?-1:1})">
+    <path d="M18 6 Q23 1 31 3 Q36 1 40 6" fill="#F5F5F5" stroke="#DDD" stroke-width="0.8"/>
+    <path d="M8 13 Q7 4 22 3 Q40 2 48 13 Q40 23 22 23 Q7 22 8 13Z" fill="#FAFAFA" stroke="#DDD" stroke-width="1.2"/>
+    <path d="M18 4 Q26 8 30 14 Q24 12 18 4Z" fill="#FF5722" opacity="0.85"/>
+    <path d="M30 3 Q38 7 42 13 Q36 10 30 3Z" fill="#FF5722" opacity="0.8"/>
+    <path d="M20 16 Q26 20 32 18 Q28 22 20 20Z" fill="#212121" opacity="0.75"/>
+    <path d="M35 14 Q40 18 44 16 Q41 20 35 18Z" fill="#FF5722" opacity="0.7"/>
+    <path d="M48 9 L58 4 L56 13 L58 22 L48 17Z" fill="#FAFAFA" stroke="#DDD" stroke-width="0.8"/>
+    <path d="M14 15 Q10 21 12 25 Q17 22 17 17Z" fill="rgba(245,245,245,0.7)"/>
+    <ellipse cx="10" cy="12" rx="4" ry="5.5" fill="#F0F0F0"/>
+    <circle cx="8" cy="10.5" r="2.5" fill="white" stroke="#CCC" stroke-width="0.5"/>
+    <circle cx="8.8" cy="11" r="1.5" fill="#1a1a1a"/>
+    <circle cx="8.1" cy="10.2" r="0.6" fill="white"/>
+    <path d="M5 14 Q6.5 16.5 9 14" stroke="#999" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M26 3 L28 8" stroke="#FFB74D" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M30 3 L31 7" stroke="#FFB74D" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 16 — Discus — corpo altíssimo e circular, listras onduladas azul/vermelho
+  (s, f) => `<svg width="${s*1.5}" height="${s*1.7}" viewBox="0 0 30 34" style="transform:scaleX(${f?-1:1})">
+    <path d="M15 7 L10 2 L15 9Z" fill="#1565C0" stroke="#0D47A1" stroke-width="0.6"/>
+    <path d="M15 29 L10 34 L15 27Z" fill="#1565C0" stroke="#0D47A1" stroke-width="0.6"/>
+    <circle cx="15" cy="17" r="13" fill="#1565C0" stroke="#0D47A1" stroke-width="1.2"/>
+    <path d="M5 10 Q15 12 25 10 Q25 24 15 26 Q5 24 5 10Z" fill="#E53935" opacity="0.6"/>
+    ${[0,1,2,3,4,5].map(i=>`<path d="M${4+i*4} ${8+i} Q15 ${12+i} ${26-i*4} ${8+i}" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>`).join('')}
+    <path d="M3 17 L0 13 L0 21Z" fill="#1565C0" stroke="#0D47A1" stroke-width="0.6"/>
+    <path d="M27 17 L30 13 L30 21Z" fill="#1565C0" stroke="#0D47A1" stroke-width="0.6"/>
+    <ellipse cx="8" cy="15" rx="3.5" ry="4.5" fill="#0D47A1"/>
+    <circle cx="6.5" cy="13.5" r="2.2" fill="white" stroke="#0D47A1" stroke-width="0.5"/>
+    <circle cx="7.2" cy="14" r="1.3" fill="#1a1a1a"/>
+    <circle cx="6.5" cy="13.2" r="0.55" fill="white"/>
+    <path d="M4 17.5 Q5 19.5 7.5 17.5" stroke="#0D47A1" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 17 — Barracuda — longo e plateado, boca cheia de dentes
+  (s, f) => `<svg width="${s*3.5}" height="${s*0.85}" viewBox="0 0 70 17" style="transform:scaleX(${f?-1:1})">
+    <path d="M6 8 Q5 3 22 3 Q45 2 62 8 Q55 13 22 13 Q5 13 6 8Z" fill="#78909C" stroke="#546E7A" stroke-width="1"/>
+    <path d="M8 10 Q35 13 60 10 Q55 14 22 14 Q7 13 8 10Z" fill="rgba(180,210,230,0.45)"/>
+    <path d="M35 3 Q42 5 35 8" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+    <path d="M50 3 Q56 5 50 8" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" fill="none"/>
+    <path d="M62 6 L70 4 L70 12Z" fill="#78909C" stroke="#546E7A" stroke-width="0.8"/>
+    <path d="M45 13 L47 17 L51 13Z" fill="#607D8B"/>
+    <path d="M62 10 L64 14 L67 10Z" fill="#607D8B"/>
+    <path d="M30 3 Q28 1 32 2 Q35 0 38 2 Q40 3 38 4Z" fill="#607D8B"/>
+    <ellipse cx="8" cy="8" rx="4" ry="4.5" fill="#607D8B"/>
+    <path d="M4 8 Q5 11 8 10" stroke="white" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <line x1="5" y1="10" x2="7" y2="11" stroke="white" stroke-width="0.7"/>
+    <line x1="7.5" y1="10.5" x2="9" y2="11.2" stroke="white" stroke-width="0.7"/>
+    <circle cx="6" cy="6.5" r="2" fill="white" stroke="#546E7A" stroke-width="0.5"/>
+    <circle cx="6.6" cy="6.9" r="1.2" fill="#1a1a1a"/>
+    <circle cx="6" cy="6.2" r="0.5" fill="white"/>
+  </svg>`,
+
+  // 18 — Arraia de rio (Freshwater Stingray) — preta com pintas brancas, disco achatado
+  (s, f) => `<svg width="${s*2.4}" height="${s*1.7}" viewBox="0 0 48 34" style="transform:scaleX(${f?-1:1})">
+    <path d="M24 17 Q6 8 2 18 Q10 26 24 20Z" fill="#1A1A2E" stroke="#111" stroke-width="0.8"/>
+    <path d="M24 17 Q42 8 46 18 Q38 26 24 20Z" fill="#1A1A2E" stroke="#111" stroke-width="0.8"/>
+    <ellipse cx="24" cy="18" rx="12" ry="9" fill="#212140" stroke="#111" stroke-width="0.8"/>
+    <path d="M24 20 Q28 32 30 44" stroke="#1A1A2E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M24 20 Q26 32 27 38" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+    ${[0,1,2,3,4,5,6].map(i=>`<circle cx="${14+i%4*7}" cy="${14+Math.floor(i/4)*6}" r="1.4" fill="rgba(255,255,255,0.55)"/>`).join('')}
+    <ellipse cx="17" cy="17" rx="3" ry="2" fill="#111" opacity="0.6"/>
+    <circle cx="15.5" cy="16.5" r="1.5" fill="white" stroke="#111" stroke-width="0.4"/>
+    <circle cx="16" cy="16.8" r="0.9" fill="#1a1a1a"/>
+    <circle cx="15.5" cy="16.2" r="0.38" fill="white"/>
+    <circle cx="18.5" cy="16.5" r="1.5" fill="white" stroke="#111" stroke-width="0.4"/>
+    <circle cx="19" cy="16.8" r="0.9" fill="#1a1a1a"/>
+    <circle cx="18.5" cy="16.2" r="0.38" fill="white"/>
+    <path d="M15 19 Q17 21 19 19" stroke="#333" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 19 — Peixe-dragão (Dragonfish) — bioluminescente, fundo escuro
+  (s, f) => `<svg width="${s*3}" height="${s*1.1}" viewBox="0 0 60 22" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 11 Q7 4 22 3 Q40 2 52 11 Q44 19 22 19 Q7 18 8 11Z" fill="#0D1B2A" stroke="#071020" stroke-width="1"/>
+    <path d="M16 6 Q22 8 28 6 Q34 8 40 6" stroke="#00E5FF" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M14 16 Q22 14 30 16 Q36 14 44 16" stroke="#00E5FF" stroke-width="1" fill="none" opacity="0.6"/>
+    <path d="M20 4 Q22 0 26 3" stroke="#00BCD4" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M32 4 Q34 1 37 3" stroke="#00BCD4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="18" cy="9" r="1.5" fill="#00E5FF" opacity="0.7"/>
+    <circle cx="26" cy="8" r="1.2" fill="#00E5FF" opacity="0.6"/>
+    <circle cx="34" cy="9" r="1.4" fill="#00E5FF" opacity="0.65"/>
+    <circle cx="42" cy="10" r="1" fill="#00E5FF" opacity="0.5"/>
+    <path d="M8 9 Q4 7 2 10 Q4 14 2 16 Q5 14 8 13Z" fill="#1A2F45" stroke="#071020" stroke-width="0.7"/>
+    <line x1="2" y1="10" x2="0" y2="7" stroke="#00E5FF" stroke-width="0.8" opacity="0.8"/>
+    <line x1="2" y1="12" x2="0" y2="12" stroke="#00E5FF" stroke-width="0.8" opacity="0.7"/>
+    <line x1="2" y1="14" x2="0" y2="16" stroke="#00E5FF" stroke-width="0.8" opacity="0.6"/>
+    <path d="M52 9 L60 5 L60 17Z" fill="#0D1B2A" stroke="#071020" stroke-width="0.8"/>
+    <circle cx="9" cy="9.5" r="3.2" fill="white" stroke="#071020" stroke-width="0.5"/>
+    <circle cx="9.7" cy="10" r="1.9" fill="#00E5FF" opacity="0.95"/>
+    <circle cx="9.1" cy="9.2" r="0.8" fill="white"/>
+    <path d="M5 12.5 Q6.5 14.5 9 12.5" stroke="#071020" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 20 — Peixe-arlequim (Harlequin Rasbora) — vermelho com triângulo preto
+  (s, f) => `<svg width="${s*2.1}" height="${s*1.1}" viewBox="0 0 42 22" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 11 Q7 4 20 3 Q35 2 39 11 Q33 20 20 20 Q7 19 8 11Z" fill="#E53935" stroke="#B71C1C" stroke-width="1.2"/>
+    <path d="M10 14 Q21 19 35 14 Q36 17 20 19 Q8 18 10 14Z" fill="rgba(255,160,130,0.4)"/>
+    <path d="M22 3 Q28 7 26 14 Q22 16 20 14 Q22 7 22 3Z" fill="#1A1A1A" opacity="0.88"/>
+    <path d="M18 5 Q22 3 26 5" fill="#1A1A1A" opacity="0.6"/>
+    <path d="M16 15 Q11 20 13 23 Q17 20 17 17Z" fill="rgba(229,57,53,0.7)"/>
+    <path d="M39 8 L46 4 L45 11 L46 18 L39 14Z" fill="#E53935" stroke="#B71C1C" stroke-width="0.8"/>
+    <ellipse cx="9.5" cy="10.5" rx="3.8" ry="5" fill="#C62828"/>
+    <circle cx="7.5" cy="9" r="2.2" fill="white" stroke="#B71C1C" stroke-width="0.5"/>
+    <circle cx="8.2" cy="9.5" r="1.3" fill="#1a1a1a"/>
+    <circle cx="7.5" cy="8.7" r="0.55" fill="white"/>
+    <path d="M4 12 Q5.5 14.5 8 12" stroke="#B71C1C" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 21 — Peixe-anjo de Altum — corpo ainda mais alto, listras chocolate/creme
+  (s, f) => `<svg width="${s*1.6}" height="${s*2.1}" viewBox="0 0 32 42" style="transform:scaleX(${f?-1:1})">
+    <path d="M16 10 L9 2 L16 12Z" fill="#795548" stroke="#4E342E" stroke-width="0.7"/>
+    <path d="M16 34 L9 42 L16 32Z" fill="#795548" stroke="#4E342E" stroke-width="0.7"/>
+    <path d="M7 21 Q6 9 16 8 Q26 9 26 21 Q26 33 16 35 Q6 33 7 21Z" fill="#EFEBE9" stroke="#4E342E" stroke-width="1.3"/>
+    <path d="M12 9 Q14 8 15 11 L15 33 Q13 34 12 33 Q10 30 10 21 Q10 12 12 9Z" fill="#5D4037"/>
+    <path d="M20 9 Q22 8 23 10 L23 33 Q21 34 20 33 Q19 9 20 9Z" fill="#5D4037"/>
+    <path d="M16 8 Q22 16 22 21 Q22 26 16 30" stroke="rgba(121,85,72,0.25)" stroke-width="2.5" fill="none"/>
+    <path d="M4 21 L0 16 L0 26Z" fill="#795548" stroke="#4E342E" stroke-width="0.6"/>
+    <path d="M28 21 L32 16 L32 26Z" fill="#795548" stroke="#4E342E" stroke-width="0.6"/>
+    <ellipse cx="8.5" cy="19" rx="3.5" ry="4.8" fill="#6D4C41"/>
+    <circle cx="7" cy="17.5" r="2.2" fill="white" stroke="#4E342E" stroke-width="0.5"/>
+    <circle cx="7.7" cy="18" r="1.3" fill="#1a1a1a"/>
+    <circle cx="7" cy="17.2" r="0.55" fill="white"/>
+    <path d="M4.5 20.5 Q5.5 22.5 8 20.5" stroke="#4E342E" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 22 — Guppy macho — cauda enorme e colorida
+  (s, f) => `<svg width="${s*2.8}" height="${s*1.4}" viewBox="0 0 56 28" style="transform:scaleX(${f?-1:1})">
+    <path d="M34 12 Q44 2 56 6 Q50 14 56 22 Q44 18 34 16Z" fill="#7B1FA2" stroke="#4A148C" stroke-width="0.8" opacity="0.9"/>
+    <path d="M36 12 Q46 6 54 8 Q50 13 54 18 Q46 15 36 15Z" fill="#E040FB" opacity="0.5"/>
+    <path d="M34 12 Q40 8 44 10 Q42 14 44 17 Q40 16 34 16Z" fill="#CE93D8" opacity="0.4"/>
+    <path d="M8 14 Q7 6 18 5 Q30 4 35 14 Q29 22 18 22 Q7 21 8 14Z" fill="#1565C0" stroke="#0D47A1" stroke-width="1.1"/>
+    <path d="M11 17 Q19 22 30 17 Q31 21 18 22 Q8 21 11 17Z" fill="rgba(100,160,255,0.35)"/>
+    <path d="M16 6 Q19 8 17 12" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+    <path d="M22 5 Q25 7 23 11" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" fill="none"/>
+    <path d="M17 16 Q12 22 14 25 Q18 22 18 18Z" fill="rgba(21,101,192,0.7)"/>
+    <ellipse cx="9.5" cy="13" rx="3.8" ry="5" fill="#0D47A1"/>
+    <circle cx="7.5" cy="11.5" r="2.3" fill="white" stroke="#0D47A1" stroke-width="0.5"/>
+    <circle cx="8.2" cy="12" r="1.4" fill="#1a1a1a"/>
+    <circle cx="7.5" cy="11.2" r="0.6" fill="white"/>
+    <path d="M5 14.5 Q6.5 17 9 14.5" stroke="#0D47A1" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  // 23 — Peixe-payara (Peixe-vampiro) — prateado com presas enormes
+  (s, f) => `<svg width="${s*2.8}" height="${s*1.1}" viewBox="0 0 56 22" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 11 Q7 4 22 3 Q40 2 50 11 Q42 19 22 19 Q7 18 8 11Z" fill="#90A4AE" stroke="#607D8B" stroke-width="1.1"/>
+    <path d="M10 13 Q30 18 48 13 Q46 17 22 18 Q8 17 10 13Z" fill="rgba(200,230,240,0.5)"/>
+    <path d="M25 3 Q32 5 38 3" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none"/>
+    <path d="M35 3 Q41 5 46 4" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" fill="none"/>
+    <path d="M50 8 L56 4 L56 18Z" fill="#90A4AE" stroke="#607D8B" stroke-width="0.8"/>
+    <path d="M33 18 L35 22 L38 18Z" fill="#78909C"/>
+    <ellipse cx="10" cy="10.5" rx="4" ry="5" fill="#78909C"/>
+    <path d="M6 12 Q7 16 10 14" stroke="white" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M7 14 L9 16" stroke="white" stroke-width="1"/>
+    <path d="M9.5 14.5 L11 16" stroke="white" stroke-width="1"/>
+    <path d="M12 14 L14 18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M15 14 L17 17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="7.5" cy="8.5" r="2.4" fill="white" stroke="#607D8B" stroke-width="0.5"/>
+    <circle cx="8.2" cy="9" r="1.4" fill="#1a1a1a"/>
+    <circle cx="7.5" cy="8.2" r="0.6" fill="white"/>
   </svg>`,
 ];
 
@@ -820,15 +1022,165 @@ const drawKrill: DrawFn = (s, f, phase) => {
   </svg>`;
 };
 
+
+// ════════════════════════════════════════════════════════════════
+// PEIXES ESPECIAIS — cada um com poder único que afeta o aquário
+// ════════════════════════════════════════════════════════════════
+
+const drawAnglerfish: DrawFn = (s, f, phase) => {
+  const lure = Math.sin(phase * 1.4) * 5;
+  const glow = (0.6 + Math.sin(phase * 2) * 0.4).toFixed(2);
+  const glow2 = (0.3 + Math.sin(phase * 2) * 0.2).toFixed(2);
+  return `<svg width="${s*2}" height="${s*1.6}" viewBox="0 0 40 32" style="transform:scaleX(${f?-1:1})">
+    <circle cx="14" cy="${6+lure}" r="9" fill="rgba(0,229,255,0.08)" opacity="${glow2}"/>
+    <circle cx="14" cy="${6+lure}" r="6" fill="rgba(0,229,255,0.18)" opacity="${glow2}"/>
+    <path d="M12 5 Q10 1 14 ${1+lure} Q12 ${3+lure} 14 ${6+lure}" stroke="#2d3748" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="14" cy="${6+lure}" r="4" fill="#00E5FF" opacity="${glow}"/>
+    <path d="M8 16 Q7 7 20 6 Q33 5 36 16 Q30 27 20 27 Q7 26 8 16Z" fill="#1a2030" stroke="#111" stroke-width="1.2"/>
+    <path d="M11 18 Q20 24 32 18 Q30 24 20 26 Q10 24 11 18Z" fill="rgba(50,80,120,0.4)"/>
+    <path d="M8 14 Q9 10 12 11 L12 22 Q9 23 8 21Z" fill="#0d1520"/>
+    <path d="M7 14 Q5 11 3 13 Q5 18 3 21 Q6 19 7 21" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <line x1="4" y1="14" x2="6" y2="16" stroke="white" stroke-width="0.9"/>
+    <line x1="4" y1="17" x2="6" y2="18.5" stroke="white" stroke-width="0.9"/>
+    <line x1="4" y1="20" x2="6" y2="21" stroke="white" stroke-width="0.9"/>
+    <path d="M36 14 L42 10 L42 22Z" fill="#1a2030" stroke="#111" stroke-width="0.8"/>
+    <circle cx="10" cy="14" r="4" fill="white" stroke="#111" stroke-width="0.5"/>
+    <circle cx="10.8" cy="14.5" r="2.4" fill="#111"/>
+    <circle cx="10" cy="13.7" r="1" fill="rgba(0,229,255,0.85)"/>
+  </svg>`;
+};
+
+const drawElectricEel: DrawFn = (s, f, phase) => {
+  const w1 = Math.sin(phase * 0.7) * 9;
+  const w2 = Math.sin(phase * 0.7 + 1.2) * 9;
+  const w3 = Math.sin(phase * 0.7 + 2.4) * 9;
+  const spark = Math.sin(phase * 4) > 0.6;
+  return `<svg width="${s*4}" height="${s*1.2}" viewBox="0 0 80 24" style="transform:scaleX(${f?-1:1})">
+    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="#1A237E" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="#3949AB" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="${spark?'#FFEE58':'#5C6BC0'}" stroke-width="2" fill="none" stroke-linecap="round" opacity="${spark?'0.9':'0.4'}"/>
+    ${spark?`<path d="M28 ${12+w1*0.5} L25 ${8+w1*0.5} L30 ${10+w1*0.5} L27 ${6+w1*0.5}" stroke="#FFEE58" stroke-width="1.5" fill="none"/>
+    <path d="M50 ${12+w2*0.5} L47 ${8+w2*0.5} L52 ${9+w2*0.5} L49 ${5+w2*0.5}" stroke="#FFEE58" stroke-width="1.5" fill="none"/>`:''}
+    <path d="M76 10 L80 8 L80 16 L76 14Z" fill="#3949AB"/>
+    <ellipse cx="6" cy="12" rx="5" ry="4.5" fill="#283593"/>
+    <circle cx="4" cy="10.5" r="2.2" fill="white" stroke="#1A237E" stroke-width="0.5"/>
+    <circle cx="4.7" cy="11" r="1.3" fill="#111"/>
+    <circle cx="4.1" cy="10.3" r="0.55" fill="rgba(200,220,255,0.9)"/>
+    <path d="M2 13.5 Q3.5 15.5 6 13.5" stroke="#1A237E" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+const drawGhostFish: DrawFn = (s, f, phase) => {
+  const pulse = (0.55 + Math.sin(phase * 0.8) * 0.2).toFixed(2);
+  const p25 = (parseFloat(pulse)*0.25).toFixed(2);
+  const p80 = (parseFloat(pulse)*0.8).toFixed(2);
+  const p18 = (parseFloat(pulse)*0.18).toFixed(2);
+  const p40 = (parseFloat(pulse)*0.4).toFixed(2);
+  const p30 = (parseFloat(pulse)*0.3).toFixed(2);
+  const p70 = (parseFloat(pulse)*0.7).toFixed(2);
+  const trail = Math.sin(phase * 0.5) * 4;
+  return `<svg width="${s*2.4}" height="${s*1.1}" viewBox="0 0 48 22" style="transform:scaleX(${f?-1:1})">
+    <path d="M8 11 Q7 3 21 2 Q38 1 44 11 Q38 20 21 20 Q7 19 8 11Z" fill="rgba(180,220,255,${p25})" stroke="rgba(150,210,255,${p80})" stroke-width="1.2"/>
+    <path d="M10 13 Q22 18 40 13 Q38 19 21 20 Q8 18 10 13Z" fill="rgba(255,255,255,${p18})"/>
+    <path d="M12 5 Q22 3 36 5" stroke="rgba(200,240,255,${p40})" stroke-width="1.5" fill="none"/>
+    <path d="M44 8 Q52 ${5+trail} 50 11 Q52 ${17-trail} 44 14Z" fill="rgba(150,210,255,${p30})" stroke="rgba(150,210,255,${p70})" stroke-width="0.8"/>
+    <path d="M17 14 Q12 20 14 23 Q18 20 18 16Z" fill="rgba(180,220,255,${p30})"/>
+    <circle cx="10" cy="10" r="4.5" fill="rgba(220,240,255,${p30})" stroke="rgba(180,220,255,${p70})" stroke-width="0.8"/>
+    <circle cx="10.8" cy="10.5" r="2.7" fill="rgba(100,180,255,${p80})"/>
+    <circle cx="9.7" cy="9.4" r="1.1" fill="rgba(255,255,255,0.9)"/>
+    <path d="M6 13 Q7.5 15.5 10 13" stroke="rgba(150,210,255,${p70})" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+const drawOarfish: DrawFn = (s, f, phase) => {
+  const w = Math.sin(phase * 0.4) * 12;
+  const w2 = Math.sin(phase * 0.4 + 1) * 10;
+  const dots = Array.from({length:8},(_,i)=>`<ellipse cx="${(12+w*(i/8)).toFixed(1)}" cy="${12+i*10}" rx="0.8" ry="2" fill="rgba(180,220,255,0.4)"/>`).join('');
+  return `<svg width="${s*1.2}" height="${s*5}" viewBox="0 0 24 100" style="transform:scaleX(${f?-1:1})">
+    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="#607D8B" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="#B0BEC5" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="rgba(207,226,255,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M${12+w} 50 L${12+w+14} 44 M${12+w} 50 L${12+w+14} 56" stroke="#F44336" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M12 94 L5 100 L12 96 L19 100Z" fill="#546E7A"/>
+    <path d="M8 6 Q5 2 8 8 M16 6 Q19 2 16 8" stroke="#EF9A9A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="12" cy="5" rx="5" ry="4" fill="#546E7A"/>
+    <circle cx="10" cy="4" r="2" fill="white" stroke="#455A64" stroke-width="0.4"/>
+    <circle cx="10.5" cy="4.4" r="1.2" fill="#111"/>
+    <circle cx="9.9" cy="3.8" r="0.5" fill="white"/>
+    <path d="M10 7 Q12 8.5 14 7" stroke="#455A64" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+};
+
+const drawCoelacanth: DrawFn = (s, f, phase) => {
+  const aura = (0.4 + Math.sin(phase * 0.6) * 0.25).toFixed(2);
+  const aura2 = (parseFloat(aura)*0.25).toFixed(2);
+  const aura3 = (parseFloat(aura)*0.15).toFixed(2);
+  const aura4 = (parseFloat(aura)*0.7).toFixed(2);
+  const dots = Array.from({length:6},(_,i)=>`<circle cx="${8+i*7}" cy="${10+i%3*4}" r="1.2" fill="rgba(100,220,180,${aura4})"/>`).join('');
+  return `<svg width="${s*2.5}" height="${s*1.5}" viewBox="0 0 50 30" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="24" cy="15" rx="22" ry="13" fill="rgba(0,150,100,${aura2})" opacity="0.8"/>
+    <ellipse cx="24" cy="15" rx="18" ry="10" fill="rgba(0,200,140,${aura3})" opacity="0.7"/>
+    <path d="M8 15 Q7 6 22 5 Q38 4 44 15 Q37 25 22 25 Q7 24 8 15Z" fill="#01579B" stroke="#013A6B" stroke-width="1.3"/>
+    <path d="M11 18 Q22 24 38 18 Q36 23 22 24 Q9 23 11 18Z" fill="rgba(0,100,180,0.4)"/>
+    <path d="M18 5 Q22 3 28 5" stroke="#0288D1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M28 5 Q33 3 38 6" stroke="#0288D1" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M10 10 Q8 6 6 8 Q5 12 6 16 Q8 14 10 18Z" fill="#01579B" stroke="#013A6B" stroke-width="0.8"/>
+    <path d="M14 22 Q10 26 8 24 Q9 20 14 21Z" fill="#01579B"/>
+    <path d="M32 23 Q28 27 26 25 Q27 21 32 22Z" fill="#01579B"/>
+    <path d="M44 13 L50 8 L50 22Z" fill="#01579B" stroke="#013A6B" stroke-width="0.8"/>
+    <path d="M15 8 Q18 7 20 9 L20 22 Q17 23 15 22 Q13 19 13 15 Q13 10 15 8Z" fill="#013A6B" opacity="0.5"/>
+    <path d="M28 7 Q31 6 32 8 L32 22 Q29 23 28 22 Q27 7 28 7Z" fill="#013A6B" opacity="0.45"/>
+    ${dots}
+    <circle cx="10" cy="13" r="4.2" fill="white" stroke="#013A6B" stroke-width="0.6"/>
+    <circle cx="10.9" cy="13.5" r="2.5" fill="#01579B"/>
+    <circle cx="10" cy="12.7" r="1.05" fill="rgba(100,220,180,0.9)"/>
+    <path d="M6 16 Q7.5 18.5 10 16" stroke="#013A6B" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+const drawMimic: DrawFn = (s, _f, phase) => {
+  const hue = Math.floor((phase * 20) % 360);
+  const hue2 = (hue + 40) % 360;
+  const pulse = (1 + Math.sin(phase * 0.5) * 0.035).toFixed(3);
+  const tentacles = Array.from({ length: 8 }, (_, i) => {
+    const spread = (i - 3.5) / 3.5;
+    const bx = 20 + spread * 14;
+    const wave1 = Math.sin(phase + i * 0.9) * 6;
+    const wave2 = Math.sin(phase * 0.8 + i * 1.2) * 4;
+    const len = 26 + Math.sin(phase * 0.3 + i) * 3;
+    const w = 5 - Math.abs(spread) * 1.5;
+    const mx = bx + spread * 4 + wave1 * 0.7;
+    const tx = bx + spread * 6 + wave2 * 0.4;
+    return `<path d="M${(bx-w/2).toFixed(1)} 21 C${(mx-w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(mx-w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${tx.toFixed(1)} ${(22+len).toFixed(1)} C${(mx+w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${(mx+w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(bx+w/2).toFixed(1)} 21Z" fill="hsl(${hue},80%,40%)" stroke="hsl(${hue},80%,25%)" stroke-width="0.5"/>`;
+  }).join('');
+  return `<svg width="${s*1.7}" height="${s*1.65}" viewBox="0 0 40 52" style="transform:scale(${pulse})">
+    ${tentacles}
+    <path d="M5 18 Q4 4 20 2 Q36 4 35 18 Q36 26 28 28 Q20 32 12 28 Q4 26 5 18Z" fill="hsl(${hue2},75%,45%)" stroke="hsl(${hue},75%,30%)" stroke-width="1.2"/>
+    <path d="M7 12 Q20 8 33 12" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+    <ellipse cx="20" cy="6" rx="8" ry="3" fill="rgba(255,255,255,0.2)"/>
+    <circle cx="13" cy="15" r="4.2" fill="white" stroke="hsl(${hue},75%,30%)" stroke-width="0.6"/>
+    <circle cx="14" cy="15.6" r="2.5" fill="#1a1a1a"/>
+    <circle cx="12.8" cy="14.5" r="1.05" fill="white"/>
+    <circle cx="27" cy="15" r="4.2" fill="white" stroke="hsl(${hue},75%,30%)" stroke-width="0.6"/>
+    <circle cx="28" cy="15.6" r="2.5" fill="#1a1a1a"/>
+    <circle cx="26.8" cy="14.5" r="1.05" fill="white"/>
+    <path d="M16 25 Q20 27 24 25" stroke="hsl(${hue},75%,30%)" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
 interface CreatureDef {
   kind: CreatureKind;
   draw: DrawFn;
-  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
-  sizeOverride?: number; // se definido, ignora getFishSize (em px, valor base do SVG)
+  rarity: 'common' | 'uncommon' | 'rare' | 'legendary' | 'special';
+  sizeOverride?: number;
+  power?: SpecialPower;
+  powerRadius?: number;
+  powerLabel?: string;
+  powerColor?: string;
 }
 
-// Peso de cada raridade no pool de sorteio
-const RARITY_WEIGHT = { common: 12, uncommon: 5, rare: 2, legendary: 1 } as const;
+const RARITY_WEIGHT = { common: 12, uncommon: 5, rare: 2, legendary: 1, special: 0 } as const;
 
 const CREATURES: CreatureDef[] = [
   // ── Peixes Ósseos comuns ─────────────────────────────────────────────────────
@@ -875,7 +1227,21 @@ const CREATURES: CreatureDef[] = [
   { kind: 'whale',        draw: drawWhale,        rarity: 'legendary', sizeOverride: 58 },
   { kind: 'whaleshark',   draw: drawWhaleShark,   rarity: 'legendary', sizeOverride: 52 },
   { kind: 'krill',        draw: drawKrill,        rarity: 'legendary', sizeOverride: 10 },
-  { kind: 'seaslug',      draw: drawNudibranch,   rarity: 'legendary', sizeOverride: 8  }, // micro-nudibranch lendário
+  { kind: 'seaslug',      draw: drawNudibranch,   rarity: 'legendary', sizeOverride: 8  },
+
+  // ── Especiais (weight=0 → não entram no sorteio normal; admin pode conceder) ──
+  { kind: 'anglerfish',  draw: drawAnglerfish,  rarity: 'special', sizeOverride: 36,
+    power: 'attract',  powerRadius: 180, powerLabel: 'Atração Abissal',     powerColor: '#00E5FF' },
+  { kind: 'electriceel', draw: drawElectricEel, rarity: 'special', sizeOverride: 24,
+    power: 'electric', powerRadius: 140, powerLabel: 'Descarga Elétrica',   powerColor: '#FFEE58' },
+  { kind: 'ghostfish',   draw: drawGhostFish,   rarity: 'special', sizeOverride: 26,
+    power: 'ghost',    powerRadius: 120, powerLabel: 'Presença Espectral',  powerColor: '#90CAF9' },
+  { kind: 'oarfish',     draw: drawOarfish,     rarity: 'special', sizeOverride: 52,
+    power: 'speed',    powerRadius: 9999,powerLabel: 'Corrente do Abismo',  powerColor: '#EF9A9A' },
+  { kind: 'coelacanth',  draw: drawCoelacanth,  rarity: 'special', sizeOverride: 44,
+    power: 'xpaura',   powerRadius: 200, powerLabel: 'Aura Ancestral',      powerColor: '#66BB6A' },
+  { kind: 'mimic',       draw: drawMimic,       rarity: 'special', sizeOverride: 32,
+    power: 'mimic',    powerRadius: 100, powerLabel: 'Mímico das Profundezas', powerColor: '#CE93D8' },
 ];
 
 // Pool ponderada: cada criatura aparece N vezes conforme seu peso de raridade.
@@ -926,10 +1292,17 @@ interface FishState {
   flipped: boolean;
   wobble: number;
   wobbleSpeed: number;
-  lastMsgTs: number;     // timestamp (ms) da última mensagem já exibida — evita reexibir a mesma msg a cada poll
-  messageUntil: number;  // timestamp (ms) até quando o balão deve ficar visível
+  lastMsgTs: number;
+  messageUntil: number;
   turnTimer: number;
   turnCounter: number;
+  // poderes especiais
+  power: SpecialPower;
+  powerRadius: number;
+  frozenUntil: number;      // timestamp até quando está paralisado (electric)
+  ghostOpacity: number;     // opacidade atual quando afetado pelo ghost (0-1)
+  speedBoost: number;       // multiplicador de velocidade extra (oarfish)
+  mimicTargetIdx: number;   // índice do peixe que está copiando (-1 = nenhum)
 }
 
 // Quanto tempo o balão de chat fica visível acima do peixe.
@@ -947,7 +1320,7 @@ export default function AquariumScene() {
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const msgCountRef = useRef<number>(0);
   // Busca usuários da API — repete a cada 30s para pegar novos registros.
   // Só atualiza o estado se a lista de usernames realmente mudou, evitando
   // disparar o efeito de spawn (e suas race conditions) sem necessidade.
@@ -978,49 +1351,94 @@ export default function AquariumScene() {
   const [chatInput, setChatInput] = useState('');
   const [sending, setSending] = useState(false);
 
-  // ── Gamificação ───────────────────────────────────────────────
-  // XP / nível por usuário
-  const [xpMap, setXpMap]       = useState<Record<string, {xp:number; level:number}>>({});
-  // Alimentação
-  const [feeding, setFeeding]   = useState(false);
-  const foodRef                  = useRef<{x:number;y:number;until:number}|null>(null);
-  // Humor do aquário
+  // ── Gamificação ─────────────────────────────────────────────
+  const [xpMap,    setXpMap]    = useState<Record<string,{xp:number;level:number;badges:string[];streak:number}>>({});
+  const [likes,    setLikes]    = useState<Record<string,number>>({});        // username → total de likes
+  const [myLikes,  setMyLikes]  = useState<Set<string>>(new Set());           // usernames que eu já curti
+  const [ranking,  setRanking]  = useState<{username:string;xp:number;level:number}[]>([]);
+  const [feeding,  setFeeding]  = useState(false);
+  const [feedCooldown, setFeedCooldown] = useState(0);                       // segundos restantes
   const [msgCount, setMsgCount] = useState(0);
-  const msgCountRef              = useRef(0);
-  // Toast de avistamento
-  const [sighting, setSighting] = useState<string|null>(null);
+  const [sighting, setSighting] = useState<{text:string;kind:CreatureKind}|null>(null);
+  const foodRef                 = useRef<{x:number;y:number;until:number}|null>(null);
+  const foodRefStable           = foodRef;
   const seenLegendaryRef        = useRef<Set<string>>(new Set());
+  const lastLoginBonusRef       = useRef<string>('');
 
   const LEGENDARY_KINDS: CreatureKind[] = ['whale','whaleshark','krill','seaslug'];
 
-  // Humor calculado a partir de usuários online e mensagens recentes
+  // ── SVG Icons ────────────────────────────────────────────────
+  const IconFeed  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M12 8v8"/></svg>`;
+  const IconStar  = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
+  const IconHeart = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  const IconShield= `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7l-9-5z"/></svg>`;
+  const IconFlame = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0-6 5.686-6 10a6 6 0 0 0 12 0c0-4.314-6-10-6-10zm0 15a3 3 0 0 1-3-3c0-2 3-5.4 3-5.4S15 12 15 14a3 3 0 0 1-3 3z"/></svg>`;
+  const IconTrophy= `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12v8a6 6 0 0 1-12 0V2zM4 4H2v4a4 4 0 0 0 4 4v-1A4 4 0 0 1 4 8V4zm16 0h-2v4a4 4 0 0 1-2 3.65V13a4 4 0 0 0 4-4V4zM9 20h6l1 2H8l1-2zm-2 2h10v1H7v-1z"/></svg>`;
+  const IconFish  = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 2c.9 0 1.73.24 2.44.66L7.66 15.44A4.97 4.97 0 0 1 7 13c0-2.76 2.24-5 5-5zm0 10c-.9 0-1.73-.24-2.44-.66l6.78-6.78c.42.71.66 1.54.66 2.44 0 2.76-2.24 5-5 5z"/></svg>`;
+  const IconDrop  = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>`;
+
+  // Definição das conquistas
+  type BadgeKey = 'first_fish'|'msg10'|'msg50'|'feed10'|'feed50'|'streak3'|'streak7'|'streak30'|'likes10'|'likes50'|'legendary'|'level10'|'level30';
+  const BADGE_DEFS: Record<BadgeKey,{label:string;desc:string;icon:string;color:string}> = {
+    first_fish: { label:'Primeiro Mergulho', desc:'Entrou no aquário',      icon:IconFish,   color:'#64B5F6' },
+    msg10:      { label:'Comunicativo',      desc:'10 mensagens enviadas',  icon:IconDrop,   color:'#4DD0E1' },
+    msg50:      { label:'Orador do Mar',     desc:'50 mensagens enviadas',  icon:IconDrop,   color:'#00BCD4' },
+    feed10:     { label:'Alimentador',       desc:'Alimentou 10 vezes',     icon:IconStar,   color:'#FFB74D' },
+    feed50:     { label:'Chef do Recife',    desc:'Alimentou 50 vezes',     icon:IconStar,   color:'#FF8F00' },
+    streak3:    { label:'3 Dias Seguidos',   desc:'3 dias no aquário',      icon:IconFlame,  color:'#EF9A9A' },
+    streak7:    { label:'Habitué',           desc:'7 dias seguidos',        icon:IconFlame,  color:'#EF5350' },
+    streak30:   { label:'Veterano',          desc:'30 dias seguidos',       icon:IconFlame,  color:'#B71C1C' },
+    likes10:    { label:'Popular',           desc:'Recebeu 10 curtidas',    icon:IconHeart,  color:'#F48FB1' },
+    likes50:    { label:'Ídolo do Mar',      desc:'Recebeu 50 curtidas',    icon:IconHeart,  color:'#E91E63' },
+    legendary:  { label:'Lendário',          desc:'Tem criatura lendária',  icon:IconShield, color:'#FFD700' },
+    level10:    { label:'Experiente',        desc:'Chegou ao nível 10',     icon:IconTrophy, color:'#7E57C2' },
+    level30:    { label:'Mestre do Aquário', desc:'Chegou ao nível 30',     icon:IconTrophy, color:'#FFD700' },
+  };
+
+  // Humor do aquário
   const aquariumMood = (() => {
-    const u = users.length;
-    const m = msgCount;
-    if (u === 0)   return { emoji:'🌊', label:'Aquário vazio',     color:'rgba(100,150,200,0.7)' };
-    if (u >= 10 && m >= 8)  return { emoji:'🎉', label:'Festa no recife!', color:'rgba(250,200,50,0.9)' };
-    if (m >= 5)             return { emoji:'🌊', label:'Aquário agitado',  color:'rgba(34,211,238,0.85)' };
-    if (u >= 5)             return { emoji:'🐠', label:'Aquário cheio',    color:'rgba(100,220,180,0.85)' };
-    if (m === 0 && u <= 2)  return { emoji:'😴', label:'Aquário quieto',   color:'rgba(150,180,220,0.65)' };
-    return                         { emoji:'🐡', label:'Aquário tranquilo',color:'rgba(120,200,160,0.75)' };
+    const u = users.length, m = msgCount;
+    if (u === 0)          return { icon:IconFish,   label:'Aquário vazio',      color:'rgba(100,150,200,0.7)'  };
+    if (u >= 10 && m >= 8)return { icon:IconTrophy, label:'Festa no recife!',   color:'rgba(255,215,50,0.9)'   };
+    if (m >= 5)           return { icon:IconDrop,   label:'Aquário agitado',    color:'rgba(34,211,238,0.9)'   };
+    if (u >= 5)           return { icon:IconFish,   label:'Aquário cheio',      color:'rgba(100,220,180,0.85)' };
+    if (m === 0 && u <= 2)return { icon:IconStar,   label:'Aquário quieto',     color:'rgba(150,180,220,0.65)' };
+    return                       { icon:IconFish,   label:'Aquário tranquilo',  color:'rgba(120,200,160,0.75)' };
   })();
 
-  // Busca XP/nível de todos os usuários
+  // Fetch XP/badges/ranking
   const fetchXp = useCallback(async () => {
     try {
-      const { data } = await apiClient.get<{success:boolean;data:Record<string,{xp:number;level:number}>}>('/gamification/xp');
-      setXpMap(data.data ?? {});
+      const { data } = await apiClient.get<{success:boolean;data:{
+        xpMap: Record<string,{xp:number;level:number;badges:string[];streak:number}>;
+        ranking: {username:string;xp:number;level:number}[];
+        likes: Record<string,number>;
+      }}>('/gamification/stats');
+      setXpMap(data.data.xpMap ?? {});
+      setRanking(data.data.ranking ?? []);
+      setLikes(data.data.likes ?? {});
+
+      // Bônus de login diário (uma vez por dia)
+      const today = new Date().toDateString();
+      if (user && lastLoginBonusRef.current !== today) {
+        try {
+          await apiClient.post('/gamification/daily');
+          lastLoginBonusRef.current = today;
+          await fetchXp();
+        } catch { /* já recebeu hoje */ }
+      }
+
       // Detecta lendários recém-avistados
       for (const f of fishList.current) {
         if (LEGENDARY_KINDS.includes(f.kind) && !seenLegendaryRef.current.has(f.username)) {
           seenLegendaryRef.current.add(f.username);
-          const label = f.kind === 'whale' ? 'Baleia-azul' : f.kind === 'whaleshark' ? 'Tubarão-baleia' : f.kind === 'krill' ? 'Krill' : 'Lesma-do-mar';
-          setSighting(`🌟 Uma ${label} foi avistada! É de @${f.username}`);
-          setTimeout(() => setSighting(null), 5000);
+          setSighting({ text: `Avistado! @${f.username}`, kind: f.kind });
+          setTimeout(() => setSighting(null), 5500);
         }
       }
-    } catch { /* silently ignore */ }
-  }, []);
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     fetchXp();
@@ -1028,23 +1446,56 @@ export default function AquariumScene() {
     return () => clearInterval(interval);
   }, [fetchXp]);
 
-  // Alimentação: lança comida e concede XP
+  // Alimentação
   const handleFeed = async () => {
-    if (feeding || !user || !wrapRef.current) return;
+    if (feeding || feedCooldown > 0 || !user || !wrapRef.current) return;
     setFeeding(true);
     const rect  = wrapRef.current.getBoundingClientRect();
-    const foodX = 60 + Math.random() * (rect.width - 120);
-    const foodY = rect.height * 0.4 + Math.random() * (rect.height * 0.25);
-    foodRef.current = { x: foodX, y: foodY, until: Date.now() + 4000 };
+    foodRef.current = {
+      x: 60 + Math.random() * (rect.width - 120),
+      y: rect.height * 0.35 + Math.random() * (rect.height * 0.3),
+      until: Date.now() + 4000,
+    };
     try {
       await apiClient.post('/gamification/feed');
       await fetchXp();
-    } catch { /* ignore */ }
+    } catch (e: any) {
+      // Extrai segundos de cooldown da resposta de erro
+      const msg: string = e?.response?.data?.error ?? '';
+      const match = msg.match(/(\d+)s/);
+      if (match) {
+        const secs = parseInt(match[1]);
+        setFeedCooldown(secs);
+        const tick = setInterval(() => {
+          setFeedCooldown(p => { if (p <= 1) { clearInterval(tick); return 0; } return p - 1; });
+        }, 1000);
+      }
+    }
     setTimeout(() => { foodRef.current = null; setFeeding(false); }, 4200);
   };
 
-  // Integra alimentação no loop — peixes nadam em direção à comida
-  const foodRefStable = foodRef;
+  // Like em peixe de outro usuário
+  const handleLike = async (targetUsername: string) => {
+    if (!user || targetUsername === user.username) return;
+    try {
+      if (myLikes.has(targetUsername)) {
+        await apiClient.delete(`/gamification/like/${targetUsername}`);
+        setMyLikes(p => { const n = new Set(p); n.delete(targetUsername); return n; });
+      } else {
+        await apiClient.post(`/gamification/like/${targetUsername}`);
+        setMyLikes(p => new Set([...p, targetUsername]));
+      }
+      await fetchXp();
+    } catch { /* ignore */ }
+  };
+
+  // XP por mensagem enviada
+  const sendMessageAndXp = async (text: string) => {
+    await apiClient.post('/messages', { text });
+    try { await apiClient.post('/gamification/xp/add', { reason:'message', amount:10 }); } catch { /* ignore */ }
+    await fetchXp();
+  };
+
 
 
   // ── Admin: roleta de criaturas ────────────────────────────────
@@ -1121,24 +1572,18 @@ export default function AquariumScene() {
     e.preventDefault();
     const text = chatInput.trim();
     if (!text || !user || sending) return;
-
     setSending(true);
     setChatInput('');
     try {
-      await apiClient.post('/messages', { text });
-      // feedback otimista: já mostra o balão no próprio peixe sem esperar o próximo poll
+      await sendMessageAndXp(text);
       const f = fishList.current.find(fs => fs.username === user.username);
       if (f) {
         f.lastMsgTs = Date.now();
         f.messageUntil = Date.now() + MESSAGE_DISPLAY_MS;
         f.bubbleEl.textContent = text;
       }
-    } catch {
-      // se falhar, devolve o texto pro input pra não perder o que a pessoa digitou
-      setChatInput(text);
-    } finally {
-      setSending(false);
-    }
+    } catch { setChatInput(text); }
+    finally { setSending(false); }
   };
 
   // Spawna peixes quando a lista de usuários mudar ou quando o admin aciona a roleta
@@ -1181,10 +1626,19 @@ export default function AquariumScene() {
     newUsers.forEach((u, idx) => {
       existingUsernames.add(u.username); // reserva o slot imediatamente
 
-      // Sorteia o tipo ANTES do setTimeout (com o mapa atual) e já incrementa
-      // o contador, pra usuários seguintes na mesma rodada não pegarem o mesmo.
-      const reservedTypeIdx = getCreatureType(u.username, typeCounts, shuffleSeed);
-      typeCounts.set(reservedTypeIdx, (typeCounts.get(reservedTypeIdx) ?? 0) + 1);
+      // Se o usuário tem um peixe especial concedido pelo admin, usa ele;
+      // senão sorteia normalmente pelo hash do username.
+      const specialKind = u.special_creature as CreatureKind | undefined;
+      const specialIdx  = specialKind
+        ? CREATURES.findIndex(c => c.kind === specialKind)
+        : -1;
+      const reservedTypeIdx = specialIdx >= 0
+        ? specialIdx
+        : getCreatureType(u.username, typeCounts, shuffleSeed);
+
+      if (specialIdx < 0) {
+        typeCounts.set(reservedTypeIdx, (typeCounts.get(reservedTypeIdx) ?? 0) + 1);
+      }
 
       setTimeout(() => {
         if (!wrapRef.current) return;
@@ -1256,7 +1710,9 @@ export default function AquariumScene() {
 
         // Destaca o peixe do usuário logado
         const isMe = user?.username === u.username;
-        const rarityBadge = rarity === 'legendary'
+        const rarityBadge = rarity === 'special'
+          ? `<span style="color:${creatureDef.powerColor ?? '#fff'};font-size:10px"> ⚡ ${creatureDef.powerLabel ?? 'Especial'}</span>`
+          : rarity === 'legendary'
           ? `<span style="color:#f59e0b;font-size:10px"> ✦ lendário</span>`
           : rarity === 'rare'
           ? `<span style="color:#a78bfa;font-size:10px"> ★ raro</span>`
@@ -1335,6 +1791,12 @@ export default function AquariumScene() {
           turnCounter: Math.floor(Math.random() * 100),
           lastMsgTs: 0,
           messageUntil: 0,
+          power: creatureDef.power ?? null,
+          powerRadius: creatureDef.powerRadius ?? 0,
+          frozenUntil: 0,
+          ghostOpacity: 1,
+          speedBoost: 1,
+          mimicTargetIdx: -1,
         };
 
         fish.el.style.left = fish.x + 'px';
@@ -1367,6 +1829,80 @@ export default function AquariumScene() {
 
         const isMyFish = user?.username === f.username;
         const mouse    = mouseRef.current;
+
+        // ── Poderes especiais: cada peixe especial afeta os vizinhos ──────────
+        if (f.power && f.power !== null) {
+          const fcx = f.x + fw / 2, fcy = f.y + fh / 2;
+          for (const other of fishList.current) {
+            if (other === f) continue;
+            const ofw = other.el.offsetWidth || other.size * 2.2;
+            const ofh = other.el.offsetHeight || other.size;
+            const ocx = other.x + ofw / 2, ocy = other.y + ofh / 2;
+            const dx = ocx - fcx, dy = ocy - fcy;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            if (f.power === 'attract' && dist < f.powerRadius) {
+              // Anglerfish: atrai irresistivelmente
+              const pull = (1 - dist / f.powerRadius) * 2.2;
+              other.vx -= (dx / dist) * pull;
+              other.vy -= (dy / dist) * pull;
+            }
+
+            if (f.power === 'electric' && dist < f.powerRadius) {
+              // Enguia: paralisa peixes próximos por 1.5s a cada 4s
+              const shouldZap = Math.sin(now / 4000 * Math.PI * 2) > 0.85;
+              if (shouldZap && other.frozenUntil < now) {
+                other.frozenUntil = now + 1500;
+                other.el.style.filter = 'brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)';
+              }
+            }
+
+            if (f.power === 'ghost' && dist < f.powerRadius) {
+              // Ghost: peixes próximos ficam translúcidos e aceleram 30%
+              const factor = 1 - dist / f.powerRadius;
+              other.ghostOpacity = Math.max(0.18, 1 - factor * 0.75);
+              other.vx *= 1 + factor * 0.008;
+              other.vy *= 1 + factor * 0.008;
+            }
+
+            if (f.power === 'speed') {
+              // Oarfish: boost global de velocidade (afeta todos)
+              other.speedBoost = 1.6;
+            }
+
+            if (f.power === 'mimic' && dist < f.powerRadius) {
+              // Mímico: copia o índice do peixe mais próximo
+              if (f.mimicTargetIdx === -1 || dist < f.powerRadius * 0.5) {
+                f.mimicTargetIdx = other.typeIdx;
+              }
+            }
+          }
+        }
+
+        // Aplica efeitos recebidos ao próprio fish
+        if (f.frozenUntil > now) {
+          // Paralisado: não atualiza posição
+          f.el.style.opacity = '1';
+          f.wobble += f.wobbleSpeed; // continua animando mas não se move
+        }
+        // Restaura filtro quando não paralisado
+        if (f.frozenUntil < now && f.el.style.filter.includes('drop-shadow(0 0 6px #FFEE58')) {
+          f.el.style.filter = '';
+        }
+        // Restaura opacidade ghost
+        if (f.power !== 'ghost') {
+          f.ghostOpacity = Math.min(1, f.ghostOpacity + 0.02);
+          f.el.style.opacity = f.ghostOpacity.toFixed(2);
+        }
+        // Reset speedBoost a cada frame (re-aplicado se oarfish estiver presente)
+        if (f.power !== 'speed') f.speedBoost = 1;
+
+        // Se paralisado, pula o bloco de movimento
+        if (f.frozenUntil > now) {
+          f.el.style.left = f.x + 'px';
+          f.el.style.top  = f.y + 'px';
+          continue;
+        }
 
         // ── Mouse-follow: só o peixe do usuário logado, só quando mouse está no aquário ──
         if (isMyFish && mouse && f.kind !== 'crab') {
@@ -1472,8 +2008,8 @@ export default function AquariumScene() {
             f.vy = Math.max(-0.7, Math.min(0.7, f.vy));
           }
 
-          f.y += f.vy + Math.sin(f.wobble) * 0.25;
-          f.x += f.vx;
+          f.y += (f.vy + Math.sin(f.wobble) * 0.25) * f.speedBoost;
+          f.x += f.vx * f.speedBoost;
 
           if (f.x < 8) {
             f.x = 8; f.vx = Math.abs(f.vx); f.flipped = true;
@@ -1572,25 +2108,65 @@ export default function AquariumScene() {
           if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
         }
 
+        f.el.style.left = f.x + 'px';
+        f.el.style.top  = f.y + 'px';
 
         // ── Badge de nível (XP) acima do peixe ───────────────────────────────
-      const userData = xpMap[f.username];
-      const level = userData?.level ?? 1;
-        // Cor da borda por nível: cinza < 5, verde < 10, azul < 20, roxo < 30, dourado 30+
+        const userData = xpMap[f.username];
+        const level = userData?.level ?? 1;
+        const userBadges = userData?.badges ?? [];
+        const userLikes  = likes[f.username] ?? 0;
         const lvlColor = level >= 30 ? '#FFD700' : level >= 20 ? '#A855F7' : level >= 10 ? '#3B82F6' : level >= 5 ? '#22C55E' : '#9CA3AF';
-        // Anel ao redor do peixe para lendários de alto nível
-        const glowRing = LEGENDARY_KINDS.includes(f.kind) && level >= 5
-          ? `box-shadow:0 0 ${6+level/2}px ${lvlColor}, 0 0 ${12+level}px rgba(${lvlColor},0.3);`
-          : '';
-        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;left:${f.x}px;top:${f.y}px;${glowRing}`;
+        const isLegendaryCreature = LEGENDARY_KINDS.includes(f.kind);
+        const glowStyle = isLegendaryCreature ? `filter:drop-shadow(0 0 ${4+level/3}px ${lvlColor});` : '';
+        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;${glowStyle}`;
 
-        f.el.innerHTML = CREATURES[f.typeIdx].draw(f.size, f.flipped, f.wobble)
-          + (level > 1 ? `<div style="
-              position:absolute;top:-18px;left:50%;transform:translateX(-50%);
-              background:rgba(8,20,36,0.88);border:1px solid ${lvlColor};
-              color:${lvlColor};font-size:9px;font-weight:700;font-family:monospace;
-              padding:1px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;
-              letter-spacing:0.5px;">Lv${level}</div>` : '');
+        // Badge de nível: ícone SVG pequeno + número
+        const levelBadge = level > 1 ? `
+          <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+            display:flex;align-items:center;gap:3px;
+            background:rgba(6,16,30,0.92);border:1px solid ${lvlColor};
+            color:${lvlColor};font-size:9px;font-weight:700;font-family:monospace;
+            padding:2px 6px;border-radius:10px;white-space:nowrap;pointer-events:none;">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="${lvlColor}"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+            ${level}
+            ${userBadges.slice(0,2).map(b => {
+              const def = BADGE_DEFS[b as BadgeKey];
+              return def ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="${def.color}">${def.icon.replace(/<svg[^>]*>/,'').replace('</svg>','')}</svg>` : '';
+            }).join('')}
+          </div>` : '';
+
+        // Contador de likes embaixo do peixe
+        const likesBadge = userLikes > 0 ? `
+          <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+            display:flex;align-items:center;gap:2px;
+            color:rgba(244,114,182,0.9);font-size:9px;font-family:monospace;
+            pointer-events:none;white-space:nowrap;">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="rgba(244,114,182,0.9)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            ${userLikes}
+          </div>` : '';
+
+        // Desenho base: mimic copia o SVG do alvo, outros usam o próprio
+        const drawIdx = (f.power === 'mimic' && f.mimicTargetIdx >= 0)
+          ? f.mimicTargetIdx
+          : f.typeIdx;
+        const baseSvg = CREATURES[drawIdx].draw(f.size, f.flipped, f.wobble);
+
+        // Aura do peixe especial — anel colorido pulsante ao redor
+        const def = CREATURES[f.typeIdx];
+        const powerAura = def.power ? (() => {
+          const c = def.powerColor ?? '#fff';
+          const r = 4 + Math.sin(f.wobble * 2) * 2;
+          const op = (0.55 + Math.sin(f.wobble * 1.5) * 0.3).toFixed(2);
+          return `<div style="
+            position:absolute;inset:-${r}px;border-radius:50%;
+            border:2px solid ${c};opacity:${op};pointer-events:none;
+            box-shadow:0 0 ${8+r*2}px ${c},inset 0 0 ${4+r}px ${c}40;
+            animation:none;">
+          </div>`;
+        })() : '';
+
+        f.el.innerHTML = powerAura + baseSvg + levelBadge + likesBadge;
 
         // Balão de chat: segue o peixe enquanto a mensagem estiver "viva" (25s)
         if (f.messageUntil > now) {
@@ -1864,64 +2440,108 @@ export default function AquariumScene() {
 
         {/* ── Humor do aquário ── */}
         <div style={{
-          position:'absolute', top:'12px', left:'14px', zIndex:20,
-          display:'flex', alignItems:'center', gap:'6px',
-          background:'rgba(8,20,36,0.75)', border:`1px solid ${aquariumMood.color}`,
-          borderRadius:'20px', padding:'4px 12px', pointerEvents:'none',
-          boxShadow:`0 0 12px rgba(0,0,0,0.3)`,
+          position:'absolute',top:'12px',left:'14px',zIndex:20,
+          display:'flex',alignItems:'center',gap:'6px',
+          background:'rgba(6,16,30,0.82)',border:`1px solid ${aquariumMood.color}`,
+          borderRadius:'20px',padding:'5px 12px',pointerEvents:'none',
+          boxShadow:`0 0 14px rgba(0,0,0,0.35), 0 0 6px ${aquariumMood.color}40`,
         }}>
-          <span style={{fontSize:'15px'}}>{aquariumMood.emoji}</span>
-          <span style={{fontSize:'11px', fontFamily:'monospace', color: aquariumMood.color, fontWeight:600}}>
+          <span style={{color:aquariumMood.color,width:'13px',height:'13px',display:'inline-flex'}}
+            dangerouslySetInnerHTML={{__html:aquariumMood.icon.replace('<svg','<svg width="13" height="13"')}}/>
+          <span style={{fontSize:'11px',fontFamily:'monospace',color:aquariumMood.color,fontWeight:700,letterSpacing:'0.3px'}}>
             {aquariumMood.label}
           </span>
         </div>
 
-        {/* ── Toast de avistamento lendário ── */}
-        {sighting && (
+        {/* ── Ranking top-3 (canto superior direito) ── */}
+        {ranking.slice(0,3).length > 0 && (
           <div style={{
-            position:'absolute', top:'50px', left:'50%', transform:'translateX(-50%)',
-            zIndex:25, background:'rgba(8,20,36,0.95)',
-            border:'1px solid #FFD700', borderRadius:'12px',
-            padding:'8px 18px', color:'#FFD700', fontSize:'13px',
-            fontFamily:'monospace', fontWeight:700, whiteSpace:'nowrap',
-            boxShadow:'0 0 24px rgba(255,215,0,0.4)',
-            animation:'fadeInOut 5s ease forwards',
+            position:'absolute',top:'12px',right:'14px',zIndex:20,
+            display:'flex',flexDirection:'column',gap:'3px',
+            background:'rgba(6,16,30,0.82)',border:'1px solid rgba(255,215,0,0.2)',
+            borderRadius:'12px',padding:'6px 10px',pointerEvents:'none',
           }}>
-            {sighting}
+            {ranking.slice(0,3).map((r,i) => {
+              const medalColor = ['#FFD700','#C0C0C0','#CD7F32'][i];
+              const medalIcon = i === 0
+                ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="${medalColor}"><path d="M6 2h12v8a6 6 0 0 1-12 0V2zM4 4H2v4a4 4 0 0 0 4 4v-1A4 4 0 0 1 4 8V4zm16 0h-2v4a4 4 0 0 1-2 3.65V13a4 4 0 0 0 4-4V4z"/></svg>`
+                : `<svg width="8" height="8" viewBox="0 0 24 24" fill="${medalColor}"><circle cx="12" cy="12" r="10"/></svg>`;
+              return (
+                <div key={r.username} style={{display:'flex',alignItems:'center',gap:'5px'}}>
+                  <span dangerouslySetInnerHTML={{__html:medalIcon}}/>
+                  <span style={{fontSize:'10px',fontFamily:'monospace',color:medalColor,fontWeight:700}}>
+                    @{r.username}
+                  </span>
+                  <span style={{fontSize:'9px',fontFamily:'monospace',color:'rgba(180,200,220,0.6)'}}>
+                    Lv{r.level}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* ── Comida animada ── */}
+        {/* ── Toast de avistamento lendário ── */}
+        {sighting && (
+          <div style={{
+            position:'absolute',top:'54px',left:'50%',zIndex:25,
+            background:'rgba(6,16,30,0.96)',
+            border:'1px solid #FFD700',borderRadius:'14px',
+            padding:'8px 18px',display:'flex',alignItems:'center',gap:'8px',
+            boxShadow:'0 0 28px rgba(255,215,0,0.45)',
+            animation:'fadeInOut 5.5s ease forwards',pointerEvents:'none',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+            <span style={{fontSize:'12px',fontFamily:'monospace',color:'#FFD700',fontWeight:700,whiteSpace:'nowrap'}}>
+              {sighting.text}
+            </span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,215,0,0.6)">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+          </div>
+        )}
+
+        {/* ── Comida animada (SVG em vez de emoji) ── */}
         {feeding && foodRef.current && (
           <>
-            {Array.from({length:8},(_,i)=>(
+            {Array.from({length:6},(_,i)=>(
               <div key={i} style={{
                 position:'absolute',
-                left: `${foodRef.current!.x + (i-3.5)*14}px`,
-                top: `${foodRef.current!.y - 20}px`,
-                fontSize: `${10+i%3*4}px`,
-                zIndex:18, pointerEvents:'none',
-                animation:`foodfall ${0.6+i*0.15}s ease-in ${i*0.08}s forwards`,
+                left:`${foodRef.current!.x + (i-2.5)*16}px`,
+                top:`${foodRef.current!.y - 22}px`,
+                zIndex:18,pointerEvents:'none',
+                animation:`foodfall ${0.5+i*0.14}s ease-in ${i*0.09}s forwards`,
               }}>
-                {['🦐','🐟','🍤','🦐','🐠','🍤','🦐','🐟'][i]}
+                <svg width={10+i%3*5} height={10+i%3*5} viewBox="0 0 20 20">
+                  <ellipse cx="10" cy="10" rx="8" ry="5" fill={['#F4A261','#E76F51','#F4D35E','#E9C46A','#2A9D8F','#264653'][i]}/>
+                  <ellipse cx="10" cy="9" rx="5" ry="2.5" fill="rgba(255,255,255,0.25)"/>
+                </svg>
               </div>
             ))}
             <div style={{
               position:'absolute',
-              left:`${foodRef.current.x - 24}px`,
-              top:`${foodRef.current.y - 8}px`,
-              fontSize:'28px', zIndex:18, pointerEvents:'none',
-              animation:'foodpulse 0.6s ease-in-out infinite alternate',
-            }}>🍤</div>
+              left:`${foodRef.current.x - 20}px`,
+              top:`${foodRef.current.y - 12}px`,
+              zIndex:18,pointerEvents:'none',
+              animation:'foodpulse 0.5s ease-in-out infinite alternate',
+            }}>
+              <svg width="28" height="20" viewBox="0 0 28 20">
+                <ellipse cx="14" cy="12" rx="12" ry="7" fill="#E76F51" stroke="#C45A38" strokeWidth="1"/>
+                <ellipse cx="14" cy="10" rx="8" ry="4" fill="#F4A261" opacity="0.7"/>
+                <circle cx="8" cy="10" r="2" fill="rgba(255,255,255,0.3)"/>
+                <path d="M14 5 Q16 2 18 4" stroke="#E76F51" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                <path d="M10 4 Q11 1 13 3" stroke="#E76F51" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+              </svg>
+            </div>
           </>
         )}
 
 
-       {loading && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
-              <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
+            <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          </div>
         
 
         {/* Aquário vazio */}
@@ -1946,97 +2566,197 @@ export default function AquariumScene() {
         )}
       </div>
 
-      {/* Chat — só aparece pra quem está logado */}
+      {/* Chat + Gamificação — só aparece pra quem está logado */}
       {user && (
         <div className="w-full max-w-5xl mt-3 flex flex-col gap-2">
 
-          {/* Barra de XP / nível do usuário logado */}
+          {/* Barra XP + badges do usuário logado */}
           {(() => {
             const me = xpMap[user.username];
             if (!me) return null;
             const xpInLevel = me.xp % 100;
-            const lvlColor = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
+            const lvlColor  = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
+            const myBadges  = me.badges ?? [];
             return (
-              <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                <span style={{ fontSize:'11px', fontFamily:'monospace', color: lvlColor, minWidth:'52px', fontWeight:700 }}>
-                  Lv {me.level}
-                </span>
-                <div style={{ flex:1, height:'6px', background:'rgba(255,255,255,0.08)', borderRadius:'4px', overflow:'hidden' }}>
-                  <div style={{ height:'100%', width:`${xpInLevel}%`, background:`linear-gradient(90deg, ${lvlColor}, #fff)`, borderRadius:'4px', transition:'width 0.5s ease' }}/>
+              <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+                {/* Linha de XP */}
+                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill={lvlColor}>
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                  </svg>
+                  <span style={{fontSize:'11px',fontFamily:'monospace',color:lvlColor,fontWeight:700,minWidth:'44px'}}>
+                    Lv {me.level}
+                  </span>
+                  <div style={{flex:1,height:'7px',background:'rgba(255,255,255,0.07)',borderRadius:'4px',overflow:'hidden'}}>
+                    <div style={{
+                      height:'100%',width:`${xpInLevel}%`,
+                      background:`linear-gradient(90deg, ${lvlColor}cc, ${lvlColor})`,
+                      borderRadius:'4px',transition:'width 0.6s ease',
+                      boxShadow:`0 0 6px ${lvlColor}80`,
+                    }}/>
+                  </div>
+                  <span style={{fontSize:'10px',fontFamily:'monospace',color:'rgba(140,170,210,0.65)',minWidth:'72px',textAlign:'right'}}>
+                    {me.xp} XP · {me.streak}d streak
+                  </span>
                 </div>
-                <span style={{ fontSize:'10px', fontFamily:'monospace', color:'rgba(150,180,220,0.7)', minWidth:'68px', textAlign:'right' }}>
-                  {me.xp} XP total
-                </span>
+                {/* Badges conquistados */}
+                {myBadges.length > 0 && (
+                  <div style={{display:'flex',gap:'5px',flexWrap:'wrap'}}>
+                    {myBadges.map(b => {
+                      const def = BADGE_DEFS[b as BadgeKey];
+                      if (!def) return null;
+                      return (
+                        <div key={b} title={`${def.label} — ${def.desc}`} style={{
+                          display:'flex',alignItems:'center',gap:'3px',
+                          background:`rgba(6,16,30,0.85)`,border:`1px solid ${def.color}55`,
+                          borderRadius:'8px',padding:'2px 7px',cursor:'default',
+                        }}>
+                          <span style={{color:def.color,display:'inline-flex'}}
+                            dangerouslySetInnerHTML={{__html:def.icon.replace('<svg','<svg width="9" height="9"')}}/>
+                          <span style={{fontSize:'9px',fontFamily:'monospace',color:def.color,fontWeight:600}}>
+                            {def.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}
 
+          {/* Row de chat + botões */}
           <form onSubmit={handleSendMessage} className="flex gap-2">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={e => setChatInput(e.target.value)}
-            maxLength={80}
-            placeholder="Diga algo pro aquário e aperte Enter..."
-            className="flex-1 px-4 py-2 text-sm rounded-lg outline-none font-mono"
-            style={{
-              background: 'rgba(10,30,50,0.55)',
-              border: '1px solid rgba(34,211,238,0.2)',
-              color: '#e6f7ff',
-            }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(34,211,238,0.5)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(34,211,238,0.2)')}
-          />
-          <button
-            type="submit"
-            disabled={sending || !chatInput.trim()}
-            className="px-4 py-2 text-sm font-semibold rounded-lg transition"
-            style={{
-              background: sending || !chatInput.trim() ? 'rgba(34,211,238,0.3)' : '#22d3ee',
-              color: '#040e1a',
-              cursor: sending || !chatInput.trim() ? 'default' : 'pointer',
-            }}
-          >
-            Enviar
-          </button>
-
-          {/* Botão alimentar */}
-          <button
-            type="button"
-            onClick={handleFeed}
-            disabled={feeding}
-            title="Alimentar os peixes (+25 XP)"
-            className="px-3 py-2 text-lg rounded-lg transition"
-            style={{
-              background: feeding ? 'rgba(255,180,60,0.25)' : 'rgba(255,160,40,0.18)',
-              border: `1px solid rgba(255,180,60,${feeding?0.2:0.45})`,
-              cursor: feeding ? 'default' : 'pointer',
-              animation: feeding ? 'spin 1s linear infinite' : 'none',
-            }}
-          >
-            🍤
-          </button>
-
-          {/* Botão de roleta — visível só pro admin (Sonim) */}
-          {user.username === ADMIN_USERNAME && (
-            <button
-              type="button"
-              onClick={handleReshuffle}
-              disabled={reshuffling}
-              title="Rolar a roleta — todos os peixes trocam de espécie"
-              className="px-3 py-2 text-sm font-bold rounded-lg transition"
+            <input
+              type="text"
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              maxLength={80}
+              placeholder="Diga algo pro aquário e aperte Enter..."
+              className="flex-1 px-4 py-2 text-sm rounded-lg outline-none font-mono"
               style={{
-                background: reshuffling ? 'rgba(251,191,36,0.3)' : 'linear-gradient(135deg,#f59e0b,#ef4444)',
-                color: '#fff', cursor: reshuffling ? 'default' : 'pointer',
-                boxShadow: reshuffling ? 'none' : '0 0 12px rgba(245,158,11,0.5)',
-                fontSize: '18px', lineHeight: 1,
-                animation: reshuffling ? 'spin 0.6s linear infinite' : 'none',
+                background:'rgba(10,30,50,0.55)',
+                border:'1px solid rgba(34,211,238,0.2)',
+                color:'#e6f7ff',
               }}
-            >
-              🎲
+              onFocus={e => (e.currentTarget.style.borderColor='rgba(34,211,238,0.5)')}
+              onBlur={e  => (e.currentTarget.style.borderColor='rgba(34,211,238,0.2)')}
+            />
+
+            {/* Enviar */}
+            <button type="submit" disabled={sending || !chatInput.trim()}
+              className="px-4 py-2 text-sm font-semibold rounded-lg transition flex items-center gap-1"
+              style={{
+                background:sending || !chatInput.trim() ? 'rgba(34,211,238,0.25)' : '#22d3ee',
+                color:'#040e1a',cursor:sending||!chatInput.trim()?'default':'pointer',
+              }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+              </svg>
+              Enviar
             </button>
+
+            {/* Alimentar */}
+            <button type="button" onClick={handleFeed}
+              disabled={feeding || feedCooldown > 0}
+              title={feedCooldown > 0 ? `Aguarde ${feedCooldown}s` : 'Alimentar os peixes (+25 XP)'}
+              className="px-3 py-2 rounded-lg transition flex items-center gap-1"
+              style={{
+                background:feeding||feedCooldown>0?'rgba(244,162,97,0.15)':'rgba(244,162,97,0.22)',
+                border:`1px solid rgba(244,162,97,${feeding||feedCooldown>0?0.2:0.5})`,
+                color:`rgba(244,162,97,${feeding||feedCooldown>0?0.4:0.9})`,
+                cursor:feeding||feedCooldown>0?'default':'pointer',
+                minWidth:'60px',fontSize:'11px',fontFamily:'monospace',fontWeight:600,
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                style={{animation:feeding?'spin 1s linear infinite':'none'}}>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+              </svg>
+              {feedCooldown > 0 ? `${feedCooldown}s` : '+25 XP'}
+            </button>
+
+            {/* Admin: roleta */}
+            {user.username === ADMIN_USERNAME && (
+              <>
+                <button type="button" onClick={handleReshuffle} disabled={reshuffling}
+                  title="Rolar a roleta — todos os peixes trocam de espécie"
+                  className="px-3 py-2 rounded-lg transition flex items-center gap-1"
+                  style={{
+                    background:reshuffling?'rgba(245,158,11,0.2)':'linear-gradient(135deg,rgba(245,158,11,0.4),rgba(239,68,68,0.4))',
+                    border:'1px solid rgba(245,158,11,0.5)',
+                    color:'rgba(245,158,11,0.9)',cursor:reshuffling?'default':'pointer',
+                    fontSize:'11px',fontFamily:'monospace',fontWeight:700,
+                  }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"
+                    style={{animation:reshuffling?'spin 0.5s linear infinite':'none'}}>
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 7c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1 1 1zm5-4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1 1 1zm5 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1 1 1zm0-8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1 1 1z"/>
+                  </svg>
+                  Roleta
+                </button>
+                {/* Concessão de peixe especial */}
+                <select
+                  title="Conceder peixe especial a um usuário"
+                  onChange={async e => {
+                    const [username, kind] = e.target.value.split(':');
+                    if (!username || !kind) return;
+                    try {
+                      await apiClient.post('/admin/grant-special', { username, kind });
+                      await fetchXp();
+                    } catch { /* ignore */ }
+                    e.target.value = '';
+                  }}
+                  style={{
+                    background:'rgba(6,16,30,0.9)',
+                    border:'1px solid rgba(206,147,216,0.5)',
+                    color:'rgba(206,147,216,0.9)',
+                    borderRadius:'8px',padding:'6px 8px',
+                    fontSize:'10px',fontFamily:'monospace',cursor:'pointer',
+                    maxWidth:'130px',
+                  }}>
+                  <option value="">⚡ Especial...</option>
+                  {users.map(u => ['anglerfish','electriceel','ghostfish','oarfish','coelacanth','mimic'].map(k => (
+                    <option key={`${u.username}:${k}`} value={`${u.username}:${k}`}>
+                      @{u.username} → {k}
+                    </option>
+                  )))}
+                </select>
+              </>
+            )}
+          </form>
+
+          {/* Painel de likes — outros usuários do aquário */}
+          {users.filter(u => u.username !== user.username).length > 0 && (
+            <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'2px'}}>
+              <span style={{fontSize:'10px',fontFamily:'monospace',color:'rgba(140,170,210,0.5)',alignSelf:'center'}}>
+                Curtir:
+              </span>
+              {users.filter(u => u.username !== user.username).map(u => {
+                const liked    = myLikes.has(u.username);
+                const likeCount= likes[u.username] ?? 0;
+                return (
+                  <button key={u.username} type="button"
+                    onClick={() => handleLike(u.username)}
+                    title={liked?`Descurtir @${u.username}`:`Curtir @${u.username} (+5 XP pra eles)`}
+                    style={{
+                      display:'flex',alignItems:'center',gap:'3px',
+                      background:liked?'rgba(244,114,182,0.18)':'rgba(255,255,255,0.04)',
+                      border:`1px solid rgba(244,114,182,${liked?0.55:0.2})`,
+                      borderRadius:'12px',padding:'2px 8px',cursor:'pointer',
+                      transition:'all 0.2s',
+                    }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24"
+                      fill={liked?'rgba(244,114,182,0.9)':'none'}
+                      stroke="rgba(244,114,182,0.8)" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span style={{fontSize:'10px',fontFamily:'monospace',color:`rgba(244,114,182,${liked?0.9:0.55})`}}>
+                      @{u.username}{likeCount > 0 ? ` · ${likeCount}` : ''}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           )}
-        </form>
         </div>
       )}
 
