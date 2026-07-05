@@ -1816,92 +1816,92 @@ export default function AquariumScene() {
       const H = wrapRef.current.offsetHeight;
       const floorY = H - 72;
       const ceilY = 36;
-      const sandTopY = H - 60; // topo do bloco de areia visual (ver style do div "Areia")
+      const sandTopY = H - 60;
       const now = Date.now();
 
       for (const f of fishList.current) {
-        f.wobble += f.wobbleSpeed;
-        f.turnCounter++;
+        try {
+          f.wobble += f.wobbleSpeed;
+          f.turnCounter++;
 
-        const fw = f.el.offsetWidth  || f.size * 2.2;
-        const fh = f.el.offsetHeight || f.size;
+          const fw = f.el.offsetWidth  || f.size * 2.2;
+          const fh = f.el.offsetHeight || f.size;
 
-        const isMyFish = user?.username === f.username;
-        const mouse    = mouseRef.current;
+          const isMyFish = user?.username === f.username;
+          const mouse    = mouseRef.current;
 
-        // ── Poderes especiais: cada peixe especial afeta os vizinhos ──────────
-        if (f.power && f.power !== null) {
-          const fcx = f.x + fw / 2, fcy = f.y + fh / 2;
-          for (const other of fishList.current) {
-            if (other === f) continue;
-            const ofw = other.el.offsetWidth || other.size * 2.2;
-            const ofh = other.el.offsetHeight || other.size;
-            const ocx = other.x + ofw / 2, ocy = other.y + ofh / 2;
-            const dx = ocx - fcx, dy = ocy - fcy;
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          // ── Inicializa campos de poder se ainda não existirem (peixes legados) ──
+          if (f.frozenUntil  === undefined) f.frozenUntil  = 0;
+          if (f.ghostOpacity === undefined) f.ghostOpacity = 1;
+          if (f.speedBoost   === undefined) f.speedBoost   = 1;
+          if (f.mimicTargetIdx === undefined) f.mimicTargetIdx = -1;
 
-            if (f.power === 'attract' && dist < f.powerRadius) {
-              // Anglerfish: atrai irresistivelmente
-              const pull = (1 - dist / f.powerRadius) * 2.2;
-              other.vx -= (dx / dist) * pull;
-              other.vy -= (dy / dist) * pull;
-            }
+          // ── Poderes especiais ─────────────────────────────────────────────────
+          if (f.power) {
+            const fcx = f.x + fw / 2, fcy = f.y + fh / 2;
+            for (const other of fishList.current) {
+              if (other === f) continue;
+              if (other.frozenUntil  === undefined) other.frozenUntil  = 0;
+              if (other.ghostOpacity === undefined) other.ghostOpacity = 1;
+              if (other.speedBoost   === undefined) other.speedBoost   = 1;
+              const ofw = other.el.offsetWidth || other.size * 2.2;
+              const ofh = other.el.offsetHeight || other.size;
+              const dx = (other.x + ofw / 2) - fcx;
+              const dy = (other.y + ofh / 2) - fcy;
+              const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            if (f.power === 'electric' && dist < f.powerRadius) {
-              // Enguia: paralisa peixes próximos por 1.5s a cada 4s
-              const shouldZap = Math.sin(now / 4000 * Math.PI * 2) > 0.85;
-              if (shouldZap && other.frozenUntil < now) {
-                other.frozenUntil = now + 1500;
-                other.el.style.filter = 'brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)';
+              if (f.power === 'attract' && dist < f.powerRadius) {
+                const pull = (1 - dist / f.powerRadius) * 2.2;
+                other.vx -= (dx / dist) * pull;
+                other.vy -= (dy / dist) * pull;
               }
-            }
-
-            if (f.power === 'ghost' && dist < f.powerRadius) {
-              // Ghost: peixes próximos ficam translúcidos e aceleram 30%
-              const factor = 1 - dist / f.powerRadius;
-              other.ghostOpacity = Math.max(0.18, 1 - factor * 0.75);
-              other.vx *= 1 + factor * 0.008;
-              other.vy *= 1 + factor * 0.008;
-            }
-
-            if (f.power === 'speed') {
-              // Oarfish: boost global de velocidade (afeta todos)
-              other.speedBoost = 1.6;
-            }
-
-            if (f.power === 'mimic' && dist < f.powerRadius) {
-              // Mímico: copia o índice do peixe mais próximo
-              if (f.mimicTargetIdx === -1 || dist < f.powerRadius * 0.5) {
-                f.mimicTargetIdx = other.typeIdx;
+              if (f.power === 'electric' && dist < f.powerRadius) {
+                const shouldZap = Math.sin(now / 4000 * Math.PI * 2) > 0.85;
+                if (shouldZap && other.frozenUntil < now) {
+                  other.frozenUntil = now + 1500;
+                }
+              }
+              if (f.power === 'ghost' && dist < f.powerRadius) {
+                const factor = 1 - dist / f.powerRadius;
+                other.ghostOpacity = Math.max(0.18, 1 - factor * 0.75);
+              }
+              if (f.power === 'speed') {
+                other.speedBoost = 1.6;
+              }
+              if (f.power === 'mimic' && dist < f.powerRadius) {
+                if (f.mimicTargetIdx === -1 || dist < f.powerRadius * 0.5) {
+                  f.mimicTargetIdx = other.typeIdx;
+                }
               }
             }
           }
-        }
 
-        // Aplica efeitos recebidos ao próprio fish
-        if (f.frozenUntil > now) {
-          // Paralisado: não atualiza posição
-          f.el.style.opacity = '1';
-          f.wobble += f.wobbleSpeed; // continua animando mas não se move
-        }
-        // Restaura filtro quando não paralisado
-        if (f.frozenUntil < now && f.el.style.filter.includes('drop-shadow(0 0 6px #FFEE58')) {
-          f.el.style.filter = '';
-        }
-        // Restaura opacidade ghost
-        if (f.power !== 'ghost') {
-          f.ghostOpacity = Math.min(1, f.ghostOpacity + 0.02);
+          // ── Aplica efeito elétrico visualmente ───────────────────────────────
+          const isFrozen = f.frozenUntil > now;
+          if (isFrozen) {
+            f.el.style.filter = 'brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)';
+          } else if (f.el.style.filter !== '') {
+            f.el.style.filter = '';
+          }
+
+          // ── Opacidade ghost ───────────────────────────────────────────────────
+          if (f.power !== 'ghost') {
+            f.ghostOpacity = Math.min(1, f.ghostOpacity + 0.02);
+          }
           f.el.style.opacity = f.ghostOpacity.toFixed(2);
-        }
-        // Reset speedBoost a cada frame (re-aplicado se oarfish estiver presente)
-        if (f.power !== 'speed') f.speedBoost = 1;
 
-        // Se paralisado, pula o bloco de movimento
-        if (f.frozenUntil > now) {
-          f.el.style.left = f.x + 'px';
-          f.el.style.top  = f.y + 'px';
-          continue;
-        }
+          // ── Reset speedBoost (re-aplicado se oarfish estiver presente) ────────
+          if (f.power !== 'speed') f.speedBoost = 1;
+
+          // ── Se paralisado, pula movimento ─────────────────────────────────────
+          if (isFrozen) {
+            f.el.style.left = f.x + 'px';
+            f.el.style.top  = f.y + 'px';
+            // Redesenha mesmo parado para animar tentáculos/barbatanas
+            const defFrozen = CREATURES[f.typeIdx];
+            if (defFrozen) f.el.innerHTML = defFrozen.draw(f.size, f.flipped, f.wobble);
+            continue;
+          }
 
         // ── Mouse-follow: só o peixe do usuário logado, só quando mouse está no aquário ──
         if (isMyFish && mouse && f.kind !== 'crab') {
@@ -2167,13 +2167,18 @@ export default function AquariumScene() {
 
         f.el.innerHTML = powerAura + baseSvg + levelBadge + likesBadge;
 
-        // Balão de chat: segue o peixe enquanto a mensagem estiver "viva" (25s)
+        // Balão de chat: segue o peixe enquanto a mensagem estiver "viva"
         if (f.messageUntil > now) {
           f.bubbleEl.style.left = (f.x + fw / 2) + 'px';
           f.bubbleEl.style.top  = (f.y - 38) + 'px';
           f.bubbleEl.style.opacity = '1';
         } else if (f.bubbleEl.style.opacity !== '0') {
           f.bubbleEl.style.opacity = '0';
+        }
+
+        } catch (err) {
+          // Fish individual crashou — continua o loop pro próximo
+          console.warn('Fish render error:', err);
         }
       }
 
