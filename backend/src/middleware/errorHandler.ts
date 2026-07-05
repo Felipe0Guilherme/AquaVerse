@@ -1,17 +1,13 @@
 // src/middleware/errorHandler.ts
-// ============================================================
-// Global error handler middleware for Express.
-// Must be registered LAST in the middleware chain (after all routes).
-// ============================================================
-
 import { Request, Response, NextFunction } from 'express';
 
-// Typed application error — lets controllers throw structured errors
+// ⚠️ Ordem original dos parâmetros: (statusCode, message)
+// Os controllers existentes chamam: new AppError(400, 'mensagem')
 export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
 
-  constructor(message: string, statusCode = 500, isOperational = true) {
+  constructor(statusCode: number, message: string, isOperational = true) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
@@ -29,7 +25,6 @@ export function errorHandler(
   const statusCode = (err as AppError).statusCode ?? 500;
   const isOperational = (err as AppError).isOperational ?? false;
 
-  // Log unexpected (non-operational) errors for debugging
   if (!isOperational) {
     console.error('[Unhandled error]', err);
   }
