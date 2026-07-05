@@ -2118,8 +2118,13 @@ export default function AquariumScene() {
         const userLikes  = likes[f.username] ?? 0;
         const lvlColor = level >= 30 ? '#FFD700' : level >= 20 ? '#A855F7' : level >= 10 ? '#3B82F6' : level >= 5 ? '#22C55E' : '#9CA3AF';
         const isLegendaryCreature = LEGENDARY_KINDS.includes(f.kind);
-        const glowStyle = isLegendaryCreature ? `filter:drop-shadow(0 0 ${4+level/3}px ${lvlColor});` : '';
-        f.el.style.cssText = `position:absolute;cursor:pointer;z-index:10;user-select:none;${glowStyle}`;
+        // Não usar style.cssText aqui — isso apagaria left/top setados acima
+        // a cada frame, prendendo o peixe no canto (0,0). Só ajustamos o filter.
+        if (isLegendaryCreature) {
+          f.el.style.filter = `drop-shadow(0 0 ${4+level/3}px ${lvlColor})`;
+        } else if (!isFrozen && f.el.style.filter && f.el.style.filter.startsWith('drop-shadow')) {
+          f.el.style.filter = isMyFish ? 'drop-shadow(0 0 4px rgba(34,211,238,0.4))' : '';
+        }
 
         // Badge de nível: ícone SVG pequeno + número
         const levelBadge = level > 1 ? `
