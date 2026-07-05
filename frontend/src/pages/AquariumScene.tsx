@@ -1320,7 +1320,8 @@ export default function AquariumScene() {
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const msgCountRef = useRef<number>(0);
+ const msgCountRef = useRef<number>(0);
+
   // Busca usuários da API — repete a cada 30s para pegar novos registros.
   // Só atualiza o estado se a lista de usernames realmente mudou, evitando
   // disparar o efeito de spawn (e suas race conditions) sem necessidade.
