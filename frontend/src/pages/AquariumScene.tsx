@@ -24,7 +24,7 @@ type CreatureKind =
   | 'manta' | 'krill' | 'jellyfish'
   | 'anglerfish' | 'electriceel' | 'ghostfish' | 'oarfish' | 'coelacanth' | 'mimic';
 
-type SpecialPower = 'attract'|'electric'|'ghost'|'speed'|'xpaura'|'mimic'|null;
+type SpecialPower = 'attract'|'electric'|'ghost'|'speed'|'xpaura'|'mimic'|'repel'|'poison'|null;
 type DrawFn = (size: number, flipped: boolean, phase: number) => string;
 
 const FISH: DrawFn[] = [
@@ -1024,150 +1024,195 @@ const drawKrill: DrawFn = (s, f, phase) => {
 
 
 // ════════════════════════════════════════════════════════════════
-// PEIXES ESPECIAIS — cada um com poder único que afeta o aquário
+// PEIXES ESPECIAIS — formas únicas, poderes que afetam o aquário
 // ════════════════════════════════════════════════════════════════
 
+// ── Anglerfish: corpo globular de abismo, isco com luz pulsante ───────────────
 const drawAnglerfish: DrawFn = (s, f, phase) => {
-  const lure = Math.sin(phase * 1.4) * 5;
-  const glow = (0.6 + Math.sin(phase * 2) * 0.4).toFixed(2);
-  const glow2 = (0.3 + Math.sin(phase * 2) * 0.2).toFixed(2);
-  return `<svg width="${s*2}" height="${s*1.6}" viewBox="0 0 40 32" style="transform:scaleX(${f?-1:1})">
-    <circle cx="14" cy="${6+lure}" r="9" fill="rgba(0,229,255,0.08)" opacity="${glow2}"/>
-    <circle cx="14" cy="${6+lure}" r="6" fill="rgba(0,229,255,0.18)" opacity="${glow2}"/>
-    <path d="M12 5 Q10 1 14 ${1+lure} Q12 ${3+lure} 14 ${6+lure}" stroke="#2d3748" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <circle cx="14" cy="${6+lure}" r="4" fill="#00E5FF" opacity="${glow}"/>
-    <path d="M8 16 Q7 7 20 6 Q33 5 36 16 Q30 27 20 27 Q7 26 8 16Z" fill="#1a2030" stroke="#111" stroke-width="1.2"/>
-    <path d="M11 18 Q20 24 32 18 Q30 24 20 26 Q10 24 11 18Z" fill="rgba(50,80,120,0.4)"/>
-    <path d="M8 14 Q9 10 12 11 L12 22 Q9 23 8 21Z" fill="#0d1520"/>
-    <path d="M7 14 Q5 11 3 13 Q5 18 3 21 Q6 19 7 21" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    <line x1="4" y1="14" x2="6" y2="16" stroke="white" stroke-width="0.9"/>
-    <line x1="4" y1="17" x2="6" y2="18.5" stroke="white" stroke-width="0.9"/>
-    <line x1="4" y1="20" x2="6" y2="21" stroke="white" stroke-width="0.9"/>
-    <path d="M36 14 L42 10 L42 22Z" fill="#1a2030" stroke="#111" stroke-width="0.8"/>
-    <circle cx="10" cy="14" r="4" fill="white" stroke="#111" stroke-width="0.5"/>
-    <circle cx="10.8" cy="14.5" r="2.4" fill="#111"/>
-    <circle cx="10" cy="13.7" r="1" fill="rgba(0,229,255,0.85)"/>
-  </svg>`;
-};
-
-const drawElectricEel: DrawFn = (s, f, phase) => {
-  const w1 = Math.sin(phase * 0.7) * 9;
-  const w2 = Math.sin(phase * 0.7 + 1.2) * 9;
-  const w3 = Math.sin(phase * 0.7 + 2.4) * 9;
-  const spark = Math.sin(phase * 4) > 0.6;
-  return `<svg width="${s*4}" height="${s*1.2}" viewBox="0 0 80 24" style="transform:scaleX(${f?-1:1})">
-    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="#1A237E" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="#3949AB" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M4 12 Q18 ${12+w1} 36 12 Q54 ${12+w2} 68 12 Q74 ${12+w3*0.5} 76 12" stroke="${spark?'#FFEE58':'#5C6BC0'}" stroke-width="2" fill="none" stroke-linecap="round" opacity="${spark?'0.9':'0.4'}"/>
-    ${spark?`<path d="M28 ${12+w1*0.5} L25 ${8+w1*0.5} L30 ${10+w1*0.5} L27 ${6+w1*0.5}" stroke="#FFEE58" stroke-width="1.5" fill="none"/>
-    <path d="M50 ${12+w2*0.5} L47 ${8+w2*0.5} L52 ${9+w2*0.5} L49 ${5+w2*0.5}" stroke="#FFEE58" stroke-width="1.5" fill="none"/>`:''}
-    <path d="M76 10 L80 8 L80 16 L76 14Z" fill="#3949AB"/>
-    <ellipse cx="6" cy="12" rx="5" ry="4.5" fill="#283593"/>
-    <circle cx="4" cy="10.5" r="2.2" fill="white" stroke="#1A237E" stroke-width="0.5"/>
-    <circle cx="4.7" cy="11" r="1.3" fill="#111"/>
-    <circle cx="4.1" cy="10.3" r="0.55" fill="rgba(200,220,255,0.9)"/>
-    <path d="M2 13.5 Q3.5 15.5 6 13.5" stroke="#1A237E" stroke-width="1" fill="none" stroke-linecap="round"/>
-  </svg>`;
-};
-
-const drawGhostFish: DrawFn = (s, f, phase) => {
-  const pulse = (0.55 + Math.sin(phase * 0.8) * 0.2).toFixed(2);
-  const p25 = (parseFloat(pulse)*0.25).toFixed(2);
-  const p80 = (parseFloat(pulse)*0.8).toFixed(2);
-  const p18 = (parseFloat(pulse)*0.18).toFixed(2);
-  const p40 = (parseFloat(pulse)*0.4).toFixed(2);
-  const p30 = (parseFloat(pulse)*0.3).toFixed(2);
-  const p70 = (parseFloat(pulse)*0.7).toFixed(2);
-  const trail = Math.sin(phase * 0.5) * 4;
-  return `<svg width="${s*2.4}" height="${s*1.1}" viewBox="0 0 48 22" style="transform:scaleX(${f?-1:1})">
-    <path d="M8 11 Q7 3 21 2 Q38 1 44 11 Q38 20 21 20 Q7 19 8 11Z" fill="rgba(180,220,255,${p25})" stroke="rgba(150,210,255,${p80})" stroke-width="1.2"/>
-    <path d="M10 13 Q22 18 40 13 Q38 19 21 20 Q8 18 10 13Z" fill="rgba(255,255,255,${p18})"/>
-    <path d="M12 5 Q22 3 36 5" stroke="rgba(200,240,255,${p40})" stroke-width="1.5" fill="none"/>
-    <path d="M44 8 Q52 ${5+trail} 50 11 Q52 ${17-trail} 44 14Z" fill="rgba(150,210,255,${p30})" stroke="rgba(150,210,255,${p70})" stroke-width="0.8"/>
-    <path d="M17 14 Q12 20 14 23 Q18 20 18 16Z" fill="rgba(180,220,255,${p30})"/>
-    <circle cx="10" cy="10" r="4.5" fill="rgba(220,240,255,${p30})" stroke="rgba(180,220,255,${p70})" stroke-width="0.8"/>
-    <circle cx="10.8" cy="10.5" r="2.7" fill="rgba(100,180,255,${p80})"/>
-    <circle cx="9.7" cy="9.4" r="1.1" fill="rgba(255,255,255,0.9)"/>
-    <path d="M6 13 Q7.5 15.5 10 13" stroke="rgba(150,210,255,${p70})" stroke-width="1" fill="none" stroke-linecap="round"/>
-  </svg>`;
-};
-
-const drawOarfish: DrawFn = (s, f, phase) => {
-  const w = Math.sin(phase * 0.4) * 12;
-  const w2 = Math.sin(phase * 0.4 + 1) * 10;
-  const dots = Array.from({length:8},(_,i)=>`<ellipse cx="${(12+w*(i/8)).toFixed(1)}" cy="${12+i*10}" rx="0.8" ry="2" fill="rgba(180,220,255,0.4)"/>`).join('');
-  return `<svg width="${s*1.2}" height="${s*5}" viewBox="0 0 24 100" style="transform:scaleX(${f?-1:1})">
-    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="#607D8B" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="#B0BEC5" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M12 4 Q${12+w} 25 ${12+w2} 50 Q${12+w} 75 12 96" stroke="rgba(207,226,255,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M${12+w} 50 L${12+w+14} 44 M${12+w} 50 L${12+w+14} 56" stroke="#F44336" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M12 94 L5 100 L12 96 L19 100Z" fill="#546E7A"/>
-    <path d="M8 6 Q5 2 8 8 M16 6 Q19 2 16 8" stroke="#EF9A9A" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="12" cy="5" rx="5" ry="4" fill="#546E7A"/>
-    <circle cx="10" cy="4" r="2" fill="white" stroke="#455A64" stroke-width="0.4"/>
-    <circle cx="10.5" cy="4.4" r="1.2" fill="#111"/>
-    <circle cx="9.9" cy="3.8" r="0.5" fill="white"/>
-    <path d="M10 7 Q12 8.5 14 7" stroke="#455A64" stroke-width="0.9" fill="none" stroke-linecap="round"/>
-    ${dots}
-  </svg>`;
-};
-
-const drawCoelacanth: DrawFn = (s, f, phase) => {
-  const aura = (0.4 + Math.sin(phase * 0.6) * 0.25).toFixed(2);
-  const aura2 = (parseFloat(aura)*0.25).toFixed(2);
-  const aura3 = (parseFloat(aura)*0.15).toFixed(2);
-  const aura4 = (parseFloat(aura)*0.7).toFixed(2);
-  const dots = Array.from({length:6},(_,i)=>`<circle cx="${8+i*7}" cy="${10+i%3*4}" r="1.2" fill="rgba(100,220,180,${aura4})"/>`).join('');
-  return `<svg width="${s*2.5}" height="${s*1.5}" viewBox="0 0 50 30" style="transform:scaleX(${f?-1:1})">
-    <ellipse cx="24" cy="15" rx="22" ry="13" fill="rgba(0,150,100,${aura2})" opacity="0.8"/>
-    <ellipse cx="24" cy="15" rx="18" ry="10" fill="rgba(0,200,140,${aura3})" opacity="0.7"/>
-    <path d="M8 15 Q7 6 22 5 Q38 4 44 15 Q37 25 22 25 Q7 24 8 15Z" fill="#01579B" stroke="#013A6B" stroke-width="1.3"/>
-    <path d="M11 18 Q22 24 38 18 Q36 23 22 24 Q9 23 11 18Z" fill="rgba(0,100,180,0.4)"/>
-    <path d="M18 5 Q22 3 28 5" stroke="#0288D1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M28 5 Q33 3 38 6" stroke="#0288D1" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M10 10 Q8 6 6 8 Q5 12 6 16 Q8 14 10 18Z" fill="#01579B" stroke="#013A6B" stroke-width="0.8"/>
-    <path d="M14 22 Q10 26 8 24 Q9 20 14 21Z" fill="#01579B"/>
-    <path d="M32 23 Q28 27 26 25 Q27 21 32 22Z" fill="#01579B"/>
-    <path d="M44 13 L50 8 L50 22Z" fill="#01579B" stroke="#013A6B" stroke-width="0.8"/>
-    <path d="M15 8 Q18 7 20 9 L20 22 Q17 23 15 22 Q13 19 13 15 Q13 10 15 8Z" fill="#013A6B" opacity="0.5"/>
-    <path d="M28 7 Q31 6 32 8 L32 22 Q29 23 28 22 Q27 7 28 7Z" fill="#013A6B" opacity="0.45"/>
-    ${dots}
-    <circle cx="10" cy="13" r="4.2" fill="white" stroke="#013A6B" stroke-width="0.6"/>
-    <circle cx="10.9" cy="13.5" r="2.5" fill="#01579B"/>
-    <circle cx="10" cy="12.7" r="1.05" fill="rgba(100,220,180,0.9)"/>
-    <path d="M6 16 Q7.5 18.5 10 16" stroke="#013A6B" stroke-width="1" fill="none" stroke-linecap="round"/>
-  </svg>`;
-};
-
-const drawMimic: DrawFn = (s, _f, phase) => {
-  const hue = Math.floor((phase * 20) % 360);
-  const hue2 = (hue + 40) % 360;
-  const pulse = (1 + Math.sin(phase * 0.5) * 0.035).toFixed(3);
-  const tentacles = Array.from({ length: 8 }, (_, i) => {
-    const spread = (i - 3.5) / 3.5;
-    const bx = 20 + spread * 14;
-    const wave1 = Math.sin(phase + i * 0.9) * 6;
-    const wave2 = Math.sin(phase * 0.8 + i * 1.2) * 4;
-    const len = 26 + Math.sin(phase * 0.3 + i) * 3;
-    const w = 5 - Math.abs(spread) * 1.5;
-    const mx = bx + spread * 4 + wave1 * 0.7;
-    const tx = bx + spread * 6 + wave2 * 0.4;
-    return `<path d="M${(bx-w/2).toFixed(1)} 21 C${(mx-w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(mx-w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${tx.toFixed(1)} ${(22+len).toFixed(1)} C${(mx+w/4).toFixed(1)} ${(22+len*0.7).toFixed(1)} ${(mx+w/3).toFixed(1)} ${(22+len*0.45).toFixed(1)} ${(bx+w/2).toFixed(1)} 21Z" fill="hsl(${hue},80%,40%)" stroke="hsl(${hue},80%,25%)" stroke-width="0.5"/>`;
+  const lure = Math.sin(phase * 1.8) * 6;
+  const glow = (0.55 + Math.sin(phase * 2.5) * 0.45).toFixed(2);
+  const glow3 = (parseFloat(glow)*0.18).toFixed(2);
+  const spines = Array.from({length:5},(_,i)=>{
+    const ang = (-30 + i*20) * Math.PI/180;
+    const x2 = (20 + Math.cos(ang)*14).toFixed(1);
+    const y2 = (15 - Math.sin(ang)*8).toFixed(1);
+    return `<path d="M20 15 L${x2} ${y2}" stroke="#0d1a2a" stroke-width="1.5" stroke-linecap="round"/>`;
   }).join('');
-  return `<svg width="${s*1.7}" height="${s*1.65}" viewBox="0 0 40 52" style="transform:scale(${pulse})">
-    ${tentacles}
-    <path d="M5 18 Q4 4 20 2 Q36 4 35 18 Q36 26 28 28 Q20 32 12 28 Q4 26 5 18Z" fill="hsl(${hue2},75%,45%)" stroke="hsl(${hue},75%,30%)" stroke-width="1.2"/>
-    <path d="M7 12 Q20 8 33 12" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
-    <ellipse cx="20" cy="6" rx="8" ry="3" fill="rgba(255,255,255,0.2)"/>
-    <circle cx="13" cy="15" r="4.2" fill="white" stroke="hsl(${hue},75%,30%)" stroke-width="0.6"/>
-    <circle cx="14" cy="15.6" r="2.5" fill="#1a1a1a"/>
-    <circle cx="12.8" cy="14.5" r="1.05" fill="white"/>
-    <circle cx="27" cy="15" r="4.2" fill="white" stroke="hsl(${hue},75%,30%)" stroke-width="0.6"/>
-    <circle cx="28" cy="15.6" r="2.5" fill="#1a1a1a"/>
-    <circle cx="26.8" cy="14.5" r="1.05" fill="white"/>
-    <path d="M16 25 Q20 27 24 25" stroke="hsl(${hue},75%,30%)" stroke-width="1" fill="none" stroke-linecap="round"/>
+  return `<svg width="${s*2.2}" height="${s*2}" viewBox="0 0 44 40" style="transform:scaleX(${f?-1:1})">
+    <circle cx="20" cy="${8+lure}" r="14" fill="rgba(0,229,255,${glow3})"/>
+    <path d="M14 7 Q12 3 17 ${2+lure} Q15 ${4+lure} 17 ${8+lure}" stroke="#0a1520" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="17" cy="${8+lure}" r="5.5" fill="#00E5FF" opacity="${glow}"/>
+    <circle cx="17" cy="${8+lure}" r="3" fill="white" opacity="${(parseFloat(glow)*0.7).toFixed(2)}"/>
+    <path d="M7 22 Q6 11 20 9 Q35 8 39 22 Q33 35 20 36 Q6 35 7 22Z" fill="#0a1220" stroke="#050a12" stroke-width="1.3"/>
+    <path d="M7 22 Q20 16 39 22" stroke="rgba(0,229,255,0.08)" stroke-width="3" fill="none"/>
+    <path d="M10 26 Q20 32 34 26 Q30 34 20 35 Q9 34 10 26Z" fill="rgba(0,50,80,0.5)"/>
+    ${spines}
+    <path d="M7 20 Q4 16 2 19 Q4 25 2 28 Q5 25 7 26Z" fill="#0a1220" stroke="#050a12"/>
+    <path d="M4 20 L1 17 M4 23 L0 22 M4 26 L1 28" stroke="rgba(0,229,255,0.7)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M39 20 L43 16 L43 28Z" fill="#0a1220" stroke="#050a12"/>
+    <path d="M20 36 L17 40 L23 40Z" fill="#0a1220"/>
+    <circle cx="9" cy="19" r="5" fill="white" stroke="#050a12" stroke-width="0.5"/>
+    <circle cx="9.8" cy="19.5" r="3" fill="rgba(0,229,255,0.95)"/>
+    <circle cx="8.8" cy="18.7" r="1.2" fill="white"/>
+    <path d="M5 23 Q6.5 26 9 23" stroke="#050a12" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   </svg>`;
 };
+
+// ── Enguia Elétrica: serpente bioluminescente, arcos de plasma ───────────────
+const drawElectricEel: DrawFn = (s, f, phase) => {
+  const w1 = Math.sin(phase * 0.65) * 10;
+  const w2 = Math.sin(phase * 0.65 + 1.3) * 10;
+  const w3 = Math.sin(phase * 0.65 + 2.6) * 10;
+  const t  = phase % (Math.PI * 2);
+  const spark = Math.sin(phase * 3.5) > 0.65;
+  const charge = (0.4 + Math.sin(phase * 2) * 0.35).toFixed(2);
+  const bolts = spark ? `
+    <path d="M22 ${12+w1*0.5} L18 ${6+w1*0.5} L24 ${9+w1*0.5} L20 ${3+w1*0.5}" stroke="#FFEE58" stroke-width="2" fill="none" opacity="0.95"/>
+    <path d="M44 ${12+w2*0.5} L40 ${5+w2*0.5} L46 ${8+w2*0.5} L42 ${2+w2*0.5}" stroke="#E0F7FA" stroke-width="1.5" fill="none" opacity="0.85"/>
+    <circle cx="22" cy="${12+w1*0.5}" r="3" fill="rgba(255,238,88,0.4)"/>
+    <circle cx="44" cy="${12+w2*0.5}" r="2.5" fill="rgba(224,247,250,0.35)"/>
+  ` : '';
+  return `<svg width="${s*4.2}" height="${s*1.4}" viewBox="0 0 84 28" style="transform:scaleX(${f?-1:1})">
+    <path d="M4 14 Q18 ${14+w1} 36 14 Q54 ${14+w2} 68 14 Q76 ${14+w3*0.5} 80 14" stroke="#0D1B4A" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M4 14 Q18 ${14+w1} 36 14 Q54 ${14+w2} 68 14 Q76 ${14+w3*0.5} 80 14" stroke="#1A237E" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+    <path d="M4 14 Q18 ${14+w1} 36 14 Q54 ${14+w2} 68 14 Q76 ${14+w3*0.5} 80 14" stroke="#3949AB" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M4 14 Q18 ${14+w1} 36 14 Q54 ${14+w2} 68 14 Q76 ${14+w3*0.5} 80 14" stroke="${spark?'#FFEE58':'rgba(92,107,192,0.6)'}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    ${[12,28,44,60].map((cx,i)=>`<circle cx="${cx}" cy="${14+[w1,w2,w3,w2][i%4]*0.5}" r="1.8" fill="rgba(100,180,255,${charge})" opacity="0.7"/>`).join('')}
+    ${bolts}
+    <path d="M80 12 L84 9 L84 19 L80 16Z" fill="#1A237E"/>
+    <ellipse cx="5.5" cy="14" rx="5" ry="5.5" fill="#0D1B4A" stroke="#1A237E" stroke-width="0.6"/>
+    <circle cx="3.5" cy="12" r="2.5" fill="white" stroke="#0D1B4A" stroke-width="0.4"/>
+    <circle cx="4.2" cy="12.5" r="1.5" fill="rgba(100,150,255,0.95)"/>
+    <circle cx="3.5" cy="11.7" r="0.6" fill="white"/>
+    <path d="M2 15.5 Q3.5 18 6 15.5" stroke="#1A237E" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+// ── Ghost Fish: medusa-fantasma de outra dimensão, corpo etéreo ───────────────
+const drawGhostFish: DrawFn = (s, f, phase) => {
+  const pulse = 0.5 + Math.sin(phase * 0.9) * 0.25;
+  const trail = Math.sin(phase * 0.6) * 5;
+  const wisp  = Math.sin(phase * 1.2) * 3;
+  const p = (v: number) => (v).toFixed(2);
+  const streamers = Array.from({length:5},(_,i)=>{
+    const bx = 12 + i*6;
+    const w  = Math.sin(phase * 0.7 + i) * 5;
+    const len= 10 + Math.sin(phase * 0.4 + i) * 4;
+    return `<path d="M${bx} 18 Q${bx+w} ${18+len*0.6} ${bx+w*0.4} ${18+len}" stroke="rgba(180,220,255,${p(pulse*0.5)})" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${s*2.4}" height="${s*1.8}" viewBox="0 0 48 36" style="transform:scaleX(${f?-1:1})">
+    ${streamers}
+    <path d="M8 12 Q7 3 24 2 Q41 3 40 12 Q41 18 24 20 Q7 18 8 12Z" fill="rgba(160,210,255,${p(pulse*0.22)})" stroke="rgba(140,200,255,${p(pulse*0.85)})" stroke-width="1.4"/>
+    <path d="M8 12 Q24 5 40 12" fill="none" stroke="rgba(220,240,255,${p(pulse*0.35)})" stroke-width="2.5"/>
+    <ellipse cx="24" cy="7" rx="11" ry="4" fill="rgba(200,235,255,${p(pulse*0.18)})"/>
+    <path d="M16 18 Q10 28 13 34 Q20 28 18 20Z" fill="rgba(140,200,255,${p(pulse*0.3)})" stroke="rgba(140,200,255,${p(pulse*0.5)})" stroke-width="0.8"/>
+    <path d="M32 18 Q38 28 35 34 Q28 28 30 20Z" fill="rgba(140,200,255,${p(pulse*0.28)})" stroke="rgba(140,200,255,${p(pulse*0.5)})" stroke-width="0.8"/>
+    <path d="M40 10 Q${46+trail} ${7+wisp} ${45+trail} 13 Q${47+trail} ${17+wisp} 40 15Z" fill="rgba(140,200,255,${p(pulse*0.35)})" stroke="rgba(140,200,255,${p(pulse*0.7)})" stroke-width="0.8"/>
+    <circle cx="16" cy="11" r="4.8" fill="rgba(210,235,255,${p(pulse*0.28)})" stroke="rgba(180,220,255,${p(pulse*0.75)})" stroke-width="0.9"/>
+    <circle cx="17" cy="11.5" r="2.9" fill="rgba(120,190,255,${p(pulse*0.85)})"/>
+    <circle cx="15.8" cy="10.5" r="1.2" fill="rgba(255,255,255,0.9)"/>
+    <circle cx="32" cy="11" r="4.8" fill="rgba(210,235,255,${p(pulse*0.28)})" stroke="rgba(180,220,255,${p(pulse*0.75)})" stroke-width="0.9"/>
+    <circle cx="33" cy="11.5" r="2.9" fill="rgba(120,190,255,${p(pulse*0.85)})"/>
+    <circle cx="31.8" cy="10.5" r="1.2" fill="rgba(255,255,255,0.9)"/>
+    <path d="M18 16 Q24 18 30 16" stroke="rgba(140,200,255,${p(pulse*0.6)})" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+// ── Oarfish: serpente-do-mar prateada e colossal, nada verticalmente ──────────
+const drawOarfish: DrawFn = (s, f, phase) => {
+  const w  = Math.sin(phase * 0.35) * 14;
+  const w2 = Math.sin(phase * 0.35 + 1.1) * 12;
+  const w3 = Math.sin(phase * 0.35 + 2.2) * 10;
+  const shimmer = Array.from({length:10},(_,i)=>{
+    const y = 8 + i * 9;
+    const x = (12 + w*(i/10) + w2*(Math.max(0,i-5)/10)).toFixed(1);
+    return `<ellipse cx="${x}" cy="${y}" rx="1.2" ry="2.5" fill="rgba(200,230,255,${(0.3+Math.sin(phase+i)*0.15).toFixed(2)})" transform="rotate(${w*0.5} ${x} ${y})"/>`;
+  }).join('');
+  return `<svg width="${s*1.3}" height="${s*5.5}" viewBox="0 0 26 110" style="transform:scaleX(${f?-1:1})">
+    <path d="M13 5 Q${13+w} 28 ${13+w2} 55 Q${13+w} 82 ${13+w3} 106" stroke="#263238" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M13 5 Q${13+w} 28 ${13+w2} 55 Q${13+w} 82 ${13+w3} 106" stroke="#546E7A" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M13 5 Q${13+w} 28 ${13+w2} 55 Q${13+w} 82 ${13+w3} 106" stroke="#B0BEC5" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M13 5 Q${13+w} 28 ${13+w2} 55 Q${13+w} 82 ${13+w3} 106" stroke="rgba(207,226,255,0.35)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    ${shimmer}
+    <path d="M${13+w2} 55 L${13+w2+18} 48 M${13+w2} 55 L${13+w2+18} 62" stroke="#EF5350" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M13 102 L5 110 L13 106 L21 110Z" fill="#455A64"/>
+    <path d="M8 7 Q4 2 9 9 M18 7 Q22 2 17 9" stroke="#FF8A80" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="13" cy="6" rx="6" ry="5.5" fill="#455A64" stroke="#263238" stroke-width="0.6"/>
+    <circle cx="10.5" cy="4.5" r="2.5" fill="white" stroke="#263238" stroke-width="0.4"/>
+    <circle cx="11.2" cy="5" r="1.5" fill="#111"/>
+    <circle cx="10.5" cy="4.2" r="0.6" fill="white"/>
+    <path d="M9.5 8 Q13 9.5 16.5 8" stroke="#455A64" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
+// ── Celacanto: peixe pré-histórico azul-petróleo com escamas luminosas ────────
+const drawCoelacanth: DrawFn = (s, f, phase) => {
+  const aura = 0.4 + Math.sin(phase * 0.6) * 0.28;
+  const a  = (v: number) => (v).toFixed(2);
+  const scales = Array.from({length:12},(_,i)=>{
+    const cx = 10 + (i%6)*6, cy = 8 + Math.floor(i/6)*7;
+    const glow = a(aura * 0.8 * (0.6+Math.sin(phase+i)*0.4));
+    return `<ellipse cx="${cx}" cy="${cy}" rx="3" ry="2" fill="rgba(0,220,160,${glow})" transform="rotate(-20 ${cx} ${cy})"/>`;
+  }).join('');
+  return `<svg width="${s*2.6}" height="${s*1.6}" viewBox="0 0 52 32" style="transform:scaleX(${f?-1:1})">
+    <ellipse cx="25" cy="16" rx="24" ry="15" fill="rgba(0,140,90,${a(aura*0.2)})" opacity="0.85"/>
+    <path d="M7 16 Q6 6 24 5 Q42 4 47 16 Q40 27 24 27 Q7 26 7 16Z" fill="#004D40" stroke="#00251A" stroke-width="1.3"/>
+    <path d="M10 20 Q24 27 42 20 Q39 26 24 27 Q8 25 10 20Z" fill="rgba(0,77,64,0.6)"/>
+    ${scales}
+    <path d="M7 14 Q5 9 2 11 Q0 16 2 21 Q5 18 7 19Z" fill="#004D40" stroke="#00251A" stroke-width="0.8"/>
+    <path d="M7 21 Q3 25 2 23 Q3 19 7 19Z" fill="#00695C"/>
+    <path d="M30 5 Q36 1 42 5" stroke="#00897B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M36 5 Q40 2 44 5" stroke="#00897B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M47 14 L53 8 L53 24Z" fill="#004D40" stroke="#00251A" stroke-width="0.8"/>
+    <path d="M32 26 Q28 31 25 28 Q26 23 32 25Z" fill="#004D40"/>
+    <path d="M16 26 Q12 31 9 28 Q10 23 16 25Z" fill="#004D40"/>
+    <circle cx="9" cy="14" r="4.8" fill="white" stroke="#00251A" stroke-width="0.6"/>
+    <circle cx="9.9" cy="14.5" r="2.8" fill="#004D40"/>
+    <circle cx="9" cy="13.7" r="1.15" fill="rgba(0,220,160,0.95)"/>
+    <path d="M5 17.5 Q7 20 10 17.5" stroke="#00251A" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+    <path d="M20 7 Q24 5 30 7" stroke="rgba(0,220,160,${a(aura*0.5)})" stroke-width="1.5" fill="none"/>
+  </svg>`;
+};
+
+// ── Mímico: serpente-dragão que se transforma em padrões caleidoscópicos ──────
+const drawMimic: DrawFn = (s, _f, phase) => {
+  const hue  = Math.floor((phase * 25) % 360);
+  const hue2 = (hue + 60) % 360;
+  const hue3 = (hue + 120) % 360;
+  const pulse= (1 + Math.sin(phase * 0.6) * 0.05).toFixed(3);
+  const sway = Math.sin(phase * 0.5) * 8;
+  const plates = Array.from({length:8},(_,i)=>{
+    const y = 8 + i * 6;
+    const x = (24 + Math.sin(phase + i * 0.8) * 6).toFixed(1);
+    const h = (hue + i * 20) % 360;
+    return `<ellipse cx="${x}" cy="${y}" rx="8" ry="3.5" fill="hsl(${h},80%,45%)" stroke="hsl(${h},80%,25%)" stroke-width="0.5" transform="rotate(${sway*0.4} ${x} ${y})"/>`;
+  }).join('');
+  const frills = Array.from({length:6},(_,i)=>{
+    const ang = (i*30 - 60) * Math.PI/180;
+    const r = 10 + Math.sin(phase + i) * 4;
+    const x2 = (24 + Math.cos(ang)*r).toFixed(1);
+    const y2 = (20 + Math.sin(ang)*r).toFixed(1);
+    return `<path d="M24 20 Q${x2} ${y2} ${x2} ${y2}" stroke="hsl(${(hue+i*40)%360},90%,65%)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>`;
+  }).join('');
+  return `<svg width="${s*2.4}" height="${s*2.8}" viewBox="0 0 48 56" style="transform:scale(${pulse})">
+    <path d="M24 4 Q${24+sway} 20 ${24-sway*0.5} 36 Q${24+sway*0.3} 48 24 54" stroke="hsl(${hue},80%,25%)" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M24 4 Q${24+sway} 20 ${24-sway*0.5} 36 Q${24+sway*0.3} 48 24 54" stroke="hsl(${hue2},80%,40%)" stroke-width="9" fill="none" stroke-linecap="round"/>
+    ${plates}
+    ${frills}
+    <path d="M24 4 Q${24+sway*0.5} 20 24 36" stroke="hsl(${hue3},90%,65%)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <path d="M20 52 L17 56 L24 54 L31 56 L28 52Z" fill="hsl(${hue},80%,35%)"/>
+    <ellipse cx="24" cy="5" rx="7" ry="6" fill="hsl(${hue2},75%,35%)" stroke="hsl(${hue},75%,20%)" stroke-width="1"/>
+    <path d="M20 1 Q18 0 19 3 M28 1 Q30 0 29 3" stroke="hsl(${hue3},90%,65%)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="21" cy="5" r="2.8" fill="white" stroke="hsl(${hue},75%,20%)" stroke-width="0.5"/>
+    <circle cx="21.7" cy="5.5" r="1.7" fill="hsl(${hue3},90%,30%)"/>
+    <circle cx="21" cy="4.8" r="0.7" fill="white"/>
+    <circle cx="27" cy="5" r="2.8" fill="white" stroke="hsl(${hue},75%,20%)" stroke-width="0.5"/>
+    <circle cx="27.7" cy="5.5" r="1.7" fill="hsl(${hue3},90%,30%)"/>
+    <circle cx="27" cy="4.8" r="0.7" fill="white"/>
+    <path d="M21 9 Q24 11 27 9" stroke="hsl(${hue},75%,20%)" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>`;
+};
+
 
 interface CreatureDef {
   kind: CreatureKind;
@@ -1230,18 +1275,18 @@ const CREATURES: CreatureDef[] = [
   { kind: 'seaslug',      draw: drawNudibranch,   rarity: 'legendary', sizeOverride: 8  },
 
   // ── Especiais (weight=0 → não entram no sorteio normal; admin pode conceder) ──
-  { kind: 'anglerfish',  draw: drawAnglerfish,  rarity: 'special', sizeOverride: 36,
-    power: 'attract',  powerRadius: 180, powerLabel: 'Atração Abissal',     powerColor: '#00E5FF' },
-  { kind: 'electriceel', draw: drawElectricEel, rarity: 'special', sizeOverride: 24,
-    power: 'electric', powerRadius: 140, powerLabel: 'Descarga Elétrica',   powerColor: '#FFEE58' },
-  { kind: 'ghostfish',   draw: drawGhostFish,   rarity: 'special', sizeOverride: 26,
-    power: 'ghost',    powerRadius: 120, powerLabel: 'Presença Espectral',  powerColor: '#90CAF9' },
-  { kind: 'oarfish',     draw: drawOarfish,     rarity: 'special', sizeOverride: 52,
-    power: 'speed',    powerRadius: 9999,powerLabel: 'Corrente do Abismo',  powerColor: '#EF9A9A' },
-  { kind: 'coelacanth',  draw: drawCoelacanth,  rarity: 'special', sizeOverride: 44,
-    power: 'xpaura',   powerRadius: 200, powerLabel: 'Aura Ancestral',      powerColor: '#66BB6A' },
-  { kind: 'mimic',       draw: drawMimic,       rarity: 'special', sizeOverride: 32,
-    power: 'mimic',    powerRadius: 100, powerLabel: 'Mímico das Profundezas', powerColor: '#CE93D8' },
+  { kind: 'anglerfish',  draw: drawAnglerfish,  rarity: 'special', sizeOverride: 40,
+    power: 'attract',  powerRadius: 220, powerLabel: 'Atração Abissal',        powerColor: '#00E5FF' },
+  { kind: 'electriceel', draw: drawElectricEel, rarity: 'special', sizeOverride: 28,
+    power: 'electric', powerRadius: 180, powerLabel: 'Descarga Elétrica',      powerColor: '#FFEE58' },
+  { kind: 'ghostfish',   draw: drawGhostFish,   rarity: 'special', sizeOverride: 32,
+    power: 'ghost',    powerRadius: 160, powerLabel: 'Presença Espectral',     powerColor: '#90CAF9' },
+  { kind: 'oarfish',     draw: drawOarfish,     rarity: 'special', sizeOverride: 56,
+    power: 'speed',    powerRadius: 9999,powerLabel: 'Corrente do Abismo',     powerColor: '#EF9A9A' },
+  { kind: 'coelacanth',  draw: drawCoelacanth,  rarity: 'special', sizeOverride: 48,
+    power: 'repel',    powerRadius: 200, powerLabel: 'Onda de Choque',         powerColor: '#00BFA5' },
+  { kind: 'mimic',       draw: drawMimic,       rarity: 'special', sizeOverride: 36,
+    power: 'poison',   powerRadius: 130, powerLabel: 'Névoa Venenosa',         powerColor: '#CE93D8' },
 ];
 
 // Pool ponderada: cada criatura aparece N vezes conforme seu peso de raridade.
@@ -1845,6 +1890,7 @@ export default function AquariumScene() {
               if (other.frozenUntil  === undefined) other.frozenUntil  = 0;
               if (other.ghostOpacity === undefined) other.ghostOpacity = 1;
               if (other.speedBoost   === undefined) other.speedBoost   = 1;
+              if ((other as any).poisoned === undefined) (other as any).poisoned = 0;
               const ofw = other.el.offsetWidth || other.size * 2.2;
               const ofh = other.el.offsetHeight || other.size;
               const dx = (other.x + ofw / 2) - fcx;
@@ -1852,23 +1898,65 @@ export default function AquariumScene() {
               const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
               if (f.power === 'attract' && dist < f.powerRadius) {
-                const pull = (1 - dist / f.powerRadius) * 2.2;
+                // Anglerfish: atrai com força crescente conforme distância diminui
+                const pull = Math.pow(1 - dist / f.powerRadius, 1.5) * 3.5;
                 other.vx -= (dx / dist) * pull;
                 other.vy -= (dy / dist) * pull;
-              }
-              if (f.power === 'electric' && dist < f.powerRadius) {
-                const shouldZap = Math.sin(now / 4000 * Math.PI * 2) > 0.85;
-                if (shouldZap && other.frozenUntil < now) {
-                  other.frozenUntil = now + 1500;
+                // Levemente acelera peixes muito próximos (efeito de aspiração)
+                if (dist < f.powerRadius * 0.3) {
+                  other.vx *= 1.04;
+                  other.vy *= 1.04;
                 }
               }
+
+              if (f.power === 'electric' && dist < f.powerRadius) {
+                // Enguia: pulso a cada 3s, paralisa por 2s e empurra
+                const cycle = Math.sin(now / 3000 * Math.PI * 2);
+                if (cycle > 0.88 && other.frozenUntil < now) {
+                  other.frozenUntil = now + 2000;
+                  // Impulso de choque na direção oposta
+                  other.vx += (dx / dist) * 6;
+                  other.vy += (dy / dist) * 6;
+                }
+              }
+
               if (f.power === 'ghost' && dist < f.powerRadius) {
-                const factor = 1 - dist / f.powerRadius;
-                other.ghostOpacity = Math.max(0.18, 1 - factor * 0.75);
+                // Ghost: translucidez dramática e aceleração fantasmagórica
+                const factor = Math.pow(1 - dist / f.powerRadius, 0.7);
+                other.ghostOpacity = Math.max(0.08, 1 - factor * 0.88);
+                // Peixes próximos ficam ligeiramente mais rápidos (efeito de pânico)
+                if (dist < f.powerRadius * 0.5) {
+                  other.vx *= 1.012;
+                  other.vy *= 1.012;
+                }
               }
+
               if (f.power === 'speed') {
-                other.speedBoost = 1.6;
+                // Oarfish: turbina todos os peixes do aquário
+                other.speedBoost = 2.0;
               }
+
+              if (f.power === 'repel' && dist < f.powerRadius) {
+                // Celacanto: onda de choque que empurra todos pra longe
+                const pushStrength = Math.pow(1 - dist / f.powerRadius, 1.2) * 2.8;
+                other.vx += (dx / dist) * pushStrength;
+                other.vy += (dy / dist) * pushStrength;
+                // Peixes muito próximos levam um empurrão extra
+                if (dist < f.powerRadius * 0.25) {
+                  other.vx += (dx / dist) * 4;
+                  other.vy += (dy / dist) * 4;
+                }
+              }
+
+              if (f.power === 'poison' && dist < f.powerRadius) {
+                // Mímico: névoa venenosa deixa peixes lentos e esverdeados
+                const poisonLevel = 1 - dist / f.powerRadius;
+                (other as any).poisoned = Math.min(1, ((other as any).poisoned ?? 0) + poisonLevel * 0.015);
+                // Peixes envenenados ficam mais lentos
+                other.vx *= (1 - (other as any).poisoned * 0.012);
+                other.vy *= (1 - (other as any).poisoned * 0.012);
+              }
+
               if (f.power === 'mimic' && dist < f.powerRadius) {
                 if (f.mimicTargetIdx === -1 || dist < f.powerRadius * 0.5) {
                   f.mimicTargetIdx = other.typeIdx;
@@ -1877,28 +1965,26 @@ export default function AquariumScene() {
             }
           }
 
-          // ── Aplica efeito elétrico visualmente ───────────────────────────────
-          const isFrozen = f.frozenUntil > now;
-          if (isFrozen) {
-            f.el.style.filter = 'brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)';
-          } else if (f.el.style.filter !== '') {
-            f.el.style.filter = '';
+          // Recuperação do veneno fora do raio
+          if (f.power !== 'poison') {
+            const poisoned = (f as any).poisoned ?? 0;
+            if (poisoned > 0) (f as any).poisoned = Math.max(0, poisoned - 0.003);
           }
 
-          // ── Opacidade ghost ───────────────────────────────────────────────────
+          // ── Efeito elétrico: o filter fica no cssText do peixe congelado ──────
+          const isFrozen = f.frozenUntil > now;
+
+          // ── Opacidade ghost — atualiza o valor, vai pro cssText depois ─────────
           if (f.power !== 'ghost') {
             f.ghostOpacity = Math.min(1, f.ghostOpacity + 0.02);
           }
-          f.el.style.opacity = f.ghostOpacity.toFixed(2);
 
           // ── Reset speedBoost (re-aplicado se oarfish estiver presente) ────────
           if (f.power !== 'speed') f.speedBoost = 1;
 
           // ── Se paralisado, pula movimento ─────────────────────────────────────
           if (isFrozen) {
-            f.el.style.left = f.x + 'px';
-            f.el.style.top  = f.y + 'px';
-            // Redesenha mesmo parado para animar tentáculos/barbatanas
+            f.el.style.cssText = `position:absolute;left:${f.x}px;top:${f.y}px;cursor:pointer;z-index:10;user-select:none;filter:brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)`;
             const defFrozen = CREATURES[f.typeIdx];
             if (defFrozen) f.el.innerHTML = defFrozen.draw(f.size, f.flipped, f.wobble);
             continue;
@@ -2108,9 +2194,6 @@ export default function AquariumScene() {
           if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
         }
 
-        f.el.style.left = f.x + 'px';
-        f.el.style.top  = f.y + 'px';
-
         // ── Badge de nível (XP) acima do peixe ───────────────────────────────
         const userData = xpMap[f.username];
         const level = userData?.level ?? 1;
@@ -2118,13 +2201,26 @@ export default function AquariumScene() {
         const userLikes  = likes[f.username] ?? 0;
         const lvlColor = level >= 30 ? '#FFD700' : level >= 20 ? '#A855F7' : level >= 10 ? '#3B82F6' : level >= 5 ? '#22C55E' : '#9CA3AF';
         const isLegendaryCreature = LEGENDARY_KINDS.includes(f.kind);
-        // Não usar style.cssText aqui — isso apagaria left/top setados acima
-        // a cada frame, prendendo o peixe no canto (0,0). Só ajustamos o filter.
-        if (isLegendaryCreature) {
-          f.el.style.filter = `drop-shadow(0 0 ${4+level/3}px ${lvlColor})`;
-        } else if (!isFrozen && f.el.style.filter && f.el.style.filter.startsWith('drop-shadow')) {
-          f.el.style.filter = isMyFish ? 'drop-shadow(0 0 4px rgba(34,211,238,0.4))' : '';
-        }
+
+        // Efeitos visuais compostos: glow lendário + veneno verde + elétrico amarelo
+        const poisonLevel = (f as any).poisoned ?? 0;
+        const glowStyle = isLegendaryCreature
+          ? `filter:drop-shadow(0 0 ${4+level/3}px ${lvlColor});`
+          : poisonLevel > 0.1
+          ? `filter:drop-shadow(0 0 ${(poisonLevel*8).toFixed(0)}px #7B1FA2) sepia(${(poisonLevel*0.6).toFixed(2)}) hue-rotate(80deg);`
+          : '';
+
+        // ⚠️ left e top devem estar no cssText — setá-los antes e depois usar cssText apaga os valores
+        f.el.style.cssText = [
+          `position:absolute`,
+          `left:${f.x}px`,
+          `top:${f.y}px`,
+          `cursor:pointer`,
+          `z-index:10`,
+          `user-select:none`,
+          `opacity:${f.ghostOpacity.toFixed(2)}`,
+          glowStyle,
+        ].filter(Boolean).join(';');
 
         // Badge de nível: ícone SVG pequeno + número
         const levelBadge = level > 1 ? `
@@ -2151,25 +2247,33 @@ export default function AquariumScene() {
             ${userLikes}
           </div>` : '';
 
+        // Aura do peixe especial — anel colorido pulsante ao redor
+        const creatureDefSpecial = CREATURES[f.typeIdx];
+        const powerAura = creatureDefSpecial?.power ? (() => {
+          const c = creatureDefSpecial.powerColor ?? '#fff';
+          const r = 6 + Math.sin(f.wobble * 2) * 3;
+          const op = (0.6 + Math.sin(f.wobble * 1.5) * 0.35).toFixed(2);
+          const op2 = (parseFloat(op) * 0.4).toFixed(2);
+          return `<div style="
+            position:absolute;inset:-${r.toFixed(1)}px;border-radius:50%;
+            border:2.5px solid ${c};opacity:${op};pointer-events:none;
+            box-shadow:0 0 ${(10+r*2).toFixed(0)}px ${c},0 0 ${(22+r*3).toFixed(0)}px ${c}60,inset 0 0 ${(6+r).toFixed(0)}px ${c}50;">
+          </div>
+          <div style="
+            position:absolute;top:-32px;left:50%;transform:translateX(-50%);
+            background:rgba(6,12,24,0.9);border:1px solid ${c};
+            color:${c};font-size:8px;font-weight:700;font-family:monospace;
+            padding:1px 6px;border-radius:8px;white-space:nowrap;pointer-events:none;
+            opacity:${op2};letter-spacing:0.3px;">
+            ⚡ ${creatureDefSpecial.powerLabel ?? ''}
+          </div>`;
+        })() : '';
+
         // Desenho base: mimic copia o SVG do alvo, outros usam o próprio
         const drawIdx = (f.power === 'mimic' && f.mimicTargetIdx >= 0)
           ? f.mimicTargetIdx
           : f.typeIdx;
-        const baseSvg = CREATURES[drawIdx].draw(f.size, f.flipped, f.wobble);
-
-        // Aura do peixe especial — anel colorido pulsante ao redor
-        const def = CREATURES[f.typeIdx];
-        const powerAura = def.power ? (() => {
-          const c = def.powerColor ?? '#fff';
-          const r = 4 + Math.sin(f.wobble * 2) * 2;
-          const op = (0.55 + Math.sin(f.wobble * 1.5) * 0.3).toFixed(2);
-          return `<div style="
-            position:absolute;inset:-${r}px;border-radius:50%;
-            border:2px solid ${c};opacity:${op};pointer-events:none;
-            box-shadow:0 0 ${8+r*2}px ${c},inset 0 0 ${4+r}px ${c}40;
-            animation:none;">
-          </div>`;
-        })() : '';
+        const baseSvg = (CREATURES[drawIdx] ?? CREATURES[f.typeIdx])?.draw(f.size, f.flipped, f.wobble) ?? '';
 
         f.el.innerHTML = powerAura + baseSvg + levelBadge + likesBadge;
 
@@ -2549,12 +2653,10 @@ export default function AquariumScene() {
         )}
 
 
-        {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
             <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        )}
-
+        
 
         {/* Aquário vazio */}
         {!loading && users.length === 0 && (
