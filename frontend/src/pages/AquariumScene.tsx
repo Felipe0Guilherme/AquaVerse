@@ -1063,7 +1063,6 @@ const drawElectricEel: DrawFn = (s, f, phase) => {
   const w1 = Math.sin(phase * 0.65) * 10;
   const w2 = Math.sin(phase * 0.65 + 1.3) * 10;
   const w3 = Math.sin(phase * 0.65 + 2.6) * 10;
-  const t  = phase % (Math.PI * 2);
   const spark = Math.sin(phase * 3.5) > 0.65;
   const charge = (0.4 + Math.sin(phase * 2) * 0.35).toFixed(2);
   const bolts = spark ? `
