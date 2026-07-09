@@ -1063,6 +1063,7 @@ const drawElectricEel: DrawFn = (s, f, phase) => {
   const w1 = Math.sin(phase * 0.65) * 10;
   const w2 = Math.sin(phase * 0.65 + 1.3) * 10;
   const w3 = Math.sin(phase * 0.65 + 2.6) * 10;
+  const t  = phase % (Math.PI * 2);
   const spark = Math.sin(phase * 3.5) > 0.65;
   const charge = (0.4 + Math.sin(phase * 2) * 0.35).toFixed(2);
   const bolts = spark ? `
@@ -1288,35 +1289,81 @@ const CREATURES: CreatureDef[] = [
     power: 'poison',   powerRadius: 130, powerLabel: 'Névoa Venenosa',         powerColor: '#CE93D8' },
 ];
 
-// Pool ponderada: cada criatura aparece N vezes conforme seu peso de raridade.
-// hash % CREATURE_POOL.length dá índice final com probabilidade proporcional.
-const CREATURE_POOL: number[] = CREATURES.flatMap((c, idx) =>
-  Array(RARITY_WEIGHT[c.rarity]).fill(idx)
-);
+// ════════════════════════════════════════════════════════════════
+// PROGRESSÃO POR NÍVEL — cada nível desbloqueia uma criatura nova
+// ════════════════════════════════════════════════════════════════
+// Mapeia nível (1-indexed) → [kind, sub-índice dentro do kind]
+// 'fish' tem 24 sub-índices (0..23), os demais têm apenas 1
+const LEVEL_PROGRESSION: Array<[CreatureKind, number]> = [
+  ['fish', 0],   // L1  Palhaço
+  ['fish', 1],   // L2  Tang Azul
+  ['fish', 2],   // L3  Acará Bandeira
+  ['fish', 3],   // L4  Betta
+  ['fish', 4],   // L5  Baiacu
+  ['fish', 5],   // L6  Donzela
+  ['seahorse',0],// L7  Cavalo-marinho
+  ['fish', 6],   // L8  Sardinha
+  ['fish', 7],   // L9  Dourado
+  ['fish', 8],   // L10 Borboleta
+  ['fish', 9],   // L11 Néon Tetra
+  ['fish',10],   // L12 Imperador
+  ['fish',11],   // L13 Peixe-leão
+  ['fish',12],   // L14 Mandarinfish
+  ['fish',13],   // L15 Palhaço-bordô
+  ['fish',14],   // L16 Peixe-espada
+  ['fish',15],   // L17 Koi
+  ['fish',16],   // L18 Discus
+  ['fish',17],   // L19 Barracuda
+  ['fish',18],   // L20 Arraia
+  ['fish',19],   // L21 Peixe-dragão
+  ['fish',20],   // L22 Harlequin
+  ['fish',21],   // L23 Acará-altum
+  ['fish',22],   // L24 Guppy
+  ['fish',23],   // L25 Payara
+  ['octopus',0], // L26 Polvo
+  ['seaturtle',0],// L27 Tartaruga
+  ['manta',0],   // L28 Manta
+  ['shark',0],   // L29 Tubarão
+  ['hammerhead',0],// L30 Tubarão-martelo
+  ['dolphin',0], // L31 Golfinho
+  ['orca',0],    // L32 Orca
+  ['humpback',0],// L33 Jubarte
+  ['whaleshark',0],// L34 Tubarão-baleia
+  ['whale',0],   // L35 Baleia-azul
+];
 
-function getCreatureType(
-  username: string,
-  typeCounts: Map<number, number>,
-  shuffleSeed: number,   // muda a cada roleta do admin → hash diferente → criatura diferente
-  maxPerType = 2
-): number {
-  // Incorpora o seed no hash: seed=0 mantém o comportamento original
-  const input = shuffleSeed > 0 ? `${username}:${shuffleSeed}` : username;
-  let hash = 0;
-  for (const c of input) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
-  const poolLen = CREATURE_POOL.length;
-  const startPos = Math.abs(hash) % poolLen;
-
-  let hash2 = 0;
-  for (const c of input) hash2 = (hash2 * 17 + c.charCodeAt(0)) & 0xffffffff;
-  const step = (Math.abs(hash2) % (poolLen - 1)) + 1;
-
-  for (let i = 0; i < poolLen; i++) {
-    const pos = (startPos + i * step) % poolLen;
-    const idx = CREATURE_POOL[pos];
-    if ((typeCounts.get(idx) ?? 0) < maxPerType) return idx;
+// Retorna o índice em CREATURES para um dado nível
+function getCreatureIndexForLevel(level: number): number {
+  const prog = LEVEL_PROGRESSION[Math.min(level - 1, LEVEL_PROGRESSION.length - 1)];
+  const [kind, subIdx] = prog;
+  let count = 0;
+  for (let i = 0; i < CREATURES.length; i++) {
+    if (CREATURES[i].kind === kind) {
+      if (count === subIdx) return i;
+      count++;
+    }
   }
-  return CREATURE_POOL[startPos];
+  return 0; // fallback: palhaço
+}
+
+// Retorna o label e a prévia da próxima criatura a desbloquear
+function getNextUnlock(level: number): { label: string; previewIdx: number } | null {
+  if (level >= LEVEL_PROGRESSION.length) return null;
+  const [kind, subIdx] = LEVEL_PROGRESSION[level]; // próximo nível = level (0-indexed = level+1-1)
+  let count = 0;
+  let previewIdx = 0;
+  for (let i = 0; i < CREATURES.length; i++) {
+    if (CREATURES[i].kind === kind) {
+      if (count === subIdx) { previewIdx = i; break; }
+      count++;
+    }
+  }
+  const labels: Partial<Record<CreatureKind,string>> = {
+    fish:'Peixe',seahorse:'Cavalo-marinho',octopus:'Polvo',seaturtle:'Tartaruga',
+    manta:'Manta',shark:'Tubarão',hammerhead:'Tubarão-martelo',dolphin:'Golfinho',
+    orca:'Orca',humpback:'Jubarte',whaleshark:'Tubarão-baleia',whale:'Baleia-azul',
+  };
+  return { label: labels[kind] ?? kind, previewIdx };
 }
 
 function getFishSize(username: string): number {
@@ -1360,11 +1407,13 @@ export default function AquariumScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
   // Posição do mouse dentro do aquário; null = fora do aquário
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
+  // true enquanto o botão do mouse está pressionado dentro do aquário (drag)
+  const mouseDownRef = useRef<boolean>(false);
   const fishList = useRef<FishState[]>([]);
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
   const [loading, setLoading] = useState(true);
- const msgCountRef = useRef<number>(0);
+const msgCountRef = useRef<number>(0);
 
   // Busca usuários da API — repete a cada 30s para pegar novos registros.
   // Só atualiza o estado se a lista de usernames realmente mudou, evitando
@@ -1398,19 +1447,22 @@ export default function AquariumScene() {
 
   // ── Gamificação ─────────────────────────────────────────────
   const [xpMap,    setXpMap]    = useState<Record<string,{xp:number;level:number;badges:string[];streak:number}>>({});
-  const [likes,    setLikes]    = useState<Record<string,number>>({});        // username → total de likes
-  const [myLikes,  setMyLikes]  = useState<Set<string>>(new Set());           // usernames que eu já curti
+  const [likes,    setLikes]    = useState<Record<string,number>>({});
+  const [myLikes,  setMyLikes]  = useState<Set<string>>(new Set());
   const [ranking,  setRanking]  = useState<{username:string;xp:number;level:number}[]>([]);
-  const [feeding,  setFeeding]  = useState(false);
-  const [feedCooldown, setFeedCooldown] = useState(0);                       // segundos restantes
   const [msgCount, setMsgCount] = useState(0);
   const [sighting, setSighting] = useState<{text:string;kind:CreatureKind}|null>(null);
-  const foodRef                 = useRef<{x:number;y:number;until:number}|null>(null);
-  const foodRefStable           = foodRef;
   const seenLegendaryRef        = useRef<Set<string>>(new Set());
   const lastLoginBonusRef       = useRef<string>('');
+  const prevLevelsRef           = useRef<Record<string,number>>({});
 
-  const LEGENDARY_KINDS: CreatureKind[] = ['whale','whaleshark','krill','seaslug'];
+  // ── Comida — aparece periodicamente, usuário arrasta o peixe para comer ──
+  const [foodVisible, setFoodVisible] = useState<{x:number;y:number;id:number}|null>(null);
+  const foodItemRef   = useRef<{x:number;y:number;id:number;until:number}|null>(null);
+  const nextFoodRef   = useRef<number>(Date.now() + 20_000); // primeira comida após 20s
+  const eatingRef     = useRef<boolean>(false); // evita duplo-eat no mesmo frame
+
+  const LEGENDARY_KINDS: CreatureKind[] = ['whale','whaleshark','krill','seaslug','anglerfish','electriceel','ghostfish','oarfish','coelacanth','mimic'];
 
   // ── SVG Icons ────────────────────────────────────────────────
   const IconStar  = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
@@ -1458,21 +1510,39 @@ export default function AquariumScene() {
         ranking: {username:string;xp:number;level:number}[];
         likes: Record<string,number>;
       }}>('/gamification/stats');
-      setXpMap(data.data.xpMap ?? {});
+
+      const newXpMap = data.data.xpMap ?? {};
+      setXpMap(newXpMap);
       setRanking(data.data.ranking ?? []);
       setLikes(data.data.likes ?? {});
 
-      // Bônus de login diário (uma vez por dia)
+      // ── Detecta level-up e atualiza o peixe automaticamente ──────────────
+      for (const [username, userData] of Object.entries(newXpMap)) {
+        const prevLevel = prevLevelsRef.current[username] ?? 1;
+        const newLevel  = userData.level;
+        if (newLevel !== prevLevel) {
+          prevLevelsRef.current[username] = newLevel;
+          // Atualiza o typeIdx do peixe já na tela (sem remover/respawnar)
+          const fish = fishList.current.find(f => f.username === username);
+          if (fish && !CREATURES[fish.typeIdx]?.power) { // não substitui especiais
+            const newIdx = getCreatureIndexForLevel(newLevel);
+            fish.typeIdx = newIdx;
+            fish.kind    = CREATURES[newIdx].kind;
+            fish.size    = CREATURES[newIdx].sizeOverride ?? getFishSize(username);
+          }
+        }
+      }
+
+      // ── Bônus de login diário ─────────────────────────────────────────────
       const today = new Date().toDateString();
       if (user && lastLoginBonusRef.current !== today) {
         try {
           await apiClient.post('/gamification/daily');
           lastLoginBonusRef.current = today;
-          await fetchXp();
         } catch { /* já recebeu hoje */ }
       }
 
-      // Detecta lendários recém-avistados
+      // ── Detecta lendários recém-avistados ────────────────────────────────
       for (const f of fishList.current) {
         if (LEGENDARY_KINDS.includes(f.kind) && !seenLegendaryRef.current.has(f.username)) {
           seenLegendaryRef.current.add(f.username);
@@ -1490,33 +1560,16 @@ export default function AquariumScene() {
     return () => clearInterval(interval);
   }, [fetchXp]);
 
-  // Alimentação
-  const handleFeed = async () => {
-    if (feeding || feedCooldown > 0 || !user || !wrapRef.current) return;
-    setFeeding(true);
-    const rect  = wrapRef.current.getBoundingClientRect();
-    foodRef.current = {
-      x: 60 + Math.random() * (rect.width - 120),
-      y: rect.height * 0.35 + Math.random() * (rect.height * 0.3),
-      until: Date.now() + 4000,
-    };
+  // Chamado pela animation loop quando o peixe do usuário toca a comida
+  const handleEat = useCallback(async (foodId: number) => {
+    if (eatingRef.current) return;
+    eatingRef.current = true;
     try {
-      await apiClient.post('/gamification/feed');
+      await apiClient.post('/gamification/eat', { foodId });
       await fetchXp();
-    } catch (e: any) {
-      // Extrai segundos de cooldown da resposta de erro
-      const msg: string = e?.response?.data?.error ?? '';
-      const match = msg.match(/(\d+)s/);
-      if (match) {
-        const secs = parseInt(match[1]);
-        setFeedCooldown(secs);
-        const tick = setInterval(() => {
-          setFeedCooldown(p => { if (p <= 1) { clearInterval(tick); return 0; } return p - 1; });
-        }, 1000);
-      }
-    }
-    setTimeout(() => { foodRef.current = null; setFeeding(false); }, 4200);
-  };
+    } catch { /* ignore */ }
+    finally { setTimeout(() => { eatingRef.current = false; }, 1000); }
+  }, [fetchXp]);
 
   // Like em peixe de outro usuário
   const handleLike = async (targetUsername: string) => {
@@ -1660,29 +1713,17 @@ export default function AquariumScene() {
     const existingUsernames = new Set(fishList.current.map(f => f.username));
     const newUsers = users.filter(u => !existingUsernames.has(u.username));
 
-    // Conta quantos peixes já existem de cada tipo (inclui os que já estão no aquário)
-    // pra que getCreatureType pule tipos lotados ao sortear os novos usuários.
-    const typeCounts = new Map<number, number>();
-    for (const f of fishList.current) {
-      typeCounts.set(f.typeIdx, (typeCounts.get(f.typeIdx) ?? 0) + 1);
-    }
-
     newUsers.forEach((u, idx) => {
-      existingUsernames.add(u.username); // reserva o slot imediatamente
+      existingUsernames.add(u.username);
 
-      // Se o usuário tem um peixe especial concedido pelo admin, usa ele;
-      // senão sorteia normalmente pelo hash do username.
+      // Usa nível do xpMap se disponível, senão começa no 1
+      const userLevel = xpMap[u.username]?.level ?? 1;
+
+      // Se o usuário tem peixe especial concedido pelo admin, usa ele;
+      // senão usa a criatura correspondente ao nível
       const specialKind = u.special_creature as CreatureKind | undefined;
-      const specialIdx  = specialKind
-        ? CREATURES.findIndex(c => c.kind === specialKind)
-        : -1;
-      const reservedTypeIdx = specialIdx >= 0
-        ? specialIdx
-        : getCreatureType(u.username, typeCounts, shuffleSeed);
-
-      if (specialIdx < 0) {
-        typeCounts.set(reservedTypeIdx, (typeCounts.get(reservedTypeIdx) ?? 0) + 1);
-      }
+      const specialIdx  = specialKind ? CREATURES.findIndex(c => c.kind === specialKind) : -1;
+      const reservedTypeIdx = specialIdx >= 0 ? specialIdx : getCreatureIndexForLevel(userLevel);
 
       setTimeout(() => {
         if (!wrapRef.current) return;
@@ -2179,7 +2220,7 @@ export default function AquariumScene() {
         }
 
         // ── Atração pela comida ───────────────────────────────────────────────
-        const food = foodRefStable.current;
+        const food = foodItemRef.current;
         if (food && food.until > now && f.kind !== 'crab' && !isMyFish) {
           const cx = f.x + fw / 2, cy = f.y + fh / 2;
           const dx = food.x - cx, dy = food.y - cy;
@@ -2291,6 +2332,41 @@ export default function AquariumScene() {
         }
       }
 
+      // ── Sistema de comida — spawn periódico, peixe do usuário come ao encostar ──
+      if (!foodItemRef.current && now > nextFoodRef.current) {
+        const newFood = {
+          x: 80 + Math.random() * (W - 160),
+          y: 70 + Math.random() * (H - 220),
+          id: now,
+          until: now + 25_000,
+        };
+        foodItemRef.current = newFood;
+        setFoodVisible({ x: newFood.x, y: newFood.y, id: newFood.id });
+      }
+      // Expiração da comida
+      if (foodItemRef.current && now > foodItemRef.current.until) {
+        foodItemRef.current = null;
+        setFoodVisible(null);
+        nextFoodRef.current = now + 30_000 + Math.random() * 30_000; // 30-60s até próxima
+      }
+      // Detecção de colisão peixe-comida (requer arrastar: mouse pressionado no aquário)
+      if (foodItemRef.current && user && !eatingRef.current && mouseDownRef.current) {
+        const myFish = fishList.current.find(f => f.username === user.username);
+        if (myFish) {
+          const fcx = myFish.x + (myFish.el.offsetWidth || myFish.size * 2) / 2;
+          const fcy = myFish.y + (myFish.el.offsetHeight || myFish.size) / 2;
+          const dx  = fcx - foodItemRef.current.x;
+          const dy  = fcy - foodItemRef.current.y;
+          if (Math.sqrt(dx*dx + dy*dy) < 52) {
+            const eaten = foodItemRef.current;
+            foodItemRef.current = null;
+            setFoodVisible(null);
+            nextFoodRef.current = now + 20_000 + Math.random() * 20_000;
+            handleEat(eaten.id);
+          }
+        }
+      }
+
       animRef.current = requestAnimationFrame(loop);
     };
 
@@ -2380,11 +2456,13 @@ export default function AquariumScene() {
       <div
         ref={wrapRef}
         className="relative w-full max-w-5xl overflow-hidden"
+        onMouseDown={() => { mouseDownRef.current = true; }}
+        onMouseUp={() => { mouseDownRef.current = false; }}
         onMouseMove={e => {
           const rect = wrapRef.current?.getBoundingClientRect();
           if (rect) mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
         }}
-        onMouseLeave={() => { mouseRef.current = null; }}
+        onMouseLeave={() => { mouseRef.current = null; mouseDownRef.current = false; }}
         style={{
           height: '520px',
           background: 'linear-gradient(180deg, #020d1a 0%, #041628 18%, #062240 38%, #083060 58%, #0a3f78 78%, #0c4888 100%)',
@@ -2616,39 +2694,101 @@ export default function AquariumScene() {
           </div>
         )}
 
-        {/* ── Comida animada (SVG em vez de emoji) ── */}
-        {feeding && foodRef.current && (
-          <>
-            {Array.from({length:6},(_,i)=>(
-              <div key={i} style={{
-                position:'absolute',
-                left:`${foodRef.current!.x + (i-2.5)*16}px`,
-                top:`${foodRef.current!.y - 22}px`,
-                zIndex:18,pointerEvents:'none',
-                animation:`foodfall ${0.5+i*0.14}s ease-in ${i*0.09}s forwards`,
-              }}>
-                <svg width={10+i%3*5} height={10+i%3*5} viewBox="0 0 20 20">
-                  <ellipse cx="10" cy="10" rx="8" ry="5" fill={['#F4A261','#E76F51','#F4D35E','#E9C46A','#2A9D8F','#264653'][i]}/>
-                  <ellipse cx="10" cy="9" rx="5" ry="2.5" fill="rgba(255,255,255,0.25)"/>
-                </svg>
-              </div>
-            ))}
+        {/* ── Barra de XP lateral dentro do aquário ── */}
+        {user && (() => {
+          const me = xpMap[user.username];
+          if (!me) return null;
+          const xpInLevel = me.xp % 100;
+          const lvlColor  = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
+          const nextUnlock = getNextUnlock(me.level);
+          const currentCreatureIdx = getCreatureIndexForLevel(me.level);
+          const currentCreature = CREATURES[currentCreatureIdx];
+          return (
             <div style={{
-              position:'absolute',
-              left:`${foodRef.current.x - 20}px`,
-              top:`${foodRef.current.y - 12}px`,
-              zIndex:18,pointerEvents:'none',
-              animation:'foodpulse 0.5s ease-in-out infinite alternate',
+              position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)',
+              zIndex:20, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px',
+              background:'rgba(6,14,28,0.85)', border:'1px solid rgba(34,211,238,0.15)',
+              borderRadius:'16px', padding:'12px 8px', minWidth:'52px', pointerEvents:'none',
+              boxShadow:'0 0 20px rgba(0,0,0,0.4)',
             }}>
-              <svg width="28" height="20" viewBox="0 0 28 20">
-                <ellipse cx="14" cy="12" rx="12" ry="7" fill="#E76F51" stroke="#C45A38" strokeWidth="1"/>
-                <ellipse cx="14" cy="10" rx="8" ry="4" fill="#F4A261" opacity="0.7"/>
-                <circle cx="8" cy="10" r="2" fill="rgba(255,255,255,0.3)"/>
-                <path d="M14 5 Q16 2 18 4" stroke="#E76F51" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                <path d="M10 4 Q11 1 13 3" stroke="#E76F51" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-              </svg>
+              {/* Nível atual */}
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:'8px', fontFamily:'monospace', color:'rgba(150,180,220,0.5)', marginBottom:'2px' }}>NÍVEL</div>
+                <div style={{ fontSize:'22px', fontWeight:900, fontFamily:'monospace', color:lvlColor, lineHeight:1 }}>{me.level}</div>
+              </div>
+              {/* Barra vertical de XP */}
+              <div style={{ width:'8px', height:'80px', background:'rgba(255,255,255,0.07)', borderRadius:'4px', overflow:'hidden', position:'relative' }}>
+                <div style={{
+                  position:'absolute', bottom:0, left:0, right:0,
+                  height:`${xpInLevel}%`,
+                  background:`linear-gradient(0deg, ${lvlColor}, ${lvlColor}80)`,
+                  borderRadius:'4px',
+                  boxShadow:`0 0 6px ${lvlColor}`,
+                  transition:'height 0.5s ease',
+                }}/>
+              </div>
+              {/* XP */}
+              <div style={{ fontSize:'9px', fontFamily:'monospace', color:'rgba(150,180,220,0.6)', textAlign:'center', lineHeight:1.2 }}>
+                {xpInLevel}<br/><span style={{color:'rgba(100,130,160,0.4)'}}>/100</span>
+              </div>
+              {/* Preview próxima criatura */}
+              {nextUnlock && (
+                <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:'6px', textAlign:'center' }}>
+                  <div style={{ fontSize:'7px', fontFamily:'monospace', color:'rgba(120,150,190,0.5)', marginBottom:'3px' }}>PRÓXIMO</div>
+                  <div style={{
+                    width:'34px', height:'26px', overflow:'hidden', position:'relative',
+                    filter:'grayscale(0.7) opacity(0.5)',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }} dangerouslySetInnerHTML={{__html:
+                    CREATURES[nextUnlock.previewIdx]?.draw(14, false, 0) ?? ''
+                  }}/>
+                  <div style={{ fontSize:'7px', fontFamily:'monospace', color:'rgba(120,150,190,0.4)', marginTop:'2px' }}>{nextUnlock.label}</div>
+                </div>
+              )}
             </div>
-          </>
+          );
+        })()}
+
+        {/* ── Comida — SVG animado que aparece periodicamente ── */}
+        {foodVisible && (
+          <div style={{
+            position:'absolute',
+            left:`${foodVisible.x}px`,
+            top:`${foodVisible.y}px`,
+            transform:'translate(-50%,-50%)',
+            zIndex:18, pointerEvents:'none',
+          }}>
+            {/* Anel de atração pulsante */}
+            <div style={{
+              position:'absolute', inset:'-18px', borderRadius:'50%',
+              border:'2px solid rgba(255,160,40,0.35)',
+              animation:'foodPulse 1.2s ease-in-out infinite alternate',
+            }}/>
+            <div style={{
+              position:'absolute', inset:'-8px', borderRadius:'50%',
+              border:'1.5px solid rgba(255,160,40,0.6)',
+              animation:'foodPulse 1.2s ease-in-out infinite alternate',
+              animationDelay:'0.2s',
+            }}/>
+            <svg width="38" height="38" viewBox="0 0 38 38" style={{filter:'drop-shadow(0 0 8px rgba(255,160,40,0.9))'}}>
+              <circle cx="19" cy="19" r="16" fill="rgba(255,140,20,0.12)"/>
+              <circle cx="19" cy="19" r="11" fill="#F4A261" stroke="#E76F51" strokeWidth="1.5"/>
+              <ellipse cx="14.5" cy="14.5" rx="4.5" ry="3" fill="rgba(255,255,255,0.4)" transform="rotate(-25 14.5 14.5)"/>
+              <circle cx="23" cy="15" r="2.2" fill="#E76F51" opacity="0.7"/>
+              <circle cx="15" cy="23" r="1.8" fill="#C62828" opacity="0.5"/>
+              <text x="19" y="-3" textAnchor="middle" fill="#FFD700" fontSize="9" fontWeight="bold" fontFamily="monospace" style={{textShadow:'0 0 4px #000'}}>+XP</text>
+            </svg>
+            {/* Indicador de drag */}
+            <div style={{
+              position:'absolute', top:'42px', left:'50%', transform:'translateX(-50%)',
+              background:'rgba(6,14,28,0.9)', border:'1px solid rgba(255,160,40,0.4)',
+              borderRadius:'8px', padding:'2px 8px',
+              fontSize:'9px', fontFamily:'monospace', color:'rgba(244,162,97,0.9)',
+              whiteSpace:'nowrap',
+            }}>
+              segure e arraste
+            </div>
+          </div>
         )}
 
 
@@ -2769,25 +2909,6 @@ export default function AquariumScene() {
               Enviar
             </button>
 
-            {/* Alimentar */}
-            <button type="button" onClick={handleFeed}
-              disabled={feeding || feedCooldown > 0}
-              title={feedCooldown > 0 ? `Aguarde ${feedCooldown}s` : 'Alimentar os peixes (+25 XP)'}
-              className="px-3 py-2 rounded-lg transition flex items-center gap-1"
-              style={{
-                background:feeding||feedCooldown>0?'rgba(244,162,97,0.15)':'rgba(244,162,97,0.22)',
-                border:`1px solid rgba(244,162,97,${feeding||feedCooldown>0?0.2:0.5})`,
-                color:`rgba(244,162,97,${feeding||feedCooldown>0?0.4:0.9})`,
-                cursor:feeding||feedCooldown>0?'default':'pointer',
-                minWidth:'60px',fontSize:'11px',fontFamily:'monospace',fontWeight:600,
-              }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-                style={{animation:feeding?'spin 1s linear infinite':'none'}}>
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
-              </svg>
-              {feedCooldown > 0 ? `${feedCooldown}s` : '+25 XP'}
-            </button>
-
             {/* Admin: roleta */}
             {user.username === ADMIN_USERNAME && (
               <>
@@ -2896,6 +3017,10 @@ export default function AquariumScene() {
         @keyframes foodpulse {
           0%   { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,180,60,0.7)); }
           100% { transform: scale(1.2); filter: drop-shadow(0 0 10px rgba(255,180,60,0.9)); }
+        }
+        @keyframes foodPulse {
+          0%   { transform: scale(0.85); opacity: 0.3; }
+          100% { transform: scale(1.15); opacity: 0.8; }
         }
         @keyframes fadeInOut {
           0%   { opacity: 0; transform: translateX(-50%) translateY(-6px); }

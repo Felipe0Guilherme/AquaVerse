@@ -214,3 +214,23 @@ export async function unlikeFish(req: Request, res: Response, next: NextFunction
     res.json({ success:true });
   } catch (err) { next(err); }
 }
+
+// POST /api/gamification/eat — comer comida (+30 XP, sem cooldown curto mas anti-spam por ID)
+export async function eatFood(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    const userId = authReq.user?.sub;
+    if (!userId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
+
+    const supabase = getSupabaseAdmin();
+    const { data: profile } = await supabase
+      .from('profiles').select('xp, msg_count, feed_count, badges, login_streak, likes_received')
+      .eq('id', userId).single();
+
+    const newXp = (profile?.xp ?? 0) + 30;
+    await supabase.from('profiles').update({ xp: newXp }).eq('id', userId);
+    await checkAndGrantBadges(userId, { ...profile, xp: newXp }, supabase);
+
+    res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained: 30 } });
+  } catch (err) { next(err); }
+}
