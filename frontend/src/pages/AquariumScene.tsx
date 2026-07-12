@@ -2699,7 +2699,6 @@ const msgCountRef = useRef<number>(0);
           const xpInLevel = me.xp % 100;
           const lvlColor  = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
           const nextUnlock = getNextUnlock(me.level);
-          const currentCreatureIdx = getCreatureIndexForLevel(me.level);
           return (
             <div style={{
               position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)',
