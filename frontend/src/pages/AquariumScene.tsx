@@ -1063,7 +1063,6 @@ const drawElectricEel: DrawFn = (s, f, phase) => {
   const w1 = Math.sin(phase * 0.65) * 10;
   const w2 = Math.sin(phase * 0.65 + 1.3) * 10;
   const w3 = Math.sin(phase * 0.65 + 2.6) * 10;
-  const t  = phase % (Math.PI * 2);
   const spark = Math.sin(phase * 3.5) > 0.65;
   const charge = (0.4 + Math.sin(phase * 2) * 0.35).toFixed(2);
   const bolts = spark ? `
@@ -1225,7 +1224,6 @@ interface CreatureDef {
   powerColor?: string;
 }
 
-const RARITY_WEIGHT = { common: 12, uncommon: 5, rare: 2, legendary: 1, special: 0 } as const;
 
 const CREATURES: CreatureDef[] = [
   // ── Peixes Ósseos comuns ─────────────────────────────────────────────────────
@@ -2702,7 +2700,6 @@ const msgCountRef = useRef<number>(0);
           const lvlColor  = me.level >= 30 ? '#FFD700' : me.level >= 20 ? '#A855F7' : me.level >= 10 ? '#3B82F6' : me.level >= 5 ? '#22C55E' : '#9CA3AF';
           const nextUnlock = getNextUnlock(me.level);
           const currentCreatureIdx = getCreatureIndexForLevel(me.level);
-          const currentCreature = CREATURES[currentCreatureIdx];
           return (
             <div style={{
               position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)',
