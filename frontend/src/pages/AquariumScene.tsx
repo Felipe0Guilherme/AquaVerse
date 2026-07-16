@@ -1344,6 +1344,13 @@ function getCreatureIndexForLevel(level: number): number {
   return 0; // fallback: palhaço
 }
 
+// Nomes amigáveis por espécie — usados no toast de desbloqueio e no modal de coleção
+const SPECIES_LABELS: Partial<Record<CreatureKind,string>> = {
+  fish:'Peixe',seahorse:'Cavalo-marinho',octopus:'Polvo',seaturtle:'Tartaruga',
+  manta:'Manta',shark:'Tubarão',hammerhead:'Tubarão-martelo',dolphin:'Golfinho',
+  orca:'Orca',humpback:'Jubarte',whaleshark:'Tubarão-baleia',whale:'Baleia-azul',
+};
+
 // Retorna o label e a prévia da próxima criatura a desbloquear
 function getNextUnlock(level: number): { label: string; previewIdx: number } | null {
   if (level >= LEVEL_PROGRESSION.length) return null;
@@ -1356,12 +1363,16 @@ function getNextUnlock(level: number): { label: string; previewIdx: number } | n
       count++;
     }
   }
-  const labels: Partial<Record<CreatureKind,string>> = {
-    fish:'Peixe',seahorse:'Cavalo-marinho',octopus:'Polvo',seaturtle:'Tartaruga',
-    manta:'Manta',shark:'Tubarão',hammerhead:'Tubarão-martelo',dolphin:'Golfinho',
-    orca:'Orca',humpback:'Jubarte',whaleshark:'Tubarão-baleia',whale:'Baleia-azul',
-  };
-  return { label: labels[kind] ?? kind, previewIdx };
+  return { label: SPECIES_LABELS[kind] ?? kind, previewIdx };
+}
+
+// Nível "efetivo" a usar pra decidir qual peixe da progressão mostrar:
+// respeita a escolha manual do usuário (displayLevel) desde que ela não
+// ultrapasse o nível real dele (evita mostrar peixe de nível que ele não tem mais).
+function getEffectiveDisplayLevel(entry: { level: number; displayLevel: number | null } | undefined): number {
+  if (!entry) return 1;
+  if (entry.displayLevel && entry.displayLevel >= 1 && entry.displayLevel <= entry.level) return entry.displayLevel;
+  return entry.level;
 }
 
 function getFishSize(username: string): number {
@@ -1392,12 +1403,17 @@ interface FishState {
   ghostOpacity: number;     // opacidade atual quando afetado pelo ghost (0-1)
   speedBoost: number;       // multiplicador de velocidade extra (oarfish)
   mimicTargetIdx: number;   // índice do peixe que está copiando (-1 = nenhum)
+  evolveFromIdx: number;    // índice do peixe anterior durante a transição (-1 = não está evoluindo)
+  evolveUntil: number;      // timestamp até quando a animação de evolução dura
 }
 
 // Quanto tempo o balão de chat fica visível acima do peixe.
 // Se mudar aqui, ajusta também o RECENT_WINDOW_SECONDS no messagesController.ts
 // do backend (precisa ser um pouco maior que isso, pra dar margem ao polling).
 const MESSAGE_DISPLAY_MS = 10_000;
+
+// Duração da animação de "evolução" (transição visual entre peixe antigo e novo)
+const EVOLVE_DURATION_MS = 2600;
 
 export default function AquariumScene() {
   const { user, logout } = useAuth();
@@ -1444,12 +1460,14 @@ const msgCountRef = useRef<number>(0);
   const [sending, setSending] = useState(false);
 
   // ── Gamificação ─────────────────────────────────────────────
-  const [xpMap,    setXpMap]    = useState<Record<string,{xp:number;level:number;badges:string[];streak:number}>>({});
+  const [xpMap,    setXpMap]    = useState<Record<string,{xp:number;level:number;badges:string[];streak:number;displayLevel:number|null}>>({});
   const [likes,    setLikes]    = useState<Record<string,number>>({});
   const [myLikes,  setMyLikes]  = useState<Set<string>>(new Set());
   const [ranking,  setRanking]  = useState<{username:string;xp:number;level:number}[]>([]);
   const [msgCount, setMsgCount] = useState(0);
   const [sighting, setSighting] = useState<{text:string;kind:CreatureKind}|null>(null);
+  const [showCreatureModal, setShowCreatureModal] = useState(false);
+  const [pickingLevel, setPickingLevel] = useState<number | null>(null);
   const seenLegendaryRef        = useRef<Set<string>>(new Set());
   const lastLoginBonusRef       = useRef<string>('');
   const prevLevelsRef           = useRef<Record<string,number>>({});
@@ -1504,7 +1522,7 @@ const msgCountRef = useRef<number>(0);
   const fetchXp = useCallback(async () => {
     try {
       const { data } = await apiClient.get<{success:boolean;data:{
-        xpMap: Record<string,{xp:number;level:number;badges:string[];streak:number}>;
+        xpMap: Record<string,{xp:number;level:number;badges:string[];streak:number;displayLevel:number|null}>;
         ranking: {username:string;xp:number;level:number}[];
         likes: Record<string,number>;
       }}>('/gamification/stats');
@@ -1514,19 +1532,37 @@ const msgCountRef = useRef<number>(0);
       setRanking(data.data.ranking ?? []);
       setLikes(data.data.likes ?? {});
 
-      // ── Detecta level-up e atualiza o peixe automaticamente ──────────────
+      // ── Detecta level-up e evolui o peixe automaticamente ──────────────
       for (const [username, userData] of Object.entries(newXpMap)) {
         const prevLevel = prevLevelsRef.current[username] ?? 1;
         const newLevel  = userData.level;
         if (newLevel !== prevLevel) {
           prevLevelsRef.current[username] = newLevel;
-          // Atualiza o typeIdx do peixe já na tela (sem remover/respawnar)
+
+          const oldSpeciesIdx = getCreatureIndexForLevel(prevLevel);
+          const newSpeciesIdx = getCreatureIndexForLevel(newLevel);
+          const speciesChanged = oldSpeciesIdx !== newSpeciesIdx;
+
           const fish = fishList.current.find(f => f.username === username);
-          if (fish && !CREATURES[fish.typeIdx]?.power) { // não substitui especiais
-            const newIdx = getCreatureIndexForLevel(newLevel);
-            fish.typeIdx = newIdx;
-            fish.kind    = CREATURES[newIdx].kind;
-            fish.size    = CREATURES[newIdx].sizeOverride ?? getFishSize(username);
+          const hasManualPick = !!userData.displayLevel;
+
+          if (fish && !CREATURES[fish.typeIdx]?.power) { // não substitui peixes especiais
+            if (!hasManualPick && speciesChanged) {
+              // ── Modo automático: o peixe evolui de verdade, com animação ──
+              fish.evolveFromIdx = fish.typeIdx;
+              fish.evolveUntil   = Date.now() + EVOLVE_DURATION_MS;
+              fish.typeIdx = newSpeciesIdx;
+              fish.kind    = CREATURES[newSpeciesIdx].kind;
+              fish.size    = CREATURES[newSpeciesIdx].sizeOverride ?? getFishSize(username);
+              const speciesLabel = SPECIES_LABELS[CREATURES[newSpeciesIdx].kind] ?? CREATURES[newSpeciesIdx].kind;
+              setSighting({ text: `✨ @${username} evoluiu para ${speciesLabel}!`, kind: 'fish' });
+              setTimeout(() => setSighting(null), 5500);
+            } else if (hasManualPick && speciesChanged) {
+              // ── O jogador escolheu um peixe fixo: não trocamos sozinhos, só avisamos ──
+              const speciesLabel = SPECIES_LABELS[CREATURES[newSpeciesIdx].kind] ?? CREATURES[newSpeciesIdx].kind;
+              setSighting({ text: `🔓 Novo peixe desbloqueado: ${speciesLabel} (Nv.${newLevel})`, kind: 'fish' });
+              setTimeout(() => setSighting(null), 5500);
+            }
           }
         }
       }
@@ -1582,6 +1618,18 @@ const msgCountRef = useRef<number>(0);
       }
       await fetchXp();
     } catch { /* ignore */ }
+  };
+
+  // Escolhe qual peixe já desbloqueado exibir no aquário (ou volta ao automático)
+  const handlePickDisplayLevel = async (level: number | null) => {
+    if (pickingLevel !== null) return;
+    setPickingLevel(level ?? -1);
+    try {
+      await apiClient.post('/gamification/display-level', { level });
+      await fetchXp();
+      setShowCreatureModal(false);
+    } catch { /* ignore */ }
+    setPickingLevel(null);
   };
 
   // XP por mensagem enviada
@@ -1714,14 +1762,15 @@ const msgCountRef = useRef<number>(0);
     newUsers.forEach((u, idx) => {
       existingUsernames.add(u.username);
 
-      // Usa nível do xpMap se disponível, senão começa no 1
-      const userLevel = xpMap[u.username]?.level ?? 1;
+      // Usa o nível "efetivo" — respeita a escolha manual do usuário (Trocar Peixe),
+      // desde que ela não ultrapasse o nível real dele
+      const displayLevel = getEffectiveDisplayLevel(xpMap[u.username]);
 
       // Se o usuário tem peixe especial concedido pelo admin, usa ele;
-      // senão usa a criatura correspondente ao nível
+      // senão usa a criatura correspondente ao nível efetivo
       const specialKind = u.special_creature as CreatureKind | undefined;
       const specialIdx  = specialKind ? CREATURES.findIndex(c => c.kind === specialKind) : -1;
-      const reservedTypeIdx = specialIdx >= 0 ? specialIdx : getCreatureIndexForLevel(userLevel);
+      const reservedTypeIdx = specialIdx >= 0 ? specialIdx : getCreatureIndexForLevel(displayLevel);
 
       setTimeout(() => {
         if (!wrapRef.current) return;
@@ -1880,6 +1929,8 @@ const msgCountRef = useRef<number>(0);
           ghostOpacity: 1,
           speedBoost: 1,
           mimicTargetIdx: -1,
+          evolveFromIdx: -1,
+          evolveUntil: 0,
         };
 
         fish.el.style.left = fish.x + 'px';
@@ -2313,7 +2364,38 @@ const msgCountRef = useRef<number>(0);
           : f.typeIdx;
         const baseSvg = (CREATURES[drawIdx] ?? CREATURES[f.typeIdx])?.draw(f.size, f.flipped, f.wobble) ?? '';
 
-        f.el.innerHTML = powerAura + baseSvg + levelBadge + likesBadge;
+        // ── Evolução: transição cross-fade entre o peixe antigo e o novo ──────
+        const isEvolving = f.evolveFromIdx >= 0 && now < f.evolveUntil;
+        let evolveOverlay = '';
+        let evolveSvg = baseSvg;
+        if (isEvolving) {
+          const progress = 1 - (f.evolveUntil - now) / EVOLVE_DURATION_MS; // 0 → 1
+          const oldSvg = CREATURES[f.evolveFromIdx]?.draw(f.size, f.flipped, f.wobble) ?? '';
+          const oldOpacity = Math.max(0, 1 - progress * 1.4).toFixed(2);
+          const newOpacity = Math.min(1, progress * 1.4).toFixed(2);
+          const shimmer = 0.5 + Math.sin(now / 90) * 0.5;
+          const pulseR  = 10 + Math.sin(now / 110) * 4;
+          evolveSvg = `
+            <div style="position:absolute;inset:0;opacity:${oldOpacity};">${oldSvg}</div>
+            <div style="position:absolute;inset:0;opacity:${newOpacity};">${baseSvg}</div>
+          `;
+          evolveOverlay = `
+            <div style="position:absolute;inset:-${pulseR.toFixed(0)}px;border-radius:50%;
+              background:radial-gradient(circle, rgba(255,255,255,${(0.35*shimmer).toFixed(2)}) 0%, rgba(120,220,255,${(0.25*shimmer).toFixed(2)}) 45%, transparent 75%);
+              filter:blur(2px);pointer-events:none;"></div>
+            <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);
+              background:rgba(6,16,30,0.92);border:1px solid #7CE7FF;color:#7CE7FF;
+              font-size:8px;font-weight:700;font-family:monospace;padding:2px 7px;
+              border-radius:9px;white-space:nowrap;pointer-events:none;letter-spacing:0.3px;">
+              🧬 evoluindo...
+            </div>
+          `;
+        } else if (f.evolveFromIdx >= 0) {
+          // Animação terminou — libera o slot pra parar de checar
+          f.evolveFromIdx = -1;
+        }
+
+        f.el.innerHTML = powerAura + evolveOverlay + evolveSvg + levelBadge + likesBadge;
 
         // Balão de chat: segue o peixe enquanto a mensagem estiver "viva"
         if (f.messageUntil > now) {
@@ -2415,6 +2497,22 @@ const msgCountRef = useRef<number>(0);
               <span className="text-sm font-mono" style={{ color: '#22d3ee' }}>
                 @{user.username}
               </span>
+              {xpMap[user.username] && (
+                <button
+                  onClick={() => setShowCreatureModal(true)}
+                  className="px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1"
+                  style={{
+                    border: '1px solid rgba(124,231,255,0.35)',
+                    color: '#7CE7FF',
+                    background: 'rgba(34,211,238,0.08)',
+                    fontFamily: 'monospace', fontWeight: 700,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(34,211,238,0.18)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(34,211,238,0.08)')}
+                >
+                  🐠 Trocar peixe
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-1.5 text-sm rounded-lg transition"
@@ -2995,6 +3093,108 @@ const msgCountRef = useRef<number>(0);
       <p className="mt-4 text-xs" style={{ color: 'rgba(100,130,160,0.5)', fontFamily: 'monospace' }}>
         novo membro = novo peixe · atualiza a cada 30s
       </p>
+
+      {/* ── Modal "Trocar peixe" — coleção de criaturas já desbloqueadas ── */}
+      {showCreatureModal && user && (() => {
+        const me = xpMap[user.username];
+        if (!me) return null;
+        const currentLevel = me.level;
+        const effectiveLevel = getEffectiveDisplayLevel(me);
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 100,
+              background: 'rgba(3,8,16,0.82)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '16px',
+            }}
+            onClick={() => setShowCreatureModal(false)}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: 'rgba(8,18,32,0.98)',
+                border: '1px solid rgba(34,211,238,0.25)',
+                borderRadius: '18px', padding: '20px',
+                maxWidth: '560px', width: '100%', maxHeight: '80vh',
+                overflowY: 'auto', boxShadow: '0 0 40px rgba(0,0,0,0.6)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <h2 style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 800, color: '#7CE7FF', margin: 0 }}>
+                  🐠 Trocar peixe
+                </h2>
+                <button
+                  onClick={() => setShowCreatureModal(false)}
+                  style={{ background: 'transparent', border: 'none', color: 'rgba(180,200,220,0.6)', fontSize: '18px', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
+              <p style={{ fontFamily: 'monospace', fontSize: '11px', color: 'rgba(150,180,220,0.6)', marginTop: 0, marginBottom: '14px' }}>
+                Escolha qualquer peixe que você já desbloqueou pra nadar no aquário. Você continua ganhando XP normalmente.
+              </p>
+
+              {/* Opção: modo automático — sempre acompanha o nível atual e evolui sozinho */}
+              <button
+                onClick={() => handlePickDisplayLevel(null)}
+                disabled={pickingLevel !== null}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                  background: me.displayLevel == null ? 'rgba(34,211,238,0.16)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${me.displayLevel == null ? '#22d3ee' : 'rgba(255,255,255,0.08)'}`,
+                  borderRadius: '12px', padding: '10px 12px', marginBottom: '12px',
+                  cursor: pickingLevel !== null ? 'default' : 'pointer', textAlign: 'left',
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>🔄</span>
+                <div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 700, color: '#e6f7ff' }}>
+                    Automático (sempre o mais atual)
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(150,180,220,0.5)' }}>
+                    Evolui sozinho a cada novo nível
+                  </div>
+                </div>
+              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px,1fr))', gap: '8px' }}>
+                {LEVEL_PROGRESSION.map((_, i) => {
+                  const lvl = i + 1;
+                  const unlocked = lvl <= currentLevel;
+                  const speciesIdx = getCreatureIndexForLevel(lvl);
+                  const speciesLabel = SPECIES_LABELS[CREATURES[speciesIdx].kind] ?? CREATURES[speciesIdx].kind;
+                  const isActive = unlocked && me.displayLevel != null && effectiveLevel === lvl;
+                  return (
+                    <button
+                      key={lvl}
+                      disabled={!unlocked || pickingLevel !== null}
+                      onClick={() => handlePickDisplayLevel(lvl)}
+                      title={unlocked ? speciesLabel : `Desbloqueia no nível ${lvl}`}
+                      style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                        background: isActive ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${isActive ? '#22d3ee' : 'rgba(255,255,255,0.08)'}`,
+                        borderRadius: '10px', padding: '8px 4px',
+                        cursor: unlocked && pickingLevel === null ? 'pointer' : 'default',
+                        opacity: unlocked ? 1 : 0.35,
+                        filter: unlocked ? 'none' : 'grayscale(1)',
+                      }}
+                    >
+                      <div style={{ width: '34px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        dangerouslySetInnerHTML={{ __html: unlocked ? (CREATURES[speciesIdx]?.draw(15, false, 0) ?? '') : '🔒' }}
+                      />
+                      <div style={{ fontSize: '8px', fontFamily: 'monospace', color: 'rgba(180,200,220,0.7)', textAlign: 'center', lineHeight: 1.1 }}>
+                        Nv.{lvl}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         @keyframes spin {

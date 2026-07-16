@@ -39,7 +39,7 @@ export async function getStats(_req: Request, res: Response, next: NextFunction)
 
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('username, xp, badges, login_streak, likes_received')
+      .select('username, xp, badges, login_streak, likes_received, display_level')
       .order('xp', { ascending: false });
     if (error) throw error;
 
@@ -58,11 +58,43 @@ export async function getStats(_req: Request, res: Response, next: NextFunction)
     for (const p of profiles ?? []) {
       const xp = p.xp ?? 0;
       const level = calcLevel(xp);
-      xpMap[p.username] = { xp, level, badges: p.badges ?? [], streak: p.login_streak ?? 0 };
+      xpMap[p.username] = { xp, level, badges: p.badges ?? [], streak: p.login_streak ?? 0, displayLevel: p.display_level ?? null };
       ranking.push({ username: p.username, xp, level });
     }
 
     res.json({ success: true, data: { xpMap, ranking: ranking.slice(0, 10), likes: likesMap } });
+  } catch (err) { next(err); }
+}
+
+// POST /api/gamification/display-level — escolhe qual peixe (de um nível já alcançado)
+// o usuário quer exibir no aquário, ou volta ao modo automático (level: null)
+export async function setDisplayLevel(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    const userId = authReq.user?.sub;
+    if (!userId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
+
+    const rawLevel = req.body?.level;
+    const level: number | null = rawLevel === null || rawLevel === undefined ? null : Number(rawLevel);
+    if (level !== null && (!Number.isInteger(level) || level < 1)) {
+      res.status(400).json({ success: false, error: 'Invalid level.' });
+      return;
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data: profile } = await supabase
+      .from('profiles').select('xp')
+      .eq('id', userId).single();
+
+    const currentLevel = calcLevel(profile?.xp ?? 0);
+    if (level !== null && level > currentLevel) {
+      res.status(400).json({ success: false, error: 'You have not unlocked that level yet.' });
+      return;
+    }
+
+    await supabase.from('profiles').update({ display_level: level }).eq('id', userId);
+
+    res.json({ success: true, data: { displayLevel: level } });
   } catch (err) { next(err); }
 }
 
