@@ -1330,9 +1330,23 @@ const LEVEL_PROGRESSION: Array<[CreatureKind, number]> = [
   ['whale',0],   // L35 Baleia-azul
 ];
 
+// Quantos níveis o peixe fica "parado" antes de evoluir pra próxima espécie.
+// Aumentar esse número deixa as evoluções mais espaçadas (menos peixe novo a cada nível).
+const LEVELS_PER_SPECIES = 3;
+
+// Converte um nível "bruto" no índice do estágio de espécie (tier) dentro de LEVEL_PROGRESSION
+function getSpeciesTier(level: number): number {
+  return Math.min(Math.floor(Math.max(level - 1, 0) / LEVELS_PER_SPECIES), LEVEL_PROGRESSION.length - 1);
+}
+
+// Nível em que um determinado tier de espécie é desbloqueado
+function getUnlockLevelForTier(tier: number): number {
+  return tier * LEVELS_PER_SPECIES + 1;
+}
+
 // Retorna o índice em CREATURES para um dado nível
 function getCreatureIndexForLevel(level: number): number {
-  const prog = LEVEL_PROGRESSION[Math.min(level - 1, LEVEL_PROGRESSION.length - 1)];
+  const prog = LEVEL_PROGRESSION[getSpeciesTier(level)];
   const [kind, subIdx] = prog;
   let count = 0;
   for (let i = 0; i < CREATURES.length; i++) {
@@ -1352,9 +1366,10 @@ const SPECIES_LABELS: Partial<Record<CreatureKind,string>> = {
 };
 
 // Retorna o label e a prévia da próxima criatura a desbloquear
-function getNextUnlock(level: number): { label: string; previewIdx: number } | null {
-  if (level >= LEVEL_PROGRESSION.length) return null;
-  const [kind, subIdx] = LEVEL_PROGRESSION[level]; // próximo nível = level (0-indexed = level+1-1)
+function getNextUnlock(level: number): { label: string; previewIdx: number; unlockLevel: number } | null {
+  const nextTier = getSpeciesTier(level) + 1;
+  if (nextTier >= LEVEL_PROGRESSION.length) return null;
+  const [kind, subIdx] = LEVEL_PROGRESSION[nextTier];
   let count = 0;
   let previewIdx = 0;
   for (let i = 0; i < CREATURES.length; i++) {
@@ -1363,7 +1378,7 @@ function getNextUnlock(level: number): { label: string; previewIdx: number } | n
       count++;
     }
   }
-  return { label: SPECIES_LABELS[kind] ?? kind, previewIdx };
+  return { label: SPECIES_LABELS[kind] ?? kind, previewIdx, unlockLevel: getUnlockLevelForTier(nextTier) };
 }
 
 // Nível "efetivo" a usar pra decidir qual peixe da progressão mostrar:
@@ -2837,6 +2852,7 @@ const msgCountRef = useRef<number>(0);
                     CREATURES[nextUnlock.previewIdx]?.draw(14, false, 0) ?? ''
                   }}/>
                   <div style={{ fontSize:'7px', fontFamily:'monospace', color:'rgba(120,150,190,0.4)', marginTop:'2px' }}>{nextUnlock.label}</div>
+                  <div style={{ fontSize:'6px', fontFamily:'monospace', color:'rgba(100,130,160,0.35)' }}>Nv.{nextUnlock.unlockLevel}</div>
                 </div>
               )}
             </div>
@@ -3159,18 +3175,18 @@ const msgCountRef = useRef<number>(0);
               </button>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px,1fr))', gap: '8px' }}>
-                {LEVEL_PROGRESSION.map((_, i) => {
-                  const lvl = i + 1;
-                  const unlocked = lvl <= currentLevel;
-                  const speciesIdx = getCreatureIndexForLevel(lvl);
+                {LEVEL_PROGRESSION.map((_, tier) => {
+                  const unlockLevel = getUnlockLevelForTier(tier);
+                  const unlocked = unlockLevel <= currentLevel;
+                  const speciesIdx = getCreatureIndexForLevel(unlockLevel);
                   const speciesLabel = SPECIES_LABELS[CREATURES[speciesIdx].kind] ?? CREATURES[speciesIdx].kind;
-                  const isActive = unlocked && me.displayLevel != null && effectiveLevel === lvl;
+                  const isActive = unlocked && me.displayLevel != null && getSpeciesTier(effectiveLevel) === tier;
                   return (
                     <button
-                      key={lvl}
+                      key={tier}
                       disabled={!unlocked || pickingLevel !== null}
-                      onClick={() => handlePickDisplayLevel(lvl)}
-                      title={unlocked ? speciesLabel : `Desbloqueia no nível ${lvl}`}
+                      onClick={() => handlePickDisplayLevel(unlockLevel)}
+                      title={unlocked ? speciesLabel : `Desbloqueia no nível ${unlockLevel}`}
                       style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                         background: isActive ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.03)',
@@ -3185,7 +3201,7 @@ const msgCountRef = useRef<number>(0);
                         dangerouslySetInnerHTML={{ __html: unlocked ? (CREATURES[speciesIdx]?.draw(15, false, 0) ?? '') : '🔒' }}
                       />
                       <div style={{ fontSize: '8px', fontFamily: 'monospace', color: 'rgba(180,200,220,0.7)', textAlign: 'center', lineHeight: 1.1 }}>
-                        Nv.{lvl}
+                        Nv.{unlockLevel}
                       </div>
                     </button>
                   );
