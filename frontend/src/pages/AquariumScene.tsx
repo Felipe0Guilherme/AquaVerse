@@ -2788,10 +2788,11 @@ const msgCountRef = useRef<number>(0);
         )}
 
 
+        {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
             <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        
+        )}
 
         {/* Aquário vazio */}
         {!loading && users.length === 0 && (
