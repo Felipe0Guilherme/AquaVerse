@@ -12,6 +12,7 @@ import authRoutes from './routes/auth';
 import logsRoutes from './routes/logs';
 import messagesRoutes from './routes/messages';
 import adminRoutes from './routes/admin';
+import gamificationRoutes from './routes/gamification';
 import { config } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -59,6 +60,7 @@ app.use('/api/logs', apiLimiter, logsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/messages', apiLimiter, messagesRoutes);
 app.use('/api/admin',   apiLimiter, adminRoutes);
+app.use('/api/gamification', apiLimiter, gamificationRoutes);
 
 // ── 404 & Error Handler ───────────────────────────────────────
 app.use((_req, res) => {
