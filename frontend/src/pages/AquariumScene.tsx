@@ -1486,6 +1486,7 @@ const msgCountRef = useRef<number>(0);
   const seenLegendaryRef        = useRef<Set<string>>(new Set());
   const lastLoginBonusRef       = useRef<string>('');
   const prevLevelsRef           = useRef<Record<string,number>>({});
+  const xpMapRef                = useRef<Record<string,{xp:number;level:number;badges:string[];streak:number;displayLevel:number|null}>>({});
 
   // ── Comida — aparece periodicamente, usuário arrasta o peixe para comer ──
   const [foodVisible, setFoodVisible] = useState<{x:number;y:number;id:number}|null>(null);
@@ -1544,6 +1545,7 @@ const msgCountRef = useRef<number>(0);
 
       const newXpMap = data.data.xpMap ?? {};
       setXpMap(newXpMap);
+      xpMapRef.current = newXpMap;
       setRanking(data.data.ranking ?? []);
       setLikes(data.data.likes ?? {});
 
@@ -1637,11 +1639,23 @@ const msgCountRef = useRef<number>(0);
 
   // Escolhe qual peixe já desbloqueado exibir no aquário (ou volta ao automático)
   const handlePickDisplayLevel = async (level: number | null) => {
-    if (pickingLevel !== null) return;
+    if (pickingLevel !== null || !user) return;
     setPickingLevel(level ?? -1);
     try {
       await apiClient.post('/gamification/display-level', { level });
       await fetchXp();
+
+      // Atualiza o peixe já nadando na tela na hora, sem precisar recarregar a página
+      const fish = fishList.current.find(f => f.username === user.username);
+      if (fish && !CREATURES[fish.typeIdx]?.power) { // não mexe em peixes especiais
+        const effLevel = getEffectiveDisplayLevel(xpMapRef.current[user.username]);
+        const newIdx = getCreatureIndexForLevel(effLevel);
+        fish.typeIdx = newIdx;
+        fish.kind    = CREATURES[newIdx].kind;
+        fish.size    = CREATURES[newIdx].sizeOverride ?? getFishSize(user.username);
+        fish.evolveFromIdx = -1; // troca manual é instantânea, sem animação de evolução
+      }
+
       setShowCreatureModal(false);
     } catch { /* ignore */ }
     setPickingLevel(null);
@@ -3174,7 +3188,6 @@ const msgCountRef = useRef<number>(0);
                 </div>
               </button>
 
-              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px,1fr))', gap: '8px' }}>
                 {LEVEL_PROGRESSION.map((_, tier) => {
                   const unlockLevel = getUnlockLevelForTier(tier);
