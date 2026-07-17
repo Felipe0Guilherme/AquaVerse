@@ -3174,6 +3174,7 @@ const msgCountRef = useRef<number>(0);
                 </div>
               </button>
 
+              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px,1fr))', gap: '8px' }}>
                 {LEVEL_PROGRESSION.map((_, tier) => {
                   const unlockLevel = getUnlockLevelForTier(tier);
