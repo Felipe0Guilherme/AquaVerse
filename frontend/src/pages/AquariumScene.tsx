@@ -1457,6 +1457,7 @@ interface FishState {
   mimicTargetIdx: number;   // índice do peixe que está copiando (-1 = nenhum)
   evolveFromIdx: number;    // índice do peixe anterior durante a transição (-1 = não está evoluindo)
   evolveUntil: number;      // timestamp até quando a animação de evolução dura
+  boostUntil: number;       // timestamp até quando o boost de velocidade da ração elétrica dura
 }
 
 // Quanto tempo o balão de chat fica visível acima do peixe.
@@ -1467,7 +1468,7 @@ const MESSAGE_DISPLAY_MS = 10_000;
 // Duração da animação de "evolução" (transição visual entre peixe antigo e novo)
 const EVOLVE_DURATION_MS = 2600;
 
-// SVG de uma raçãozinha/flake de comida caindo
+// SVG de uma raçãozinha/flake de comida caindo (comum)
 const FOOD_FLAKE_SVG = `
   <svg width="22" height="22" viewBox="0 0 22 22" style="filter:drop-shadow(0 0 5px rgba(255,160,40,0.8))">
     <ellipse cx="11" cy="11" rx="9" ry="6.5" fill="#D98A3D" stroke="#8B4A1E" stroke-width="1"/>
@@ -1476,6 +1477,52 @@ const FOOD_FLAKE_SVG = `
     <circle cx="9" cy="14" r="1" fill="#7A3B12" opacity="0.5"/>
   </svg>
 `;
+
+// Ração dourada — rara, dá bem mais XP
+const FOOD_GOLD_SVG = `
+  <svg width="24" height="24" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 9px rgba(255,215,0,0.95))">
+    <ellipse cx="12" cy="12" rx="10" ry="7" fill="#FFD700" stroke="#B8860B" stroke-width="1.2"/>
+    <ellipse cx="9" cy="9" rx="3.4" ry="2.2" fill="rgba(255,255,255,0.55)" transform="rotate(-20 9 9)"/>
+    <circle cx="15.5" cy="13" r="1.5" fill="#8A6200" opacity="0.6"/>
+    <circle cx="9.5" cy="15.5" r="1.1" fill="#8A6200" opacity="0.5"/>
+  </svg>
+`;
+
+// Ração elétrica — dá um boost de velocidade temporário
+const FOOD_SPEED_SVG = `
+  <svg width="22" height="22" viewBox="0 0 22 22" style="filter:drop-shadow(0 0 8px rgba(120,220,255,0.9))">
+    <ellipse cx="11" cy="11" rx="9" ry="6.5" fill="#4FD6FF" stroke="#0E7FA8" stroke-width="1"/>
+    <path d="M12 5 L8 12 L11 12 L9.5 17 L15 10 L11.5 10 Z" fill="#FFF" opacity="0.9"/>
+  </svg>
+`;
+
+// Ração da sorte — dá um like grátis além do XP
+const FOOD_LUCKY_SVG = `
+  <svg width="22" height="22" viewBox="0 0 22 22" style="filter:drop-shadow(0 0 8px rgba(255,105,180,0.9))">
+    <ellipse cx="11" cy="11" rx="9" ry="6.5" fill="#FF8FC7" stroke="#B23B72" stroke-width="1"/>
+    <path d="M11 15.5 C7 12.5 6.5 9 9 8 C10.2 7.5 11 8.5 11 8.5 C11 8.5 11.8 7.5 13 8 C15.5 9 15 12.5 11 15.5 Z" fill="#fff" opacity="0.85"/>
+  </svg>
+`;
+
+type FoodTypeId = 'normal' | 'golden' | 'speed' | 'lucky';
+const FOOD_TYPES: Record<FoodTypeId, { svg: string; weight: number; xp: number; label: string; toast: string | null }> = {
+  normal: { svg: FOOD_FLAKE_SVG, weight: 68, xp: 30, label: 'Ração',          toast: null },
+  golden: { svg: FOOD_GOLD_SVG,  weight: 12, xp: 75, label: 'Ração Dourada',  toast: '✨ Ração Dourada! +75 XP' },
+  speed:  { svg: FOOD_SPEED_SVG, weight: 10, xp: 15, label: 'Ração Elétrica', toast: '⚡ Ração Elétrica! Seu peixe ficou mais rápido por um tempo' },
+  lucky:  { svg: FOOD_LUCKY_SVG, weight: 10, xp: 20, label: 'Ração da Sorte', toast: '💖 Ração da Sorte! +1 curtida grátis' },
+};
+
+// Sorteia um tipo de comida respeitando os pesos de raridade
+function pickFoodType(): FoodTypeId {
+  const entries = Object.entries(FOOD_TYPES) as [FoodTypeId, typeof FOOD_TYPES[FoodTypeId]][];
+  const total = entries.reduce((sum, [, t]) => sum + t.weight, 0);
+  let roll = Math.random() * total;
+  for (const [id, t] of entries) {
+    if (roll < t.weight) return id;
+    roll -= t.weight;
+  }
+  return 'normal';
+}
 
 export default function AquariumScene() {
   const { user, logout } = useAuth();
@@ -1544,7 +1591,7 @@ const msgCountRef = useRef<number>(0);
   // ── Comida — aparece periodicamente, usuário arrasta o peixe para comer ──
   // ── Comida — cai em remessas de 1 a 3 rações, com intervalo entre remessas.
   // Cada ração afunda de verdade (gravidade); se chegar na areia sem ser comida, é perdida.
-  const foodListRef      = useRef<Array<{ id:number; x:number; y:number; vy:number; el:HTMLDivElement }>>([]);
+  const foodListRef      = useRef<Array<{ id:number; x:number; y:number; vy:number; el:HTMLDivElement; type:FoodTypeId }>>([]);
   const nextFoodBatchRef = useRef<number>(Date.now() + 15_000); // primeira remessa após 15s
   const eatingRef     = useRef<boolean>(false); // evita duplo-eat no mesmo frame
 
@@ -1666,12 +1713,25 @@ const msgCountRef = useRef<number>(0);
   }, [fetchXp]);
 
   // Chamado pela animation loop quando o peixe do usuário toca a comida
-  const handleEat = useCallback(async (foodId: number) => {
+  const handleEat = useCallback(async (foodId: number, foodType: FoodTypeId = 'normal') => {
     if (eatingRef.current) return;
     eatingRef.current = true;
     try {
-      await apiClient.post('/gamification/eat', { foodId });
+      await apiClient.post('/gamification/eat', { foodId, foodType });
       await fetchXp();
+
+      // Boost de velocidade temporário (ração elétrica)
+      if (foodType === 'speed' && userRef.current) {
+        const myFish = fishList.current.find(f => f.username === userRef.current!.username);
+        if (myFish) myFish.boostUntil = Date.now() + 45_000;
+      }
+
+      // Toast pras comidas especiais
+      const toast = FOOD_TYPES[foodType].toast;
+      if (toast) {
+        setSighting({ text: toast, kind: 'fish' });
+        setTimeout(() => setSighting(null), 4000);
+      }
     } catch { /* ignore */ }
     finally { setTimeout(() => { eatingRef.current = false; }, 1000); }
   }, [fetchXp]);
@@ -2014,6 +2074,7 @@ const msgCountRef = useRef<number>(0);
           mimicTargetIdx: -1,
           evolveFromIdx: -1,
           evolveUntil: 0,
+          boostUntil: 0,
         };
 
         fish.el.style.left = fish.x + 'px';
@@ -2053,6 +2114,7 @@ const msgCountRef = useRef<number>(0);
           if (f.ghostOpacity === undefined) f.ghostOpacity = 1;
           if (f.speedBoost   === undefined) f.speedBoost   = 1;
           if (f.mimicTargetIdx === undefined) f.mimicTargetIdx = -1;
+          if (f.boostUntil === undefined) f.boostUntil = 0;
 
           // ── Poderes especiais ─────────────────────────────────────────────────
           if (f.power) {
@@ -2151,8 +2213,10 @@ const msgCountRef = useRef<number>(0);
             f.ghostOpacity = Math.min(1, f.ghostOpacity + 0.02);
           }
 
-          // ── Reset speedBoost (re-aplicado se oarfish estiver presente) ────────
-          if (f.power !== 'speed') f.speedBoost = 1;
+          // ── Reset speedBoost (re-aplicado se oarfish estiver presente, ou peixe comeu ração elétrica) ──
+          if (f.power !== 'speed') {
+            f.speedBoost = (f.boostUntil && now < f.boostUntil) ? 1.8 : 1;
+          }
 
           // ── Se paralisado, pula movimento ─────────────────────────────────────
           if (isFrozen) {
@@ -2507,9 +2571,10 @@ const msgCountRef = useRef<number>(0);
         const roll = Math.random();
         const batchSize = roll < 0.55 ? 1 : roll < 0.85 ? 2 : 3; // maioria cai 1, às vezes 2, raramente 3
         for (let i = 0; i < batchSize; i++) {
+          const type = pickFoodType();
           const el = document.createElement('div');
           el.style.cssText = 'position:absolute;z-index:18;pointer-events:none;';
-          el.innerHTML = FOOD_FLAKE_SVG;
+          el.innerHTML = FOOD_TYPES[type].svg;
           wrapRef.current.appendChild(el);
           foodListRef.current.push({
             id: now + i,
@@ -2517,6 +2582,7 @@ const msgCountRef = useRef<number>(0);
             y: 20 + Math.random() * 24 - i * 14, // peças da mesma remessa começam levemente espaçadas
             vy: 0.4 + Math.random() * 0.3,
             el,
+            type,
           });
         }
         // Intervalo bem maior até a próxima remessa
@@ -2548,9 +2614,10 @@ const msgCountRef = useRef<number>(0);
             const dist = Math.hypot(fcx - food.x, fcy - food.y);
             if (dist < 40) {
               const eatenId = food.id;
+              const eatenType = food.type;
               food.el.remove();
               foodListRef.current.splice(i, 1);
-              handleEat(eatenId);
+              handleEat(eatenId, eatenType);
             }
           }
         }

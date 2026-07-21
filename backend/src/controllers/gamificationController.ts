@@ -248,21 +248,36 @@ export async function unlikeFish(req: Request, res: Response, next: NextFunction
 }
 
 // POST /api/gamification/eat — comer comida (+30 XP, sem cooldown curto mas anti-spam por ID)
+// XP concedido por tipo de ração — precisa bater com FOOD_TYPES do frontend
+const FOOD_XP: Record<string, number> = { normal: 30, golden: 75, speed: 15, lucky: 20 };
+
 export async function eatFood(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const authReq = req as AuthRequest;
     const userId = authReq.user?.sub;
     if (!userId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
 
+    const foodType = String(req.body?.foodType ?? 'normal');
+    const gained = FOOD_XP[foodType] ?? FOOD_XP.normal;
+
     const supabase = getSupabaseAdmin();
     const { data: profile } = await supabase
       .from('profiles').select('xp, msg_count, feed_count, badges, login_streak, likes_received')
       .eq('id', userId).single();
 
-    const newXp = (profile?.xp ?? 0) + 30;
-    await supabase.from('profiles').update({ xp: newXp }).eq('id', userId);
-    await checkAndGrantBadges(userId, { ...profile, xp: newXp }, supabase);
+    const newXp = (profile?.xp ?? 0) + gained;
+    const updates: Record<string, number> = { xp: newXp };
 
-    res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained: 30 } });
+    // Ração da sorte também concede 1 curtida bônus
+    let newLikes = profile?.likes_received ?? 0;
+    if (foodType === 'lucky') {
+      newLikes += 1;
+      updates.likes_received = newLikes;
+    }
+
+    await supabase.from('profiles').update(updates).eq('id', userId);
+    await checkAndGrantBadges(userId, { ...profile, xp: newXp, likes_received: newLikes }, supabase);
+
+    res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained, foodType } });
   } catch (err) { next(err); }
 }
