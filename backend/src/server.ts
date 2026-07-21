@@ -18,6 +18,11 @@ import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
+// Necessário no Render (e em qualquer host atrás de proxy reverso) pra que o
+// express-rate-limit identifique o IP real de cada usuário via X-Forwarded-For,
+// em vez de contar todo mundo como se fosse um IP só.
+app.set('trust proxy', 1);
+
 // ── Security & Middlewares ──────────────────────────────────
 app.use(helmet());
 app.use(
@@ -57,7 +62,7 @@ app.get('/health', (_req, res) => {
 // ── API Routes ────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/logs', apiLimiter, logsRoutes);
-app.use('/api/users', usersRoutes);
+app.use('/api/users', apiLimiter, usersRoutes);
 app.use('/api/messages', apiLimiter, messagesRoutes);
 app.use('/api/admin',   apiLimiter, adminRoutes);
 app.use('/api/gamification', apiLimiter, gamificationRoutes);
