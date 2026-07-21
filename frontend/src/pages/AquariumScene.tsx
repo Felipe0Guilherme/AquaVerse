@@ -1293,41 +1293,71 @@ const CREATURES: CreatureDef[] = [
 // Mapeia nível (1-indexed) → [kind, sub-índice dentro do kind]
 // 'fish' tem 24 sub-índices (0..23), os demais têm apenas 1
 const LEVEL_PROGRESSION: Array<[CreatureKind, number]> = [
-  ['fish', 0],   // L1  Palhaço
-  ['fish', 1],   // L2  Tang Azul
-  ['fish', 2],   // L3  Acará Bandeira
-  ['fish', 3],   // L4  Betta
-  ['fish', 4],   // L5  Baiacu
-  ['fish', 5],   // L6  Donzela
-  ['seahorse',0],// L7  Cavalo-marinho
-  ['fish', 6],   // L8  Sardinha
-  ['fish', 7],   // L9  Dourado
-  ['fish', 8],   // L10 Borboleta
-  ['fish', 9],   // L11 Néon Tetra
-  ['fish',10],   // L12 Imperador
-  ['fish',11],   // L13 Peixe-leão
-  ['fish',12],   // L14 Mandarinfish
-  ['fish',13],   // L15 Palhaço-bordô
-  ['fish',14],   // L16 Peixe-espada
-  ['fish',15],   // L17 Koi
-  ['fish',16],   // L18 Discus
-  ['fish',17],   // L19 Barracuda
-  ['fish',18],   // L20 Arraia
-  ['fish',19],   // L21 Peixe-dragão
-  ['fish',20],   // L22 Harlequin
-  ['fish',21],   // L23 Acará-altum
-  ['fish',22],   // L24 Guppy
-  ['fish',23],   // L25 Payara
-  ['octopus',0], // L26 Polvo
-  ['seaturtle',0],// L27 Tartaruga
-  ['manta',0],   // L28 Manta
-  ['shark',0],   // L29 Tubarão
-  ['hammerhead',0],// L30 Tubarão-martelo
-  ['dolphin',0], // L31 Golfinho
-  ['orca',0],    // L32 Orca
-  ['humpback',0],// L33 Jubarte
-  ['whaleshark',0],// L34 Tubarão-baleia
-  ['whale',0],   // L35 Baleia-azul
+  // ── Comuns ─────────────────────────────────────────────────────────────────
+  ['fish', 0],   // Palhaço
+  ['fish', 1],   // Tang Azul
+  ['fish', 2],   // Acará Bandeira
+  ['fish', 3],   // Betta
+  ['fish', 4],   // Baiacu
+  ['fish', 5],   // Donzela
+  ['seahorse',0],// Cavalo-marinho
+  ['fish', 6],   // Sardinha
+  ['fish', 7],   // Dourado
+  ['fish', 8],   // Borboleta
+  ['fish', 9],   // Néon Tetra
+  ['fish',10],   // Imperador
+  ['fish',11],   // Peixe-leão
+  ['fish',12],   // Mandarinfish
+  ['fish',13],   // Palhaço-bordô
+  ['fish',14],   // Peixe-espada
+  ['fish',15],   // Koi
+  ['fish',16],   // Discus
+  ['fish',17],   // Barracuda
+  ['fish',18],   // Arraia
+  ['fish',19],   // Peixe-dragão
+  ['fish',20],   // Harlequin
+  ['fish',21],   // Acará-altum
+  ['fish',22],   // Guppy
+  ['fish',23],   // Payara
+  ['pipefish',0],
+  ['parrotfish',0],
+  ['surgeonfish',0],
+  ['grouper',0],
+  ['moorishidol',0],
+  ['crab',0],
+  ['starfish',0],
+  ['nudibranch',0],
+  ['octopus',0],
+
+  // ── Incomuns ───────────────────────────────────────────────────────────────
+  ['trumpetfish',0],
+  ['clownfrogfish',0],
+  ['lobster',0],
+  ['mantisshrimp',0],
+  ['nautilus',0],
+  ['giantclam',0],
+  ['seaurchin',0],
+  ['jellyfish',0],
+  ['manta',0],
+  ['shark',0],
+  ['seaturtle',0],
+  ['dugong',0],
+
+  // ── Raros ──────────────────────────────────────────────────────────────────
+  ['sunfish',0],
+  ['sawfish',0],
+  ['hammerhead',0],
+  ['sealion',0],
+  ['seaSnake',0],
+  ['dolphin',0],
+  ['orca',0],
+  ['humpback',0],
+
+  // ── Lendários ──────────────────────────────────────────────────────────────
+  ['whaleshark',0],
+  ['krill',0],
+  ['seaslug',0],
+  ['whale',0],
 ];
 
 // Quantos níveis o peixe fica "parado" antes de evoluir pra próxima espécie.
@@ -1363,6 +1393,13 @@ const SPECIES_LABELS: Partial<Record<CreatureKind,string>> = {
   fish:'Peixe',seahorse:'Cavalo-marinho',octopus:'Polvo',seaturtle:'Tartaruga',
   manta:'Manta',shark:'Tubarão',hammerhead:'Tubarão-martelo',dolphin:'Golfinho',
   orca:'Orca',humpback:'Jubarte',whaleshark:'Tubarão-baleia',whale:'Baleia-azul',
+  pipefish:'Peixe-cachimbo',parrotfish:'Peixe-papagaio',surgeonfish:'Peixe-cirurgião',
+  grouper:'Garoupa',moorishidol:'Ídolo-mouro',crab:'Caranguejo',starfish:'Estrela-do-mar',
+  nudibranch:'Lesma-do-mar',trumpetfish:'Peixe-trombeta',clownfrogfish:'Peixe-sapo',
+  lobster:'Lagosta',mantisshrimp:'Camarão-mantis',nautilus:'Nautilus',giantclam:'Amêijoa-gigante',
+  seaurchin:'Ouriço-do-mar',jellyfish:'Água-viva',dugong:'Peixe-boi',sunfish:'Peixe-lua',
+  sawfish:'Peixe-serra',sealion:'Leão-marinho',seaSnake:'Cobra-do-mar',krill:'Krill',
+  seaslug:'Lesma-marinha',
 };
 
 // Retorna o label e a prévia da próxima criatura a desbloquear
@@ -1438,6 +1475,12 @@ export default function AquariumScene() {
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   // true enquanto o botão do mouse está pressionado dentro do aquário (drag)
   const mouseDownRef = useRef<boolean>(false);
+
+  // O loop de animação (abaixo) roda dentro de um efeito que só é criado uma vez,
+  // então ele não "vê" o `user` atualizar depois do mount (ex: reload da página,
+  // onde a checagem de login é assíncrona). Por isso usamos uma ref sempre atual.
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; }, [user]);
   const fishList = useRef<FishState[]>([]);
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
@@ -1991,7 +2034,7 @@ const msgCountRef = useRef<number>(0);
           const fw = f.el.offsetWidth  || f.size * 2.2;
           const fh = f.el.offsetHeight || f.size;
 
-          const isMyFish = user?.username === f.username;
+          const isMyFish = userRef.current?.username === f.username;
           const mouse    = mouseRef.current;
 
           // ── Inicializa campos de poder se ainda não existirem (peixes legados) ──
@@ -2459,8 +2502,8 @@ const msgCountRef = useRef<number>(0);
         nextFoodRef.current = now + 30_000 + Math.random() * 30_000; // 30-60s até próxima
       }
       // Detecção de colisão peixe-comida (requer arrastar: mouse pressionado no aquário)
-      if (foodItemRef.current && user && !eatingRef.current && mouseDownRef.current) {
-        const myFish = fishList.current.find(f => f.username === user.username);
+      if (foodItemRef.current && userRef.current && !eatingRef.current && mouseDownRef.current) {
+        const myFish = fishList.current.find(f => f.username === userRef.current!.username);
         if (myFish) {
           const fcx = myFish.x + (myFish.el.offsetWidth || myFish.size * 2) / 2;
           const fcy = myFish.y + (myFish.el.offsetHeight || myFish.size) / 2;
