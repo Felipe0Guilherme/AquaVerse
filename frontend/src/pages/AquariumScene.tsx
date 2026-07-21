@@ -1467,6 +1467,16 @@ const MESSAGE_DISPLAY_MS = 10_000;
 // Duração da animação de "evolução" (transição visual entre peixe antigo e novo)
 const EVOLVE_DURATION_MS = 2600;
 
+// SVG de uma raçãozinha/flake de comida caindo
+const FOOD_FLAKE_SVG = `
+  <svg width="22" height="22" viewBox="0 0 22 22" style="filter:drop-shadow(0 0 5px rgba(255,160,40,0.8))">
+    <ellipse cx="11" cy="11" rx="9" ry="6.5" fill="#D98A3D" stroke="#8B4A1E" stroke-width="1"/>
+    <ellipse cx="8.5" cy="8.5" rx="3" ry="2" fill="rgba(255,255,255,0.35)" transform="rotate(-20 8.5 8.5)"/>
+    <circle cx="14" cy="12" r="1.4" fill="#7A3B12" opacity="0.6"/>
+    <circle cx="9" cy="14" r="1" fill="#7A3B12" opacity="0.5"/>
+  </svg>
+`;
+
 export default function AquariumScene() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -1532,9 +1542,10 @@ const msgCountRef = useRef<number>(0);
   const xpMapRef                = useRef<Record<string,{xp:number;level:number;badges:string[];streak:number;displayLevel:number|null}>>({});
 
   // ── Comida — aparece periodicamente, usuário arrasta o peixe para comer ──
-  const [foodVisible, setFoodVisible] = useState<{x:number;y:number;id:number}|null>(null);
-  const foodItemRef   = useRef<{x:number;y:number;id:number;until:number}|null>(null);
-  const nextFoodRef   = useRef<number>(Date.now() + 20_000); // primeira comida após 20s
+  // ── Comida — cai em remessas de 1 a 3 rações, com intervalo entre remessas.
+  // Cada ração afunda de verdade (gravidade); se chegar na areia sem ser comida, é perdida.
+  const foodListRef      = useRef<Array<{ id:number; x:number; y:number; vy:number; el:HTMLDivElement }>>([]);
+  const nextFoodBatchRef = useRef<number>(Date.now() + 15_000); // primeira remessa após 15s
   const eatingRef     = useRef<boolean>(false); // evita duplo-eat no mesmo frame
 
   const LEGENDARY_KINDS: CreatureKind[] = ['whale','whaleshark','krill','seaslug','anglerfish','electriceel','ghostfish','oarfish','coelacanth','mimic'];
@@ -2340,19 +2351,26 @@ const msgCountRef = useRef<number>(0);
           }
         }
 
-        // ── Atração pela comida ───────────────────────────────────────────────
-        const food = foodItemRef.current;
-        if (food && food.until > now && f.kind !== 'crab' && !isMyFish) {
+        // ── Atração pela comida (mira na ração caindo mais próxima) ───────────
+        if (foodListRef.current.length > 0 && f.kind !== 'crab' && !isMyFish) {
           const cx = f.x + fw / 2, cy = f.y + fh / 2;
-          const dx = food.x - cx, dy = food.y - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const pull = Math.min(dist * 0.06, 3.5);
-          f.vx += (dx / dist) * pull * 0.22;
-          f.vy += (dy / dist) * pull * 0.22;
-          const maxV = 3.5;
-          const v = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
-          if (v > maxV) { f.vx = (f.vx / v) * maxV; f.vy = (f.vy / v) * maxV; }
-          if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
+          let nearest: typeof foodListRef.current[number] | null = null;
+          let nearestDist = Infinity;
+          for (const food of foodListRef.current) {
+            const d = Math.hypot(food.x - cx, food.y - cy);
+            if (d < nearestDist) { nearestDist = d; nearest = food; }
+          }
+          if (nearest) {
+            const dx = nearest.x - cx, dy = nearest.y - cy;
+            const dist = nearestDist || 1;
+            const pull = Math.min(dist * 0.06, 3.5);
+            f.vx += (dx / dist) * pull * 0.22;
+            f.vy += (dy / dist) * pull * 0.22;
+            const maxV = 3.5;
+            const v = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+            if (v > maxV) { f.vx = (f.vx / v) * maxV; f.vy = (f.vy / v) * maxV; }
+            if (Math.abs(f.vx) > 0.2) f.flipped = f.vx > 0;
+          }
         }
 
         // ── Badge de nível (XP) acima do peixe ───────────────────────────────
@@ -2484,37 +2502,56 @@ const msgCountRef = useRef<number>(0);
         }
       }
 
-      // ── Sistema de comida — spawn periódico, peixe do usuário come ao encostar ──
-      if (!foodItemRef.current && now > nextFoodRef.current) {
-        const newFood = {
-          x: 80 + Math.random() * (W - 160),
-          y: 70 + Math.random() * (H - 220),
-          id: now,
-          until: now + 25_000,
-        };
-        foodItemRef.current = newFood;
-        setFoodVisible({ x: newFood.x, y: newFood.y, id: newFood.id });
+      // ── Sistema de comida — cai em remessas de 1-3 rações, com intervalo entre remessas ──
+      if (wrapRef.current && now > nextFoodBatchRef.current) {
+        const roll = Math.random();
+        const batchSize = roll < 0.55 ? 1 : roll < 0.85 ? 2 : 3; // maioria cai 1, às vezes 2, raramente 3
+        for (let i = 0; i < batchSize; i++) {
+          const el = document.createElement('div');
+          el.style.cssText = 'position:absolute;z-index:18;pointer-events:none;';
+          el.innerHTML = FOOD_FLAKE_SVG;
+          wrapRef.current.appendChild(el);
+          foodListRef.current.push({
+            id: now + i,
+            x: 60 + Math.random() * (W - 120),
+            y: 20 + Math.random() * 24 - i * 14, // peças da mesma remessa começam levemente espaçadas
+            vy: 0.4 + Math.random() * 0.3,
+            el,
+          });
+        }
+        // Intervalo bem maior até a próxima remessa
+        nextFoodBatchRef.current = now + 28_000 + Math.random() * 27_000;
       }
-      // Expiração da comida
-      if (foodItemRef.current && now > foodItemRef.current.until) {
-        foodItemRef.current = null;
-        setFoodVisible(null);
-        nextFoodRef.current = now + 30_000 + Math.random() * 30_000; // 30-60s até próxima
-      }
-      // Detecção de colisão peixe-comida (requer arrastar: mouse pressionado no aquário)
-      if (foodItemRef.current && userRef.current && !eatingRef.current && mouseDownRef.current) {
-        const myFish = fishList.current.find(f => f.username === userRef.current!.username);
-        if (myFish) {
-          const fcx = myFish.x + (myFish.el.offsetWidth || myFish.size * 2) / 2;
-          const fcy = myFish.y + (myFish.el.offsetHeight || myFish.size) / 2;
-          const dx  = fcx - foodItemRef.current.x;
-          const dy  = fcy - foodItemRef.current.y;
-          if (Math.sqrt(dx*dx + dy*dy) < 52) {
-            const eaten = foodItemRef.current;
-            foodItemRef.current = null;
-            setFoodVisible(null);
-            nextFoodRef.current = now + 20_000 + Math.random() * 20_000;
-            handleEat(eaten.id);
+
+      // Atualiza a queda de cada ração e verifica colisões
+      for (let i = foodListRef.current.length - 1; i >= 0; i--) {
+        const food = foodListRef.current[i];
+        food.y += food.vy;
+        food.vy = Math.min(food.vy + 0.004, 1.4); // afunda acelerando um pouco, como ração de verdade
+        food.el.style.left      = `${food.x}px`;
+        food.el.style.top       = `${food.y}px`;
+        food.el.style.transform = `translate(-50%,-50%) rotate(${food.y * 2.2}deg)`;
+
+        // Perdida — bateu na areia sem ser comida
+        if (food.y >= sandTopY - 8) {
+          food.el.remove();
+          foodListRef.current.splice(i, 1);
+          continue;
+        }
+
+        // Comida pelo peixe do próprio usuário (precisa arrastar até encostar)
+        if (userRef.current && !eatingRef.current && mouseDownRef.current) {
+          const myFish = fishList.current.find(f => f.username === userRef.current!.username);
+          if (myFish) {
+            const fcx = myFish.x + (myFish.el.offsetWidth || myFish.size * 2) / 2;
+            const fcy = myFish.y + (myFish.el.offsetHeight || myFish.size) / 2;
+            const dist = Math.hypot(fcx - food.x, fcy - food.y);
+            if (dist < 40) {
+              const eatenId = food.id;
+              food.el.remove();
+              foodListRef.current.splice(i, 1);
+              handleEat(eatenId);
+            }
           }
         }
       }
@@ -2537,6 +2574,8 @@ const msgCountRef = useRef<number>(0);
         f.bubbleEl.remove();
       });
       fishList.current = [];
+      foodListRef.current.forEach(food => food.el.remove());
+      foodListRef.current = [];
     };
   }, []);
 
@@ -2916,47 +2955,7 @@ const msgCountRef = useRef<number>(0);
           );
         })()}
 
-        {/* ── Comida — SVG animado que aparece periodicamente ── */}
-        {foodVisible && (
-          <div style={{
-            position:'absolute',
-            left:`${foodVisible.x}px`,
-            top:`${foodVisible.y}px`,
-            transform:'translate(-50%,-50%)',
-            zIndex:18, pointerEvents:'none',
-          }}>
-            {/* Anel de atração pulsante */}
-            <div style={{
-              position:'absolute', inset:'-18px', borderRadius:'50%',
-              border:'2px solid rgba(255,160,40,0.35)',
-              animation:'foodPulse 1.2s ease-in-out infinite alternate',
-            }}/>
-            <div style={{
-              position:'absolute', inset:'-8px', borderRadius:'50%',
-              border:'1.5px solid rgba(255,160,40,0.6)',
-              animation:'foodPulse 1.2s ease-in-out infinite alternate',
-              animationDelay:'0.2s',
-            }}/>
-            <svg width="38" height="38" viewBox="0 0 38 38" style={{filter:'drop-shadow(0 0 8px rgba(255,160,40,0.9))'}}>
-              <circle cx="19" cy="19" r="16" fill="rgba(255,140,20,0.12)"/>
-              <circle cx="19" cy="19" r="11" fill="#F4A261" stroke="#E76F51" strokeWidth="1.5"/>
-              <ellipse cx="14.5" cy="14.5" rx="4.5" ry="3" fill="rgba(255,255,255,0.4)" transform="rotate(-25 14.5 14.5)"/>
-              <circle cx="23" cy="15" r="2.2" fill="#E76F51" opacity="0.7"/>
-              <circle cx="15" cy="23" r="1.8" fill="#C62828" opacity="0.5"/>
-              <text x="19" y="-3" textAnchor="middle" fill="#FFD700" fontSize="9" fontWeight="bold" fontFamily="monospace" style={{textShadow:'0 0 4px #000'}}>+XP</text>
-            </svg>
-            {/* Indicador de drag */}
-            <div style={{
-              position:'absolute', top:'42px', left:'50%', transform:'translateX(-50%)',
-              background:'rgba(6,14,28,0.9)', border:'1px solid rgba(255,160,40,0.4)',
-              borderRadius:'8px', padding:'2px 8px',
-              fontSize:'9px', fontFamily:'monospace', color:'rgba(244,162,97,0.9)',
-              whiteSpace:'nowrap',
-            }}>
-              segure e arraste
-            </div>
-          </div>
-        )}
+        {/* Comida agora é desenhada diretamente no DOM pelo loop de animação (cai de verdade) */}
 
 
         {loading && (
@@ -3278,19 +3277,6 @@ const msgCountRef = useRef<number>(0);
           0%   { transform: translateY(0) translateX(0); opacity: 0.7; }
           50%  { transform: translateY(-180px) translateX(6px); opacity: 0.3; }
           100% { transform: translateY(-420px) translateX(-4px); opacity: 0; }
-        }
-        @keyframes foodfall {
-          0%   { transform: translateY(-30px) scale(0.6); opacity: 0; }
-          30%  { opacity: 1; }
-          100% { transform: translateY(30px) scale(1.1); opacity: 0.85; }
-        }
-        @keyframes foodpulse {
-          0%   { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,180,60,0.7)); }
-          100% { transform: scale(1.2); filter: drop-shadow(0 0 10px rgba(255,180,60,0.9)); }
-        }
-        @keyframes foodPulse {
-          0%   { transform: scale(0.85); opacity: 0.3; }
-          100% { transform: scale(1.15); opacity: 0.8; }
         }
         @keyframes fadeInOut {
           0%   { opacity: 0; transform: translateX(-50%) translateY(-6px); }
