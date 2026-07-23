@@ -6,6 +6,18 @@ import { getSupabaseAdmin } from '../config/supabase';
 const XP_PER_LEVEL = 100;
 function calcLevel(xp: number): number { return Math.floor(xp / XP_PER_LEVEL) + 1; }
 
+// Precisa bater com LEVELS_PER_SPECIES do frontend (AquariumScene.tsx) — usado só
+// pra comparar "quem é maior" no PVP, sem precisar replicar a lista de criaturas toda.
+const LEVELS_PER_SPECIES = 3;
+function getSpeciesTier(level: number): number { return Math.floor(Math.max(level - 1, 0) / LEVELS_PER_SPECIES); }
+
+// Cooldown entre ataques PVP (ms)
+const PVP_COOLDOWN_MS = 90_000;
+// XP ganho ao comer o peixe de outro usuário
+function calcPvpReward(targetLevel: number): number {
+  return Math.min(150 + targetLevel * 8, 600);
+}
+
 type BadgeKey = 'first_fish'|'msg10'|'msg50'|'feed10'|'feed50'|'streak3'|'streak7'|'streak30'|'likes10'|'likes50'|'legendary'|'level10'|'level30';
 
 async function checkAndGrantBadges(userId: string, profile: any, supabase: any) {
@@ -279,5 +291,58 @@ export async function eatFood(req: Request, res: Response, next: NextFunction): 
     await checkAndGrantBadges(userId, { ...profile, xp: newXp, likes_received: newLikes }, supabase);
 
     res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained, foodType } });
+  } catch (err) { next(err); }
+}
+
+// POST /api/gamification/eat-fish — PVP: comer o peixe de outro usuário se o seu for maior
+// (espécie de tier mais alto), com cooldown, ganhando bastante XP. Não tira XP nem nível da vítima.
+export async function eatFish(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    const attackerId = authReq.user?.sub;
+    if (!attackerId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
+
+    const targetUsername = String(req.body?.targetUsername ?? '').trim();
+    if (!targetUsername) { res.status(400).json({ success: false, error: 'targetUsername is required.' }); return; }
+
+    const supabase = getSupabaseAdmin();
+
+    const { data: attacker } = await supabase
+      .from('profiles')
+      .select('username, xp, msg_count, feed_count, badges, login_streak, likes_received, last_pvp_at')
+      .eq('id', attackerId).single();
+    if (!attacker) { res.status(404).json({ success: false, error: 'Attacker profile not found.' }); return; }
+
+    if (attacker.username === targetUsername) {
+      res.status(400).json({ success: false, error: 'You cannot eat your own fish.' });
+      return;
+    }
+
+    if (attacker.last_pvp_at) {
+      const elapsed = Date.now() - new Date(attacker.last_pvp_at).getTime();
+      if (elapsed < PVP_COOLDOWN_MS) {
+        res.status(429).json({ success: false, error: `Aguarde ${Math.ceil((PVP_COOLDOWN_MS - elapsed) / 1000)}s antes de atacar de novo.` });
+        return;
+      }
+    }
+
+    const { data: target } = await supabase
+      .from('profiles').select('id, xp').eq('username', targetUsername).single();
+    if (!target) { res.status(404).json({ success: false, error: 'Target not found.' }); return; }
+
+    const attackerTier = getSpeciesTier(calcLevel(attacker.xp ?? 0));
+    const targetTier   = getSpeciesTier(calcLevel(target.xp ?? 0));
+    if (attackerTier <= targetTier) {
+      res.status(400).json({ success: false, error: 'Your fish is not big enough to eat that one.' });
+      return;
+    }
+
+    const gained = calcPvpReward(calcLevel(target.xp ?? 0));
+    const newXp  = (attacker.xp ?? 0) + gained;
+
+    await supabase.from('profiles').update({ xp: newXp, last_pvp_at: new Date().toISOString() }).eq('id', attackerId);
+    await checkAndGrantBadges(attackerId, { ...attacker, xp: newXp }, supabase);
+
+    res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained, eaten: targetUsername } });
   } catch (err) { next(err); }
 }

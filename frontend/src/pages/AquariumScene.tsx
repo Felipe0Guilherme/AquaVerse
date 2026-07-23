@@ -1458,6 +1458,7 @@ interface FishState {
   evolveFromIdx: number;    // índice do peixe anterior durante a transição (-1 = não está evoluindo)
   evolveUntil: number;      // timestamp até quando a animação de evolução dura
   boostUntil: number;       // timestamp até quando o boost de velocidade da ração elétrica dura
+  beingEatenUntil: number;  // timestamp até quando a animação de "ser comido" (PVP) dura
 }
 
 // Quanto tempo o balão de chat fica visível acima do peixe.
@@ -1538,6 +1539,7 @@ export default function AquariumScene() {
   // onde a checagem de login é assíncrona). Por isso usamos uma ref sempre atual.
   const userRef = useRef(user);
   useEffect(() => { userRef.current = user; }, [user]);
+  const pvpCooldownRef = useRef<number>(0); // trava local rápida contra duplo-clique
   const fishList = useRef<FishState[]>([]);
   const animRef = useRef<number>(0);
   const [users, setUsers] = useState<AquaUser[]>([]);
@@ -1734,6 +1736,57 @@ const msgCountRef = useRef<number>(0);
       }
     } catch { /* ignore */ }
     finally { setTimeout(() => { eatingRef.current = false; }, 1000); }
+  }, [fetchXp]);
+
+  // ── PVP: clicar num peixe de outro usuário — se o seu for de uma espécie
+  // mais evoluída, ele come o menor e ganha uma quantidade grande de XP ──
+  const handleEatFish = useCallback(async (targetUsername: string) => {
+    const me = userRef.current;
+    if (!me || targetUsername === me.username) return;
+    if (Date.now() < pvpCooldownRef.current) return;
+
+    const myEntry     = xpMapRef.current[me.username];
+    const targetEntry = xpMapRef.current[targetUsername];
+    if (!myEntry || !targetEntry) return;
+
+    const myTier     = getSpeciesTier(getEffectiveDisplayLevel(myEntry));
+    const targetTier = getSpeciesTier(getEffectiveDisplayLevel(targetEntry));
+    if (myTier <= targetTier) {
+      setSighting({ text: `🚫 Seu peixe ainda não é grande o bastante pra comer @${targetUsername}!`, kind: 'fish' });
+      setTimeout(() => setSighting(null), 3000);
+      return;
+    }
+
+    const targetFish = fishList.current.find(f => f.username === targetUsername);
+    if (targetFish && CREATURES[targetFish.typeIdx]?.power) {
+      setSighting({ text: `🛡️ @${targetUsername} tem um peixe especial — imune a ataques!`, kind: 'fish' });
+      setTimeout(() => setSighting(null), 3000);
+      return;
+    }
+
+    pvpCooldownRef.current = Date.now() + 3000; // trava local até o servidor responder
+    try {
+      const res = await apiClient.post('/gamification/eat-fish', { targetUsername });
+      const gained: number = res?.data?.data?.gained ?? 0;
+
+      if (targetFish) {
+        targetFish.beingEatenUntil = Date.now() + 900;
+        setTimeout(() => {
+          // Vítima "reaparece" em outro ponto do aquário — não perde nível nem XP
+          targetFish.x = 40 + Math.random() * 240;
+          targetFish.y = 80 + Math.random() * 220;
+          targetFish.beingEatenUntil = 0;
+        }, 900);
+      }
+
+      setSighting({ text: `💥 Você comeu o peixe de @${targetUsername}! +${gained} XP`, kind: 'fish' });
+      setTimeout(() => setSighting(null), 4500);
+      await fetchXp();
+    } catch (err: any) {
+      const msg = err?.response?.data?.error ?? 'Não foi possível atacar agora.';
+      setSighting({ text: `⏳ ${msg}`, kind: 'fish' });
+      setTimeout(() => setSighting(null), 3000);
+    }
   }, [fetchXp]);
 
   // Like em peixe de outro usuário
@@ -2013,6 +2066,11 @@ const msgCountRef = useRef<number>(0);
           el.style.filter = isMe ? 'drop-shadow(0 0 4px rgba(34,211,238,0.4))' : '';
         });
 
+        // Clique num peixe de outro usuário tenta o ataque PVP (o maior come o menor)
+        if (!isMe) {
+          el.addEventListener('click', () => handleEatFish(u.username));
+        }
+
         // Peixe do usuário logado tem brilho permanente
         if (isMe) {
           el.style.filter = 'drop-shadow(0 0 4px rgba(34,211,238,0.4))';
@@ -2075,6 +2133,7 @@ const msgCountRef = useRef<number>(0);
           evolveFromIdx: -1,
           evolveUntil: 0,
           boostUntil: 0,
+          beingEatenUntil: 0,
         };
 
         fish.el.style.left = fish.x + 'px';
@@ -2115,6 +2174,7 @@ const msgCountRef = useRef<number>(0);
           if (f.speedBoost   === undefined) f.speedBoost   = 1;
           if (f.mimicTargetIdx === undefined) f.mimicTargetIdx = -1;
           if (f.boostUntil === undefined) f.boostUntil = 0;
+          if (f.beingEatenUntil === undefined) f.beingEatenUntil = 0;
 
           // ── Poderes especiais ─────────────────────────────────────────────────
           if (f.power) {
@@ -2223,6 +2283,24 @@ const msgCountRef = useRef<number>(0);
             f.el.style.cssText = `position:absolute;left:${f.x}px;top:${f.y}px;cursor:pointer;z-index:10;user-select:none;filter:brightness(2) saturate(0) drop-shadow(0 0 6px #FFEE58)`;
             const defFrozen = CREATURES[f.typeIdx];
             if (defFrozen) f.el.innerHTML = defFrozen.draw(f.size, f.flipped, f.wobble);
+            continue;
+          }
+
+          // ── PVP: enquanto está sendo comido, encolhe/desaparece com uma "mordida" ──
+          const isBeingEaten = f.beingEatenUntil > now;
+          if (isBeingEaten) {
+            const eatenDuration = 900;
+            const eatenProgress = 1 - Math.max(0, f.beingEatenUntil - now) / eatenDuration; // 0 → 1
+            const scale = Math.max(0.05, 1 - eatenProgress);
+            f.el.style.cssText = `position:absolute;left:${f.x}px;top:${f.y}px;cursor:pointer;z-index:10;user-select:none;`;
+            const defEaten = CREATURES[f.typeIdx];
+            const eatenSvg = defEaten ? defEaten.draw(f.size, f.flipped, f.wobble) : '';
+            f.el.innerHTML = `
+              <div style="transform:scale(${scale.toFixed(2)});transform-origin:center;opacity:${(1 - eatenProgress * 0.9).toFixed(2)};transition:none;">
+                ${eatenSvg}
+              </div>
+              <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-size:${18 + eatenProgress * 10}px;pointer-events:none;">🦷</div>
+            `;
             continue;
           }
 
