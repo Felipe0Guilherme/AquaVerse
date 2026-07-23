@@ -1690,10 +1690,10 @@ const msgCountRef = useRef<number>(0);
       // ── Bônus de login diário ─────────────────────────────────────────────
       const today = new Date().toDateString();
       if (user && lastLoginBonusRef.current !== today) {
+        lastLoginBonusRef.current = today; // marca já de cara — evita retry infinito se já foi resgatado hoje
         try {
           await apiClient.post('/gamification/daily');
-          lastLoginBonusRef.current = today;
-        } catch { /* já recebeu hoje */ }
+        } catch { /* já recebeu hoje, ou falhou — tenta de novo só amanhã */ }
       }
 
       // ── Detecta lendários recém-avistados ────────────────────────────────
