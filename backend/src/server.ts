@@ -49,7 +49,11 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  // O app faz polling automático (mensagens a cada poucos segundos, shuffle-seed,
+  // XP, etc.) — um único cliente já gera várias centenas de requisições legítimas
+  // em 15 min, e vários usuários costumam compartilhar o mesmo IP. 200 era baixo
+  // demais e travava gente que não estava fazendo nada de errado.
+  max: 1500,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -62,7 +66,7 @@ app.get('/health', (_req, res) => {
 // ── API Routes ────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/logs', apiLimiter, logsRoutes);
-app.use('/api/users', apiLimiter, usersRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/messages', apiLimiter, messagesRoutes);
 app.use('/api/admin',   apiLimiter, adminRoutes);
 app.use('/api/gamification', apiLimiter, gamificationRoutes);

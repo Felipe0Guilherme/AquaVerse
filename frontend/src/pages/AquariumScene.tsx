@@ -1856,7 +1856,7 @@ const msgCountRef = useRef<number>(0);
 
   useEffect(() => {
     fetchShuffleSeed();
-    const interval = setInterval(fetchShuffleSeed, 4_000);
+    const interval = setInterval(fetchShuffleSeed, 8_000);
     return () => clearInterval(interval);
   }, [fetchShuffleSeed]);
 
@@ -1903,7 +1903,7 @@ const msgCountRef = useRef<number>(0);
   useEffect(() => {
     if (!user) return; // só faz polling de chat se estiver logado
     fetchMessages();
-    const interval = setInterval(fetchMessages, 3_000);
+    const interval = setInterval(fetchMessages, 6_000);
     return () => clearInterval(interval);
   }, [user, fetchMessages]);
 
