@@ -1741,22 +1741,12 @@ const msgCountRef = useRef<number>(0);
   // ── PVP: clicar num peixe de outro usuário — se o seu for de uma espécie
   // mais evoluída, ele come o menor e ganha uma quantidade grande de XP ──
   const handleEatFish = useCallback(async (targetUsername: string) => {
-    console.log('[PVP] clique registrado em', targetUsername);
     const me = userRef.current;
-    if (!me || targetUsername === me.username) {
-      console.log('[PVP] abortado: sem usuário logado ou clicou no próprio peixe', { me, targetUsername });
-      return;
-    }
-    if (Date.now() < pvpCooldownRef.current) {
-      console.log('[PVP] abortado: cooldown local ainda ativo');
-      setSighting({ text: `⏳ Aguarde um pouco antes de atacar de novo`, kind: 'fish' });
-      setTimeout(() => setSighting(null), 2000);
-      return;
-    }
+    if (!me || targetUsername === me.username) return;
+    if (Date.now() < pvpCooldownRef.current) return;
 
     const myEntry     = xpMapRef.current[me.username];
     const targetEntry = xpMapRef.current[targetUsername];
-    console.log('[PVP] xpMapRef entries', { myEntry, targetEntry, allKeys: Object.keys(xpMapRef.current) });
     if (!myEntry || !targetEntry) {
       setSighting({ text: `⚠️ Dados de XP ainda não carregaram, tenta de novo em instantes`, kind: 'fish' });
       setTimeout(() => setSighting(null), 3000);
@@ -2080,10 +2070,11 @@ const msgCountRef = useRef<number>(0);
           el.style.filter = isMe ? 'drop-shadow(0 0 4px rgba(34,211,238,0.4))' : '';
         });
 
-        // Clique num peixe de outro usuário tenta o ataque PVP (o maior come o menor)
+        // Clique num peixe de outro usuário tenta o ataque PVP (o maior come o menor).
+        // Usa mousedown em vez de click: o peixe nada o tempo todo, então entre
+        // apertar e soltar o botão ele pode sair de baixo do cursor e o "click" nunca dispara.
         if (!isMe) {
-          el.addEventListener('click', () => handleEatFish(u.username));
-          console.log('[PVP] listener de clique anexado pro peixe de', u.username);
+          el.addEventListener('mousedown', () => handleEatFish(u.username));
         }
 
         // Peixe do usuário logado tem brilho permanente
