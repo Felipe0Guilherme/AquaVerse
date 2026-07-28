@@ -1585,6 +1585,9 @@ const msgCountRef = useRef<number>(0);
   const [sighting, setSighting] = useState<{text:string;kind:CreatureKind}|null>(null);
   const [showCreatureModal, setShowCreatureModal] = useState(false);
   const [pickingLevel, setPickingLevel] = useState<number | null>(null);
+  const [showMissionsModal, setShowMissionsModal] = useState(false);
+  const [dailyMissions, setDailyMissions] = useState<Array<{key:string;label:string;xp:number;target:number;progress:number;completed:boolean;claimed:boolean}>>([]);
+  const [claimingMission, setClaimingMission] = useState<string | null>(null);
   const seenLegendaryRef        = useRef<Set<string>>(new Set());
   const lastLoginBonusRef       = useRef<string>('');
   const prevLevelsRef           = useRef<Record<string,number>>({});
@@ -1708,11 +1711,21 @@ const msgCountRef = useRef<number>(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  // Busca o progresso das missões diárias
+  const fetchDailyMissions = useCallback(async () => {
+    if (!userRef.current) return;
+    try {
+      const { data } = await apiClient.get<{success:boolean;data:{missions:Array<{key:string;label:string;xp:number;target:number;progress:number;completed:boolean;claimed:boolean}>}}>('/gamification/daily-missions');
+      setDailyMissions(data.data.missions ?? []);
+    } catch { /* ignore */ }
+  }, []);
+
   useEffect(() => {
     fetchXp();
-    const interval = setInterval(fetchXp, 10_000);
+    fetchDailyMissions();
+    const interval = setInterval(() => { fetchXp(); fetchDailyMissions(); }, 10_000);
     return () => clearInterval(interval);
-  }, [fetchXp]);
+  }, [fetchXp, fetchDailyMissions]);
 
   // Chamado pela animation loop quando o peixe do usuário toca a comida
   const handleEat = useCallback(async (foodId: number, foodType: FoodTypeId = 'normal') => {
@@ -1721,6 +1734,7 @@ const msgCountRef = useRef<number>(0);
     try {
       await apiClient.post('/gamification/eat', { foodId, foodType });
       await fetchXp();
+      fetchDailyMissions();
 
       // Boost de velocidade temporário (ração elétrica)
       if (foodType === 'speed' && userRef.current) {
@@ -1786,6 +1800,7 @@ const msgCountRef = useRef<number>(0);
       setSighting({ text: `💥 Você comeu o peixe de @${targetUsername}! +${gained} XP`, kind: 'fish' });
       setTimeout(() => setSighting(null), 4500);
       await fetchXp();
+      fetchDailyMissions();
     } catch (err: any) {
       const msg = err?.response?.data?.error ?? 'Não foi possível atacar agora.';
       setSighting({ text: `⏳ ${msg}`, kind: 'fish' });
@@ -1805,6 +1820,7 @@ const msgCountRef = useRef<number>(0);
         setMyLikes(p => new Set([...p, targetUsername]));
       }
       await fetchXp();
+      fetchDailyMissions();
     } catch { /* ignore */ }
   };
 
@@ -1832,11 +1848,26 @@ const msgCountRef = useRef<number>(0);
     setPickingLevel(null);
   };
 
+  // Resgata a recompensa de uma missão diária concluída
+  const handleClaimMission = async (missionKey: string) => {
+    if (claimingMission) return;
+    setClaimingMission(missionKey);
+    try {
+      await apiClient.post('/gamification/daily-missions/claim', { missionKey });
+      await Promise.all([fetchXp(), fetchDailyMissions()]);
+      const mission = dailyMissions.find(m => m.key === missionKey);
+      setSighting({ text: `🎯 Missão concluída! +${mission?.xp ?? ''} XP`, kind: 'fish' });
+      setTimeout(() => setSighting(null), 4000);
+    } catch { /* ignore */ }
+    setClaimingMission(null);
+  };
+
   // XP por mensagem enviada
   const sendMessageAndXp = async (text: string) => {
     await apiClient.post('/messages', { text });
     try { await apiClient.post('/gamification/xp/add', { reason:'message', amount:10 }); } catch { /* ignore */ }
     await fetchXp();
+    fetchDailyMissions();
   };
 
 
@@ -2775,6 +2806,30 @@ const msgCountRef = useRef<number>(0);
                   🐠 Trocar peixe
                 </button>
               )}
+              {xpMap[user.username] && (
+                <button
+                  onClick={() => setShowMissionsModal(true)}
+                  className="px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1"
+                  style={{
+                    position: 'relative',
+                    border: '1px solid rgba(251,191,36,0.35)',
+                    color: '#fbbf24',
+                    background: 'rgba(251,191,36,0.08)',
+                    fontFamily: 'monospace', fontWeight: 700,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.18)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.08)')}
+                >
+                  🎯 Missões
+                  {dailyMissions.some(m => m.completed && !m.claimed) && (
+                    <span style={{
+                      position: 'absolute', top: '-4px', right: '-4px',
+                      width: '9px', height: '9px', borderRadius: '50%',
+                      background: '#f87171', border: '1.5px solid rgba(6,16,30,0.9)',
+                    }} />
+                  )}
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-1.5 text-sm rounded-lg transition"
@@ -3418,6 +3473,97 @@ const msgCountRef = useRef<number>(0);
           </div>
         );
       })()}
+
+      {/* ── Modal "Missões diárias" ── */}
+      {showMissionsModal && user && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'rgba(3,8,16,0.82)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setShowMissionsModal(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'rgba(8,18,32,0.98)',
+              border: '1px solid rgba(251,191,36,0.25)',
+              borderRadius: '18px', padding: '20px',
+              maxWidth: '440px', width: '100%', maxHeight: '80vh',
+              overflowY: 'auto', boxShadow: '0 0 40px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <h2 style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 800, color: '#fbbf24', margin: 0 }}>
+                🎯 Missões diárias
+              </h2>
+              <button
+                onClick={() => setShowMissionsModal(false)}
+                style={{ background: 'transparent', border: 'none', color: 'rgba(180,200,220,0.6)', fontSize: '18px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{ fontFamily: 'monospace', fontSize: '11px', color: 'rgba(150,180,220,0.6)', marginTop: 0, marginBottom: '14px' }}>
+              Reseta todo dia à meia-noite. Progresso salvo automaticamente enquanto você joga.
+            </p>
+
+            {dailyMissions.length === 0 && (
+              <p style={{ fontFamily: 'monospace', fontSize: '12px', color: 'rgba(150,180,220,0.5)' }}>Carregando...</p>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {dailyMissions.map(m => {
+                const pct = Math.min(100, Math.round((m.progress / m.target) * 100));
+                return (
+                  <div key={m.key} style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${m.claimed ? 'rgba(34,197,94,0.3)' : m.completed ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: '12px', padding: '10px 12px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 700, color: m.claimed ? '#4ade80' : '#e6f7ff' }}>
+                        {m.claimed ? '✅ ' : ''}{m.label}
+                      </span>
+                      <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#fbbf24', fontWeight: 700 }}>
+                        +{m.xp} XP
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${pct}%`, height: '100%',
+                          background: m.claimed ? '#4ade80' : '#fbbf24',
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                      <span style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(150,180,220,0.6)', whiteSpace: 'nowrap' }}>
+                        {m.progress}/{m.target}
+                      </span>
+                    </div>
+                    {m.completed && !m.claimed && (
+                      <button
+                        onClick={() => handleClaimMission(m.key)}
+                        disabled={claimingMission === m.key}
+                        style={{
+                          marginTop: '8px', width: '100%',
+                          background: 'rgba(251,191,36,0.16)', border: '1px solid #fbbf24',
+                          color: '#fbbf24', fontFamily: 'monospace', fontWeight: 700, fontSize: '11px',
+                          borderRadius: '8px', padding: '6px', cursor: 'pointer',
+                        }}
+                      >
+                        {claimingMission === m.key ? 'Resgatando...' : 'Resgatar recompensa'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin {

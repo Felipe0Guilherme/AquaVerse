@@ -1,7 +1,7 @@
 // src/routes/gamification.ts
 import { Router, RequestHandler } from 'express';
 import { authenticate } from '../middleware/auth';
-import { getStats, feedFish, addXp, dailyBonus, likeFish, unlikeFish, eatFood, setDisplayLevel, eatFish } from '../controllers/gamificationController';
+import { getStats, feedFish, addXp, dailyBonus, likeFish, unlikeFish, eatFood, setDisplayLevel, eatFish, getDailyMissions, claimDailyMission } from '../controllers/gamificationController';
 
 const router = Router();
 const auth = authenticate as RequestHandler;
@@ -15,5 +15,7 @@ router.post('/like/:username',auth, likeFish);
 router.delete('/like/:username',auth, unlikeFish);
 router.post('/eat',           auth, eatFood);
 router.post('/eat-fish',      auth, eatFish);
+router.get('/daily-missions', auth, getDailyMissions);
+router.post('/daily-missions/claim', auth, claimDailyMission);
 
 export default router;

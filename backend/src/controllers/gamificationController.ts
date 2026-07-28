@@ -18,6 +18,35 @@ function calcPvpReward(targetLevel: number): number {
   return Math.min(150 + targetLevel * 8, 600);
 }
 
+// ── Missões diárias ──────────────────────────────────────────────────────────
+type DailyMissionField = 'msg_count' | 'eat_count' | 'like_count' | 'pvp_count';
+const DAILY_MISSIONS: Record<string, { field: DailyMissionField; target: number; xp: number; label: string }> = {
+  chat5: { field: 'msg_count',  target: 5, xp: 40, label: 'Mande 5 mensagens no chat' },
+  eat2:  { field: 'eat_count',  target: 2, xp: 30, label: 'Coma 2 rações' },
+  like3: { field: 'like_count', target: 3, xp: 25, label: 'Curta 3 peixes' },
+  pvp1:  { field: 'pvp_count',  target: 1, xp: 60, label: 'Vença 1 batalha PVP' },
+};
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Soma +1 num contador de missão diária do usuário (cria a linha do dia se não existir)
+async function bumpDailyMission(userId: string, field: DailyMissionField, supabase: any) {
+  const today = todayStr();
+  const { data: row } = await supabase
+    .from('daily_missions').select('*')
+    .eq('user_id', userId).eq('mission_date', today).maybeSingle();
+
+  if (row) {
+    await supabase.from('daily_missions')
+      .update({ [field]: (row[field] ?? 0) + 1 })
+      .eq('user_id', userId).eq('mission_date', today);
+  } else {
+    await supabase.from('daily_missions').insert({ user_id: userId, mission_date: today, [field]: 1 });
+  }
+}
+
 type BadgeKey = 'first_fish'|'msg10'|'msg50'|'feed10'|'feed50'|'streak3'|'streak7'|'streak30'|'likes10'|'likes50'|'legendary'|'level10'|'level30';
 
 async function checkAndGrantBadges(userId: string, profile: any, supabase: any) {
@@ -167,6 +196,7 @@ export async function addXp(req: Request, res: Response, next: NextFunction): Pr
     const newMsgCount= reason === 'message' ? (profile?.msg_count ?? 0) + 1 : (profile?.msg_count ?? 0);
     await supabase.from('profiles').update({ xp: newXp, msg_count: newMsgCount }).eq('id', userId);
     await checkAndGrantBadges(userId, { ...profile, xp: newXp, msg_count: newMsgCount }, supabase);
+    if (reason === 'message') await bumpDailyMission(userId, 'msg_count', supabase);
 
     res.json({ success:true, data:{ xp:newXp, level:calcLevel(newXp), gained:amount } });
   } catch (err) { next(err); }
@@ -228,6 +258,7 @@ export async function likeFish(req: Request, res: Response, next: NextFunction):
     const newLikes   = (toProfile.likes_received ?? 0) + 1;
     await supabase.from('profiles').update({ xp: newXp, likes_received: newLikes }).eq('id', toProfile.id);
     await checkAndGrantBadges(toProfile.id, { ...toProfile, xp: newXp, likes_received: newLikes }, supabase);
+    await bumpDailyMission(fromUserId, 'like_count', supabase);
 
     res.json({ success:true });
   } catch (err) { next(err); }
@@ -289,6 +320,7 @@ export async function eatFood(req: Request, res: Response, next: NextFunction): 
 
     await supabase.from('profiles').update(updates).eq('id', userId);
     await checkAndGrantBadges(userId, { ...profile, xp: newXp, likes_received: newLikes }, supabase);
+    await bumpDailyMission(userId, 'eat_count', supabase);
 
     res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained, foodType } });
   } catch (err) { next(err); }
@@ -342,7 +374,73 @@ export async function eatFish(req: Request, res: Response, next: NextFunction): 
 
     await supabase.from('profiles').update({ xp: newXp, last_pvp_at: new Date().toISOString() }).eq('id', attackerId);
     await checkAndGrantBadges(attackerId, { ...attacker, xp: newXp }, supabase);
+    await bumpDailyMission(attackerId, 'pvp_count', supabase);
 
     res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained, eaten: targetUsername } });
+  } catch (err) { next(err); }
+}
+
+// GET /api/gamification/daily-missions — progresso das missões de hoje
+export async function getDailyMissions(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    const userId = authReq.user?.sub;
+    if (!userId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
+
+    const supabase = getSupabaseAdmin();
+    const { data: row } = await supabase
+      .from('daily_missions').select('*')
+      .eq('user_id', userId).eq('mission_date', todayStr()).maybeSingle();
+
+    const claimed: string[] = row?.claimed ?? [];
+    const missions = Object.entries(DAILY_MISSIONS).map(([key, m]) => {
+      const progress = Math.min(row?.[m.field] ?? 0, m.target);
+      return {
+        key, label: m.label, xp: m.xp, target: m.target, progress,
+        completed: progress >= m.target,
+        claimed: claimed.includes(key),
+      };
+    });
+
+    res.json({ success: true, data: { missions } });
+  } catch (err) { next(err); }
+}
+
+// POST /api/gamification/daily-missions/claim — resgata o XP de uma missão concluída
+export async function claimDailyMission(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const authReq = req as AuthRequest;
+    const userId = authReq.user?.sub;
+    if (!userId) { res.status(401).json({ success: false, error: 'Auth required.' }); return; }
+
+    const missionKey = String(req.body?.missionKey ?? '');
+    const mission = DAILY_MISSIONS[missionKey];
+    if (!mission) { res.status(400).json({ success: false, error: 'Invalid mission.' }); return; }
+
+    const supabase = getSupabaseAdmin();
+    const today = todayStr();
+    const { data: row } = await supabase
+      .from('daily_missions').select('*')
+      .eq('user_id', userId).eq('mission_date', today).maybeSingle();
+
+    const progress = row?.[mission.field] ?? 0;
+    const claimed: string[] = row?.claimed ?? [];
+
+    if (progress < mission.target) { res.status(400).json({ success: false, error: 'Mission not completed yet.' }); return; }
+    if (claimed.includes(missionKey)) { res.status(400).json({ success: false, error: 'Mission already claimed.' }); return; }
+
+    await supabase.from('daily_missions')
+      .update({ claimed: [...claimed, missionKey] })
+      .eq('user_id', userId).eq('mission_date', today);
+
+    const { data: profile } = await supabase
+      .from('profiles').select('xp, msg_count, feed_count, badges, login_streak, likes_received')
+      .eq('id', userId).single();
+
+    const newXp = (profile?.xp ?? 0) + mission.xp;
+    await supabase.from('profiles').update({ xp: newXp }).eq('id', userId);
+    await checkAndGrantBadges(userId, { ...profile, xp: newXp }, supabase);
+
+    res.json({ success: true, data: { xp: newXp, level: calcLevel(newXp), gained: mission.xp } });
   } catch (err) { next(err); }
 }
